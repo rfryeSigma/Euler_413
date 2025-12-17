@@ -29,4 +29,4 @@ pairs and thereby give up the hope for many restrictions on candidates.
 Then I partially factor the sums and search for a partition of the small
 factors to be used as a constant in a monotonically increasing cubic
 equation. I solve for the root of the equation and use it to construct
-the solution.
+the solution. See comments in code for details.
