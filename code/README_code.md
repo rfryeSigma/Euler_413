@@ -1,3 +1,4 @@
+### THEORY ###
 Let us define new variables for equation a^4 + b^4 = d^4 - c^4 .
 We can choose c, d odd and a, b = 0 mod 8, with a < b. 
 Define:
@@ -14,7 +15,13 @@ increasing cubic function
 We set to zero and solve for the root y using binary search or Newton's method.
 Knowing x and y, we convert them back to c and d for a solution.
 
-The code in this folder use this method to find solutions.
+### FOLDERS ###
+The code in this folder uses this method to find solutions.
 
-The code in the supplement sub-folder is used to supplement this code.
-One of the supplement programs documents and analyzes the 11 known solutions.
+The code in the supplement sub-folder is used to supplement this code. See it's README.
+
+The data files in the several tree folders hold .bin files for product trees.
+
+### CODE ###
+Files in this folder: (not completely designed yet)
+The main entry point will be search_413.py, which will use a factoring and a solving script.
