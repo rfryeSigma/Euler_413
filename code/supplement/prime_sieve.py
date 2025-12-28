@@ -145,14 +145,21 @@ class PrimeProductTree:
         Returns list:
             List of lists of products
         """
-        if len(primes).bit_count() != 1:
-            print(f'WARNING: number of primes {len(primes)} is not a power of 2')
-        tree = [primes]
-        while len(tree[-1]) > 1:
-            curr = tree[-1]
-            next_lvl = [curr[i] * curr[i+1] for i in range(0, len(curr)-1, 2)]
-            if len(curr) % 2 == 1: next_lvl.append(curr[-1])
-            tree.append(next_lvl)
+        len_p = len(primes)
+        assert 0 < len_p
+        if len_p.bit_count() != 1:
+            print(f'WARNING: number of primes {len_p} is not a power of 2')
+        len_t = len_p.bit_length() + (len_p.bit_count() > 1)
+        tree = [[]] * len_t
+        lvl = 0
+        tree[lvl] = curr = primes
+        while len(curr) > 1:
+            next_lvl= [0] * math.ceil(len(curr) / 2)
+            for i in range(len(next_lvl)):
+                i2 = 2 * i
+                next_lvl[i] = curr[i2] * (curr[i2+1] if i2 + 1 < len(curr) else 1)
+            lvl += 1
+            tree[lvl] = curr = next_lvl
         return tree
 
     @staticmethod
@@ -179,27 +186,6 @@ class PrimeProductTree:
         with open(f"{folder}/meta.txt", "w") as f:
             f.write(str(len(tree)))
 
-    @staticmethod
-    def load_level(level_idx: int) -> list:
-        """Loads a specific level into memory only when needed."""
-        num_nodes = 2** (num_levels - level_idx - 1)
-        nodes = [[]] * num_nodes
-        path = f"{folder}/level_{level_idx}.bin"
-        with open(path, "rb") as f:
-            for node_idx in range(num_nodes):
-                len_bytes = f.read(4)
-                print(node_idx, len_bytes)
-                if not len_bytes: 
-                    print(f'break after build {node_idx} nodes out of {num_nodes}')
-                    break
-                length = int.from_bytes(len_bytes, 'little')
-                nodes[node_idx] = (int.from_bytes(f.read(length), 'little'))
-        return nodes
-
-    @staticmethod
-    def get_root():
-        """Returns the single product at the top of the tree."""
-        return load_level(num_levels - 1)[0]
 
     @staticmethod
     def load(level: int, folder: str) -> list:
@@ -210,24 +196,81 @@ class PrimeProductTree:
         The last level is a list containing the product of all primes.
         
         Args:
-            level (int): level to load; if -1, load all levels
+            level (int): level to load;
+                if -1, load root;
+                if -2 load all levels
             folder (str): name of folder containing level files
         
         Returns: 
             list of products at selected level or list of lists.
         """
+        def load_level(level_idx: int) -> list:
+            """Loads a specific level into memory."""
+            num_nodes = 2** (num_levels - level_idx - 1)
+            nodes = [[]] * num_nodes
+            path = f"{folder}/level_{level_idx}.bin"
+            with open(path, "rb") as f:
+                for node_idx in range(num_nodes):
+                    len_bytes = f.read(4)
+                    if not len_bytes:
+                        return nodes[:node_idx]
+                        break
+                    length = int.from_bytes(len_bytes, 'little')
+                    nodes[node_idx] = (int.from_bytes(f.read(length), 'little'))
+                else:
+                    assert node_idx + 1 == num_nodes
+                return nodes
+
+        def get_root():
+            """Returns the single product at the top of the tree."""
+            return load_level(num_levels - 1)[0]
+
         with open(f"{folder}/meta.txt", "r") as f:
             num_levels = int(f.read())
             print(f'{folder} has {num_levels} levels')
 
-        if level is not None:
-            nodes = load_level(level)
-            return nodes
+            if 0 <= level:
+                nodes = load_level(level)
+                return nodes
+            
+            if -1 == level:
+                return get_root()
+            
+            all_nodes = [[]] * num_levels
+            for level in range(num_levels):
+                all_nodes[level] = load_level(level)
+            return all_nodes
+
+    @classmethod
+    def factor(cls, target_gcd: int, tree: list, level: int|None=None, index: int=0) -> list:
+        """
+        Factor target_gcd by recursively descending prime product tree.
+        """
+        if level is None:
+            level = len(tree) - 1 # Start at the top (the root product)
+
+        # Base case: we reached the leaves of the tree (the primes themselves)
+        if level == 0:
+            p = tree[0][index]
+            return [p] if target_gcd % p == 0 else []
+
+        found_primes = []
         
-        all_nodes = [[]] * num_levels
-        for level in range(num_levels):
-            all_nodes[level] = load_level[level]
-        return all_nodes
+        # Check the "Left" child
+        left_index = index * 2
+        left_prod = tree[level-1][left_index]
+        # Only descend if the GCD is greater than 1
+        if math.gcd(target_gcd, left_prod) > 1:
+            found_primes.extend(cls.factor(target_gcd, tree, level-1, left_index))
+
+        # Check the "Right" child
+        right_index = index * 2 + 1
+        if right_index < len(tree[level-1]): # check pass through if level not power of 2
+            right_prod = tree[level-1][right_index]
+            if math.gcd(target_gcd, right_prod) > 1:
+                found_primes.extend(cls.factor(target_gcd, tree, level-1, right_index))
+
+        return found_primes
 
 ### END class PrimeProductTree
 
@@ -237,7 +280,7 @@ import unittest
 
 class TestSieveFast(unittest.TestCase):
 
-    def test_overhead(self):
+    def test_overhead_fast(self):
         """Check how much overhead needed for n primes
         """
         def check(sieve, n, over, prime):
@@ -288,7 +331,7 @@ class TestSieveFast(unittest.TestCase):
         over = 3
         check(sieve, 25, over, 97)
 
-    def test_25(self):
+    def test_25_fast(self):
         """Reheck first 25 primes with ample overhead
         """
         def check(sieve, n, over, prime):
@@ -303,7 +346,7 @@ class TestSieveFast(unittest.TestCase):
         for i, p in enumerate(primes, start=1):
             check(sieve, i, over, p)
 
-    def test_twos(self):
+    def test_twos_fast(self):
         """Test 2**5, 2**10, 2**15, 2**20 primes"""
         pairs = ((2**5, 131), (2**10, 8161), (2**15, 386_093),
                 (2**20, 16_290_047))
@@ -312,7 +355,7 @@ class TestSieveFast(unittest.TestCase):
             prime = sieve.run_sieve(n)
             self.assertEqual(p, prime)
 
-    def test_tens(self):
+    def test_tens_fast(self):
         """Test 100, 1000, ..., 1_000_000 primes"""
         pairs = ((100, 541), (1000, 7919), (10_000, 104_729), 
                  (100_000, 1_299_709), (1_000_000, 15_485_863),
@@ -344,16 +387,41 @@ class TestSieveSlow(unittest.TestCase):
             prime = sieve.run_sieve(n)
             self.assertEqual(p, prime)
 
-class Test1Mod8(unittest.TestCase):
+class Test1Mod8_fast(unittest.TestCase):
 
-    def test_1mod8(self):
+    def test_1mod8_fast(self):
         """Test select_primes_1mod8"""
         sieve = SegmentedSieve()
         _ = sieve.run_sieve(12_345)
         c = sieve.select_primes_1mod8()
         self.assertEqual(c, 3050)
  
+class Test1Tree_fast(unittest.TestCase):
 
+    def test_build_save_load_fast(self):
+        """Test build, save and load prime product tree"""
+        tree = PrimeProductTree.build([2,3,5,7,11,13,17])
+        self.assertEqual(tree[-1], [510510])
+        self.assertEqual(tree[-2], [210, 2431])
+        PrimeProductTree.save(tree, 'test')
+        t2 = PrimeProductTree.load(-2, 'test')
+        self.assertEqual(t2, tree)
+        g = PrimeProductTree.load(-1, 'test')
+        self.assertEqual(g, 510510)
+
+    def test_factor_fast(self):
+        """Test factoring with gcd in prime product tree"""
+        tree = tree = PrimeProductTree.build([2,3,5,7,11,13,17])
+        factors = PrimeProductTree.factor(19, tree)
+        self.assertEqual(factors, [])
+        factors = PrimeProductTree.factor(77, tree)
+        self.assertEqual(factors, [7, 11])
+        factors = PrimeProductTree.factor(17*17, tree)
+        self.assertEqual(factors, [17])
+        factors = PrimeProductTree.factor(3*17, tree)
+        self.assertEqual(factors, [3, 17])
+
+### END unittests 
 
 ## --- Main Section ---
 import sys
