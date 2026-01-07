@@ -1,0 +1,1 @@
+# Partitions factors and attempts to solve cubic equation.

@@ -1,16 +1,16 @@
-import random
-import os
+from math import gcd, prod
+from random import randint
 
-def get_primorial_60():
-    # Product of the first 60 primes (up to 281)
-    return 1450257408801732953259141017424160408542918451842004245785124151740926715690807718041530230239103830424859882319047
-
+# First 100 primes and their product
+primes_100 = frozenset({2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97, 101, 103, 107, 109, 113, 127, 131, 137, 139, 149, 151, 157, 163, 167, 173, 179, 181, 191, 193, 197, 199, 211, 223, 227, 229, 233, 239, 241, 251, 257, 263, 269, 271, 277, 281, 283, 293, 307, 311, 313, 317, 331, 337, 347, 349, 353, 359, 367, 373, 379, 383, 389, 397, 401, 409, 419, 421, 431, 433, 439, 443, 449, 457, 461, 463, 467, 479, 487, 491, 499, 503, 509, 521, 523, 541})
+M = prod(primes_100)
+    
 def power(a, b, m):
     return pow(a, b, m)
 
 def miller_rabin(n, bases):
     if n < 2: return False
-    if n == 2 or n == 3: return True
+    #if n == 2 or n == 3: return True # handled by primorial
     
     d = n - 1
     s = 0
@@ -64,15 +64,12 @@ def is_prime(n:int, lucas: bool=False):
      """
     # 1. Easy cases
     if n < 2: return False
-    if n in {2, 3, 5, 7, 11, 13}: return True
-    if n % 2 == 0: return False
+    #if n in {2, 3, 5, 7, 11, 13}: return True # handled by primorial
+    #if n % 2 == 0: return False  # handled by primorial
     
     # 2. GCD Pre-filter (Massive speedup for composites)
-    M = get_primorial_60()
-    from math import gcd
     g = gcd(n, M)
-    if g > 1:
-        return n == g
+    if g > 1: return (n == g) and n in primes_100
     
     # 3. Deterministic Range (up to 2^64)
     DETERMINISTIC_BASES_64 = [2, 325, 9375, 28178, 450775, 9780504, 1795265022]
@@ -81,7 +78,7 @@ def is_prime(n:int, lucas: bool=False):
     
     # 4. Extended Range (up to 10^32)
     # We use deterministic bases + 5 random bases for "Computational Certainty"
-    extended_bases = DETERMINISTIC_BASES_64 + [random.randint(2, n-2) for _ in range(5)]
+    extended_bases = DETERMINISTIC_BASES_64 + [randint(2, n-2) for _ in range(5)]
     return miller_rabin(n, extended_bases) and (lucas_test(n) if lucas else True)
 
 
@@ -95,8 +92,7 @@ def next_prime(start: int) -> int:
     Returns:
         int: The next prime number >= start.
     """
-    if start <= 2:
-        return 2
+    if start <= 2: return 2
     # Ensure we start with an odd number
     candidate = start if start % 2 != 0 else start + 1
     
@@ -117,8 +113,7 @@ def previous_prime(start: int) -> int:
         int: The previous prime number <= start. If `start <= 2`
              returns 2.
     """
-    if start <= 2:
-        return 2
+    if start <= 2: return 2
 
     # Ensure we start with an odd number <= start
     candidate = start if start % 2 != 0 else start - 1

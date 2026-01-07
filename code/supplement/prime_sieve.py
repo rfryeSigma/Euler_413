@@ -15,6 +15,7 @@ class SegmentedSieve:
         self.extra = np.empty(0) # view of prime buffer after primes
         self.n_primes = 0
         self.primes_1mod8 = np.empty(0) # extract of primes: p%8 == 1
+        self.primes_357mod8 = np.empty(0) # extract of primes: p%8 == 3,5,7
 
     def run_sieve(self, n_primes: int=1_000_000, overhead: int=-1, 
                   verbose: bool=False) -> int|None:
@@ -116,15 +117,18 @@ class SegmentedSieve:
 
         return self.primes[-1]
 
-    def select_primes_1mod8(self) -> int:
+    def select_primes_mod8(self) -> list:
         """
-        Select primes from prime_buffer such that p%8 == 1. Save in object.
+        Select primes from prime_buffer such that p%8 == 1 or not.
+        Save in object as self.primes_1mod8, self.primes_357mod8.
 
-        Returns int
-            Number of primes selected
+        Returns list
+            Number of primes selected in each
         """
-        self.primes_1mod8 = [p for p in self.primes if p%8 == 1]
-        return len(self.primes_1mod8)
+        self.primes_1mod8 = [p for p in map(int, self.primes) if p%8 == 1]
+        self.primes_357mod8 = [p for p in map(int, self.primes[1:]) if p%8 != 1]
+        
+        return len(self.primes_1mod8), len(self.primes_357mod8)
 
 ### END class SegmentedSieve
 
@@ -389,12 +393,13 @@ class TestSieveSlow(unittest.TestCase):
 
 class Test1Mod8_fast(unittest.TestCase):
 
-    def test_1mod8_fast(self):
-        """Test select_primes_1mod8"""
+    def test_mod8_fast(self):
+        """Test select_primes_mod8"""
         sieve = SegmentedSieve()
         _ = sieve.run_sieve(12_345)
-        c = sieve.select_primes_1mod8()
-        self.assertEqual(c, 3050)
+        c1, c357 = sieve.select_primes_mod8()
+        self.assertEqual(c1, 3050)
+        self.assertEqual(c357, 9294)
  
 class Test1Tree_fast(unittest.TestCase):
 
@@ -439,8 +444,8 @@ def main(argv=None):
                         help='Python expression for integer overhead')
     p_sieve.add_argument('-v', action='store_true', help='whether to log progress')
 
-    # p_1mod8 command
-    p_p_1mod8 = subparsers.add_parser('p_1mod8', help='Select primes: p%8 == 1')
+    # p_mod8 command
+    p_p_mod8 = subparsers.add_parser('p_mod8', help='Select primes: p%8 == 1 and not')
 
     """ parse known args and leave the rest for unittest
         -v	--verbose	Show individual test names and results.
@@ -461,11 +466,11 @@ def main(argv=None):
             print('\t', sieve.primes)
         sys.exit(0)
 
-    if args.command == 'p_1mod8':
+    if args.command == 'p_mod8':
         sieve = SegmentedSieve()
         _ = sieve.run_sieve(12_345)
-        c = sieve.select_primes_1mod8()
-        print(f'Selected {c} 1mod8 primes')
+        c1, c357 = sieve.select_primes_mod8()
+        print(f'Selected {c1} 1mod8 primes and {c357} 3, 5, or 7 mod8')
         sys.exit(0)
 
     # No command, so run unit tests

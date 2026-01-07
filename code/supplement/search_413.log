@@ -1,0 +1,87 @@
+This is a log of what ranges have been searched and results confirmed and found.
+
+12/29/2023
+Code is just a skeleton now, so these results are experiments
+
+TRY SOLUTION #0 11_975, 51_820
+python -m search_413 search_ut 51_820 51_820 -v
+t 51819 in u 51820 (state 20)
+search_ut found solution None
+Elapsed: 0.071279s
+
+TRY SOLUTION #0 11_975, 51_820
+python -m search_413 search_t 51_820 11_974 11_976 -v='OUTER|INNER|PROCESS'
+Select inner generator for u 51820 state 20
+t 11974 in u 51820 (state 20)
+CALL FACTORIING: evens 2, factors {}
+t 11975 in u 51820 (state 20) # EXPECT SOLUTION #0 HERE $$$$$$$$$$
+CALL FACTORIING: evens 1, factors {5: 1}
+t 11976 in u 51820 (state 20)
+CALL FACTORIING: evens 4, factors {}
+search_t found solution None
+Elapsed: 0.000183s
+
+TRY SOLUTION #1 335_305, 2_349_595
+python -m search_413 search_t 2_349_595 335_300 335_309 -v='OUTER|INNER|PROCESS'
+Select inner generator for u 2349595 state 20
+t 335300 in u 2349595 (state 20)
+CALL FACTORIING: evens 1, factors {5: 1}
+t 335301 in u 2349595 (state 20)
+CALL FACTORIING: evens 1, factors {}
+t 335302 in u 2349595 (state 20)
+CALL FACTORIING: evens 1, factors {}
+t 335303 in u 2349595 (state 20)
+CALL FACTORIING: evens 1, factors {}
+t 335304 in u 2349595 (state 20)
+CALL FACTORIING: evens 1, factors {}
+t 335305 in u 2349595 (state 20)  # EXPECT SOLUTION #1 HERE $$$$$$$$$$
+CALL FACTORIING: evens 1, factors {5: 1}
+t 335306 in u 2349595 (state 20)
+CALL FACTORIING: evens 1, factors {}
+t 335307 in u 2349595 (state 20)
+CALL FACTORIING: evens 1, factors {}
+t 335308 in u 2349595 (state 20)
+CALL FACTORIING: evens 1, factors {}
+t 335309 in u 2349595 (state 20)
+CALL FACTORIING: evens 1, factors {}
+search_t found solution None
+Elapsed: 0.000266s
+
+TRY SOLUTION #2 4_364_815, 13_270_140
+python -m search_413 search_t 13_270_140 4_364_814 4_364_816 -v='OUTER|INNER|PROCESS'
+Select inner generator for u 13270140 state 15
+t 4364814 in u 13270140 (state 15)
+Reject common factor 3
+t 4364815 in u 13270140 (state 15)  # EXPECT SOLUTION #2 HERE $$$$$$$$$$
+Reject common factor 689  $$$$$$$$$ 689 = 13×53 (2 distinct prime factors)
+t 4364816 in u 13270140 (state 15)
+CALL FACTORIING: evens 4, factors {}
+search_t found solution None
+Elapsed: 0.000167s
+
+TRY SOLUTION #3 23_333_500, 72_833_162
+python -m search_413 search_t 13_270_140 4_364_814 4_364_816 -v='OUTER|INNER|PROCESS'
+Select inner generator for u 13270140 state 15
+Process t 4364814 in u 13270140 (state 15)
+CALL FACTORIING: evens 2, factors {}, others {3: 1}
+Process t 4364815 in u 13270140 (state 15)   # EXPECT SOLUTION #2 HERE $$$$$$$$$$
+CALL FACTORIING: evens 1, factors {5: 1}, others {689: 1}
+Process t 4364816 in u 13270140 (state 15)
+CALL FACTORIING: evens 4, factors {}, others {}
+search_t found solution None
+Elapsed: 0.000279s
+
+TRY SOLUTION #4 6_279_725, 79_083_995
+python -m search_413 search_t 79_083_995 6_279_724 6_279_726 -v='OUTER|INNER|PROCESS'
+> /Users/rogerfrye/Documents/Git/Euler_413/code/search_413.py(211)main()
+-> u = eval(args.u)
+(Pdb) c
+Select inner generator for u 79083995 state 20
+Process t 6279724 in u 79083995 (state 20)
+CALL FACTORIING: evens 1, factors {}
+Process t 6279725 in u 79083995 (state 20)  # EXPECT SOLUTION #4 HERE $$$$$$$$$$
+CALL FACTORIING: evens 1, factors {5: 1}
+Process t 6279726 in u 79083995 (state 20)
+CALL FACTORIING: evens 1, factors {}
+search_t found solution None
+Elapsed: 0.000171s

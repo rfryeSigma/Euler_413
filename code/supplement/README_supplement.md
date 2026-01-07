@@ -1,4 +1,4 @@
-The code in this supplement folder is used to aide the main code.
+The code and daata in this supplement folder are used to aid the main code.
 
 
 decompose_known_solutions.py
@@ -10,3 +10,6 @@ factoring_strategy.py
     
 prime_sieve.py
     Generates lists of primes and product trees of those primes.
+
+search_413.log
+    Hand annotated log of search ranges and results confirmed or found.
