@@ -1,35 +1,27 @@
 """
-Search for solutions to equation a^4 + b^4 = d^4 - c^4 .
-We can choose c, d odd and a, b = 0 mod 8, with a < b. 
-Define:
-    t = a / 8, u = b / 8, v = (d - c) / 2, w = (d + c) / 2.
-Then the equation becomes
-    (t^4 y + u^4) * 2^9 = m = v * w * (v^2 + w^2) = v^3 * w + v * w^3
-We search for a pair t < u such that one or both is 0 mod 5 but not
-both 0 mod 25. The pair must not have any common factors except 
-2 and 5 in order to be minimal. We calculate the 4th power sum m.
-We factor m just enough so that either v or w has a high probability
-of being completely factored.
-We search for a small subset of the factors with with product x and 
-co-product m / x = y. Then we treat x as a constant in the monotonically
-increasing cubic function
-    f(y) = x * y^3 + x^3 * y - m / x
-We set to zero and solve for the root y using binary search or Newton's method.
-Knowing x and y, we convert them back to c and d for a solution.
+As explained in README_code.md, we search for small pairs t < u such that
+one or both is 0 mod 5 but not both 0 mod 25.
+For each (t, u) pair, we call the factoring module to partially factor
+    m = t^4 + u^4,
+and we call the solving module to search for solutions (x, y) to
+    m = 2^-9 * (x + y^3 + x^2 * y)
 """
 import concurrent.futures
 from multiprocessing import Pool
 from time import time
 from factoring import factor_tu
 from logging_413 import V, IntFlag, parse_flags
+from solving import solve_factors
 
 def process_tu(t: int, u: int, vV: IntFlag=V.NONE) -> None:
     """Factor and solve for (t, u).
     Will abort with message if find solution"""
     V.log(vV, V.PROCESS, f'Process t {t} in u {u}')
     factoring_results = factor_tu(t, u, vV)
-    # CALL SOLVING $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-    return None
+    solving_results = solve_factors(*factoring_results, vV=vV)
+    assert solving_results is None, \
+        f'Found solution (t, u, v, w): ({t}, {u},' \
+        f'{solving_results[0]}, {solving_results[1]})'
 
 def search_inner_loop(u, vV: IntFlag=V.NONE):
     u_mod_25 = u % 25

@@ -333,7 +333,7 @@ def factor_tu(t: int, u: int, vV: IntFlag=V.NONE) -> list:
     :param t:int smaller variable
     :param u:int larger variable
     :param vV:IntFlag logging options
-    :return: list [common_factors, factors, others]
+    :return: list [common_factors, prime_factors, other_factors]
     """
     V.log(vV, V.FACTOR, f'Factor t, u: {t}, {u}')
     tf = time()
@@ -443,15 +443,6 @@ def main(argv=None):
     p_rho1.add_argument('-v', '--vV', type=parse_flags, default=V.NONE,
         help="Set verbosity levels (e.g., 'OUTER', 'OUTER|PROCESS', 'DEBUG')")
 
-    # rho1_mont command
-    p_rho1_mont = subparsers.add_parser('rho1_mont', 
-                        help='Factor with pollard_rho_one_mont')
-    p_rho1_mont.add_argument('n', type=str, help='Python expression for number to factor')
-    p_rho1_mont.add_argument('max_attempts', type=str, nargs='?', default='5',
-                        help='Python expression for max_attempts')    
-    p_rho1_mont.add_argument('-v', '--vV', type=parse_flags, default=V.NONE,
-        help="Set verbosity levels (e.g., 'OUTER', 'OUTER|PROCESS', 'DEBUG')")
-
     # factor_tu command
     p_factor_tu = subparsers.add_parser('factor_tu', help='Factor with factor_tu')
     p_factor_tu.add_argument('t', type=str, help='Python expression for t')
@@ -472,7 +463,7 @@ def main(argv=None):
     if args.command == 'p_1':
         n = eval(args.n)
         start = time()
-        g = p_minus_1_tree(n, vV=args.vV)
+        g = p_minus_1_backtack(n, vV=args.vV)
         elapsed = time() - start
         print(f'Found {g}, Elapsed: {elapsed:.6f}s')
         return
@@ -482,15 +473,6 @@ def main(argv=None):
         max_attempts = eval(args.max_attempts)
         start = time()
         g = pollard_rho_one(n, max_attempts=max_attempts, vV=args.vV)
-        elapsed = time() - start
-        print(f'Found {g}, Elapsed: {elapsed:.6f}s')
-        return
-
-    if args.command == 'rho1_mont':
-        n = eval(args.n)
-        max_attempts = eval(args.max_attempts)
-        start = time()
-        g = pollard_rho_one_mont(n, max_attempts=max_attempts, vV=args.vV)
         elapsed = time() - start
         print(f'Found {g}, Elapsed: {elapsed:.6f}s')
         return

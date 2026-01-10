@@ -1,6 +1,6 @@
 This is a log of what ranges have been searched and results confirmed and found.
 
-12/29/2023
+12/29/2025
 Code is just a skeleton now, so these results are experiments
 
 TRY SOLUTION #0 11_975, 51_820
@@ -85,3 +85,10 @@ Process t 6279726 in u 79083995 (state 20)
 CALL FACTORIING: evens 1, factors {}
 search_t found solution None
 Elapsed: 0.000171s
+
+1/10/2026Sa
+The code now runs all the way through search, factoring, partitioning, and solving.
+
+python -m search_413 search_t 51820 11970 11979 -v='FACTOR|F_P_1|F_GCD|F_COMMON|F_RHO|F_PLUS1|SOLVE|PROCESS'
+...
+AssertionError: Found solution (t, u, v, w): (11975, 51820,102481, 320000)

@@ -1,21 +1,53 @@
 ### THEORY ###
-Let us define new variables for equation a^4 + b^4 = d^4 - c^4 .
-We can choose c, d odd and a, b = 0 mod 8, with a < b. 
-Define:
-    t = a / 8, u = b / 8, v = (d - c) / 2, w = (d + c) / 2.
-Then the equation becomes
-    (t^4 y + u^4) * 2^9 = m = v * w * (v^2 + w^2) = v^3 * w + v * w^3
-We search for a pair t < u such that one or both is 0 mod 5 but not
-both 0 mod 25. The pair must not have any common factors except 
-2 and 5 in order to be minimal. We calculate the 4th power sum m.
+The goal is to find integer solutions to the equation
+    a^4 + b^4 + c^4 = d^4 .
+
+Move the c term to the right side and factor
+    d^4 - c^4 = (d - c) * (d + c) * (d^2 + c^2) .
+
+Modulo 8 and accounting for symmetries, the original equation
+has only 1 non-trivial solution: 0 + 0 + 1 = 1 ,
+so we can choose c, d odd and a, b = 0 mod 8, with a < b. 
+
+Define new variables:
+    t = a / 8, u = b / 8, v = (d - c) / 2, w = (d + c) / 2
+so that
+    a = 2^3 * t and b = 2^3 * u .
+And since 2 * v + 2 * w = 2 * d, and 2 * v - 2 * w = 2 * c ,
+    d = v + w and c = v - w
+
+Then the left side of the equation becomes
+    (2^3 * t)^4 + (2^3 * u)^4 = 2^12 * (t^4 + u^4) = 2^12 * m
+And the factored right side becomes
+    (2 * v) * (2 * w) * ( (v + w)^2 + (v - w)^2 )
+    = 2^3 * v * w * (v^2 + w^2)
+    = 2^3 * (v^3 * w + v * w^3)
+Notice the symmetry in the final term. If we knew either v or w,
+we could call it x and the other variable y.
+Then the final term becomes a cubic in y with parameter x:
+    x + y^3 + x^2 * y
+
+Putting this all together, we want to solve the equations
+    t^4 + u^4 = m; 2^9 * m = x * (y^3 + x^2 * y)
+
+### PROCESS ###
+We begin our solution process by search for small pairs t < u .
+
+Modulo 5 and accounting for symmetries, the original equation
+has only 1 non-trivial solution: 0 + 0 + 1 = 1 . This is the
+same as the modulo 8 solution which allowed us to choose a and b.
+But the modulo 5 condition is independent, so one or both of (t, u)
+must be 0 mod 5. If both t and u were 0 mod 25, the other terms
+would have to be the same mod 25, and the solution would be trivial.
+These conditions restrict the choice of (t, u).
+
 We factor m just enough so that either v or w has a high probability
 of being completely factored.
-We search for a small subset of the factors with with product x and 
-co-product m / x = y. Then we treat x as a constant in the monotonically
-increasing cubic function
-    f(y) = x * y^3 + x^3 * y - m / x
-We set to zero and solve for the root y using binary search or Newton's method.
-Knowing x and y, we convert them back to c and d for a solution.
+
+We select small subsets of the identified factors with product x .
+If we can solve the monotonically increasing cubic function
+    f(y; x) = y^3 + x^2 * y - 2^9 * m / x
+for the root y, then we can convert x and y back to c and d.
 
 ### FOLDERS ###
 The code in this folder uses this method to find solutions.
@@ -23,6 +55,8 @@ The code in this folder uses this method to find solutions.
 The code in the supplement sub-folder is used to supplement this code. See it's README.
 
 The data files in the several tree folders hold .bin files for product trees.
+I am reluctant to include in git because of size,
+They can be generated using supplement/prime_sieve.py
 
 ### CODE ###
 Files in this folder:
