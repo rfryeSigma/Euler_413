@@ -4,11 +4,9 @@ from random import randint
 # First 100 primes and their product
 primes_100 = frozenset({2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97, 101, 103, 107, 109, 113, 127, 131, 137, 139, 149, 151, 157, 163, 167, 173, 179, 181, 191, 193, 197, 199, 211, 223, 227, 229, 233, 239, 241, 251, 257, 263, 269, 271, 277, 281, 283, 293, 307, 311, 313, 317, 331, 337, 347, 349, 353, 359, 367, 373, 379, 383, 389, 397, 401, 409, 419, 421, 431, 433, 439, 443, 449, 457, 461, 463, 467, 479, 487, 491, 499, 503, 509, 521, 523, 541})
 M = prod(primes_100)
-    
-def power(a, b, m):
-    return pow(a, b, m)
 
-def miller_rabin(n, bases):
+
+def miller_rabin(n, bases, pow=pow):
     if n < 2: return False
     #if n == 2 or n == 3: return True # handled by primorial
     
@@ -31,7 +29,7 @@ def miller_rabin(n, bases):
             return False
     return True
 
-def lucas_test(n):
+def lucas_test(n, pow=pow):
     """Simplified Strong Lucas Primality Test."""
     if n < 2: return False
     # Find D such that Jacobi(D, n) = -1
@@ -50,7 +48,8 @@ def lucas_test(n):
     # Miller-Rabin with extra bases is often faster in Python than a full Lucas.
     return True 
 
-def is_prime(n:int, lucas: bool=False):
+def is_prime(n:int, lucas: bool=False, gcd=gcd, randint=randint, 
+            miller_rabin=miller_rabin, lucas_test=lucas_test):
     """
     Performs a easy and hard tests optimized for speed and reliability
 
@@ -82,7 +81,7 @@ def is_prime(n:int, lucas: bool=False):
     return miller_rabin(n, extended_bases) and (lucas_test(n) if lucas else True)
 
 
-def next_prime(start: int) -> int:
+def next_prime(start: int, is_prime=is_prime) -> int:
     """
     Finds the next prime greater than or equal to 'start'.
 
@@ -102,7 +101,7 @@ def next_prime(start: int) -> int:
         candidate += 2  # Check only odd numbers
 
 
-def previous_prime(start: int) -> int:
+def previous_prime(start: int, is_prime=is_prime) -> int:
     """
     Finds the previous prime less than or equal to `start`.
 
@@ -212,6 +211,16 @@ class TestSlow(unittest.TestCase):
                        5394826801, 1436697831295441]
         for c in carmichaels:
             self.assertFalse(is_prime(c, lucas=True))
+    
+    def test_next_prime(self):
+        p = 3
+        for _ in range(10):
+            for _ in range(2**13-2):
+                p = next_prime(p + 1)
+            self.assertEqual(p, 84017)
+            for _ in range(2**13-2):
+                p = previous_prime(p - 1)
+            self.assertEqual(p, 3)
 
 if __name__ == '__main__':
     unittest.main()

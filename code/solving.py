@@ -7,7 +7,7 @@ If we can solve the monotonically increasing cubic function
     f(y; x) = y^3 + x^2 * y - 2^9 * m / x
 for the root y, then x and y solve the equation.
 """
-from math import cbrt, isqrt, prod
+from math import cbrt, prod
 from time import time
 from logging_413 import V, IntFlag, parse_flags
 
@@ -62,7 +62,8 @@ def build_partition_bank(common: dict, factors: dict, others: dict) -> list:
     m512 = prod(bank) * twos_product # total product of all factors including 2**9
     return m512, twos_product, bank
 
-def partition_fragments(m512: int, twos_product: int, bank: list) -> int:
+def partition_fragments(m512: int, twos_product: int, bank: list,
+                        range=range, len=len) -> int:
     """Yield left_product where left_product < right_product
     and the products come from partitioning `factors` into two groups and multiplying.
     
@@ -92,10 +93,11 @@ def partition_fragments(m512: int, twos_product: int, bank: list) -> int:
     """
     init_left = twos_product
     init_right = m512 // twos_product
-    assert init_left < init_right
+    if init_left **2 >= init_right: return None
 
     # Generate partitions
     left_product_set = set()
+    add_to_set = left_product_set.add # localize
     partition_index = -1 # Each bit flags whether corresponding factor is in left_product
     max_index = 2 ** len(bank) - 1 # all factor inclusion flags on
     while partition_index < max_index:
@@ -109,18 +111,18 @@ def partition_fragments(m512: int, twos_product: int, bank: list) -> int:
                 left_product *= v
                 right_product //= v
         # Skip if reached max left product
-        if left_product >= right_product:
+        if left_product **2 >= right_product:
             continue
         # Avoid duplicates
         if left_product in left_product_set:
             continue
-        left_product_set.add(left_product)
+        add_to_set(left_product)
         # Yield partition
         yield left_product
 
     return None
 
-def solve_cubic_by_cardano(x: int, c: int) -> int | None:
+def solve_cubic_by_cardano(x: int, c: int, cbrt=cbrt, round=round) -> int | None:
     """Attempt to find an integer root of 
         y^3 + x^2 * y - c = 0
     for y using Cardono's formula for the depressed cubic.
@@ -146,8 +148,6 @@ def solve_cubic_by_cardano(x: int, c: int) -> int | None:
     u_cubed = -q / 2 + sqrt_discriminant
     v_cubed = -q / 2 - sqrt_discriminant
 
-    #u = round(u_cubed ** (1/3)) if u_cubed >= 0 else -round((-u_cubed) ** (1/3))
-    #v = round(v_cubed ** (1/3)) if v_cubed >= 0 else -round((-v_cubed) ** (1/3))
     u = round(cbrt(u_cubed)) if u_cubed >= 0 else -round(cbrt(-u_cubed))
     v = round(cbrt(v_cubed)) if v_cubed >= 0 else -round(cbrt(-v_cubed))
 
@@ -186,10 +186,11 @@ def solve_xm(x: int, m: int, vV=V.NONE) -> list|None:
     """
     assert (2**9 * m) % x == 0, "2^9 * m must be divisible by x"
     c =  2**9 * m // x
-    return solve_cubic_by_binary_search(x, c)
+    return solve_cubic_by_cardano(x, c)
 
 def solve_factors(common: dict, factors: dict, others: dict, vV: IntFlag=V.NONE,
-                  ) -> list|None:
+                  partition_fragments=partition_fragments, 
+                  solve_cubic_by_cardano=solve_cubic_by_cardano) -> list|None:
     """Given factors of m in the equations
         t^4 + u^4 = m; 2^9 * m = x * (y^3 + x^2 * y)
     search for integer solution x, y and return sorted pair v, w.
@@ -215,14 +216,31 @@ def solve_factors(common: dict, factors: dict, others: dict, vV: IntFlag=V.NONE,
         -> [v, w] = [2625017, 17990656]
     """
     m512, twos_product, bank = build_partition_bank(common, factors, others)
-    for x in partition_fragments(m512, twos_product, bank):
+    for i, x in enumerate(partition_fragments(m512, twos_product, bank)):
         y = solve_cubic_by_cardano(x, m512 // x)
         if y is None:
             continue
         v, w = (x, y) if x < y else (y, x)
-        V.log(vV, V.SOLVE, f"Found solution v={v}, w={w}")
+        V.log(vV, V.SOLVE, f"Found solution v={v}, w={w} in partition {i}")
         return [v, w]
     return None
+
+def solve_factors_all(common: dict, factors: dict, others: dict, vV: IntFlag=V.NONE,
+                  partition_fragments=partition_fragments, 
+                  solve_cubic_by_cardano=solve_cubic_by_cardano) -> list|None:
+    """Same as solve_factors, but does not stop if a factor is found.
+    """
+    solution = None
+    m512, twos_product, bank = build_partition_bank(common, factors, others)
+    for i, x in enumerate(partition_fragments(m512, twos_product, bank)):
+        y = solve_cubic_by_cardano(x, m512 // x)
+        if y is None:
+            continue
+        v, w = (x, y) if x < y else (y, x)
+        V.log(vV, V.SOLVE, f"Found solution v={v}, w={w} in partition {i}")
+        assert solution is None
+        solution = [v, w]
+    return solution
 
 
 
@@ -246,6 +264,7 @@ class TestSolveXMFast(unittest.TestCase):
 ## --- Main Section ---
 import argparse
 import sys
+import timeit
 
 def main(argv=None):
     """Command-line dispatcher"""
@@ -256,6 +275,7 @@ def main(argv=None):
     p_solve_tu = subparsers.add_parser('solve_tu', help='Solve with solve_tu')
     p_solve_tu.add_argument('t', type=str, help='Python expression for t')
     p_solve_tu.add_argument('u', type=str, help='Python expression for u')
+    p_solve_tu.add_argument('-a', '--all', action='store_true', help="Report all")
     p_solve_tu.add_argument('-v', '--vV', type=parse_flags, default=V.NONE,
         help="Set verbosity levels (e.g., 'OUTER', 'OUTER|PROCESS', 'DEBUG')")
 
@@ -277,14 +297,19 @@ def main(argv=None):
     args, rest = parser.parse_known_args(argv)
     if args.command == 'solve_tu':
         from factoring import factor_tu
-        import pdb; pdb.set_trace()
         t = eval(args.t)
         u = eval(args.u)
-        start = time()
         common, factors, others = factor_tu(t, u, vV=args.vV)
-        results = solve_factors(common, factors, others, vV=args.vV)
-        elapsed = time() - start
-        print(f'Found {results}, Elapsed: {elapsed:.6f}s')
+        if args.all:
+            results = solve_factors_all(common, factors, others, vV=args.vV)
+            elapsed = timeit.timeit(lambda: 
+                solve_factors_all(common, factors, others), number=1000) / 1000
+        else:
+            results = solve_factors(common, factors, others, vV=args.vV)
+            elapsed = timeit.timeit(lambda: 
+                solve_factors(common, factors, others), number=1000) / 1000
+        print(f'timeit: {elapsed:.8f}s')
+        print(f'Found {results}')
         return
  
     if args.command == 'solve_xm':  
@@ -296,7 +321,7 @@ def main(argv=None):
         print(f'Found {results}, Elapsed: {elapsed:.6f}s')
         return
     # No command, so run unit tests
-    return unittest.main(argv=[sys.argv[0]] + rest)
+    return unittest.main(argv=[sys.argv[0]] + rest) 
 
 if __name__ == "__main__":
     raise SystemExit(main(sys.argv[1:]))

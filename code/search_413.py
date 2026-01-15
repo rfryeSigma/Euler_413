@@ -9,23 +9,29 @@ and we call the solving module to search for solutions (x, y) to
 import concurrent.futures
 from multiprocessing import Pool
 from time import time
-from factoring import factor_tu
+from factoring import factor_tu, save_times, return_saved_times
 from logging_413 import V, IntFlag, parse_flags
+from os import system
 from solving import solve_factors
 
-def process_tu(t: int, u: int, vV: IntFlag=V.NONE) -> None:
+def process_tu(t: int, u: int, vV: IntFlag=V.NONE,
+               log=V.log, factor_tu=factor_tu, solve_factors=solve_factors, system=system,
+               ) -> None:
     """Factor and solve for (t, u).
     Will abort with message if find solution"""
-    V.log(vV, V.PROCESS, f'Process t {t} in u {u}')
+    log(vV, V.PROCESS, f'Process t {t} in u {u}')
     factoring_results = factor_tu(t, u, vV)
     solving_results = solve_factors(*factoring_results, vV=vV)
+    if solving_results is None: return
+    system('say found solution')
     assert solving_results is None, \
         f'Found solution (t, u, v, w): ({t}, {u},' \
         f'{solving_results[0]}, {solving_results[1]})'
 
-def search_inner_loop(u, vV: IntFlag=V.NONE):
+def search_inner_loop(u, vV: IntFlag=V.NONE,
+                      log=V.log, process_tu=process_tu):
     u_mod_25 = u % 25
-    V.log(vV, V.OUTER, f'Outer step u {u} state {u_mod_25}')
+    log(vV, V.OUTER, f'Outer step u {u} state {u_mod_25}')
         
     # 1. Define the 'Wheel' for t based on u's state
     if u_mod_25 == 0:
@@ -47,34 +53,32 @@ def search_inner_loop(u, vV: IntFlag=V.NONE):
     for t in t_generator:
         process_tu(t, u, vV)
 
-def search_p_ut(first_u :int, last_u :int, workers :int=8,
-           vV: IntFlag=V.NONE) -> None:
+def search_stride_worker(worker_id: int, first_u: int, last_u: int, 
+                         workers: int, vV: IntFlag):
+    """Processes every Nth 'u'"""
+    # The 'stride' is the number of workers
+    for u in range(first_u + worker_id, last_u + 1, workers):
+        search_inner_loop(u, vV)
+    vV.log(vV, V.F_DIAG, return_saved_times())
+
+def search_p_ut(first_u :int, last_u :int, workers :int=8, vV: IntFlag=V.NONE,
+           search_stride_worker=search_stride_worker) -> None:
     """
     Performs the search in parallel using a wheel-based lookup for
     t (smallest variable) based on the successive modular states
     of range on u. (second smallest variable)
     """
-    with concurrent.futures.ProcessPoolExecutor(max_workers=workers) as executor:
-        # Map the outer loop values to the executor
-        # This returns a dictionary of {future: outer_value}
-        future_to_val = {executor.submit(search_inner_loop, u, vV):
-                         u for u in range(first_u, last_u + 1)}
-        # This loop yields results immediately as they finish
-        for future in concurrent.futures.as_completed(future_to_val):
-            result = future.result()
-    """
     with Pool(processes=workers) as pool:
         async_results = [
-            pool.apply_async(search_inner_loop, args=(u, vV))
-            for u in range(first_u, last_u + 1)
+            pool.apply_async(search_stride_worker, 
+                             args=(i, first_u, last_u, workers, vV))
+            for i in range(workers)
         ]
         for res in async_results:
             _ = res.get() # This waits for results
-    """
-    None
 
-def search_ut(first_u :int, last_u :int,
-           vV: IntFlag=V.NONE) -> None:
+def search_ut(first_u :int, last_u :int, vV: IntFlag=V.NONE, 
+              search_inner_loop=search_inner_loop) -> None:
     """
     Performs the search using a wheel-based lookup for
     t (smallest variable) based on the successive modular states
@@ -82,9 +86,10 @@ def search_ut(first_u :int, last_u :int,
     """
     for u in range(first_u, last_u + 1):
         search_inner_loop(u, vV)
+    vV.log(vV, V.F_DIAG, return_saved_times())
 
-def search_t(u :int, first_t: int=1, last_t :int=-1, 
-             vV: IntFlag=V.NONE) -> None:
+def search_t(u :int, first_t: int=1, last_t :int=-1, vV: IntFlag=V.NONE,
+             log=V.log, process_tu=process_tu) -> None:
     """
     Performs the search using a wheel-based lookup for
     t (smallest variable) based on the modular state of 
@@ -93,7 +98,7 @@ def search_t(u :int, first_t: int=1, last_t :int=-1,
     u_mod_25 = u % 25
     if last_t == -1: last_t = u - 1
          
-    V.log(vV, V.OUTER, f'Select inner generator for u {u} state {u_mod_25}')
+    log(vV, V.OUTER, f'Select inner generator for u {u} state {u_mod_25}')
     # 1. Define the 'Wheel' for t based on u's state
     if u_mod_25 == 0:
         # Rule: Skip t if t % 25 == 0
@@ -115,6 +120,7 @@ def search_t(u :int, first_t: int=1, last_t :int=-1,
     # 2. Execute the search in the selected wheel
     for t in t_generator:
         process_tu(t, u, vV)
+    log(vV, V.F_DIAG, return_saved_times())
 
 ## Unit tests
 # ----------------------------------------------------------------------------
@@ -185,6 +191,7 @@ def main(argv=None):
         search_p_ut(first_u, last_u, workers=args.workers, vV=args.vV)
         elapsed = time() - start
         print(f'Elapsed: {elapsed:.6f}s')
+        system('say Calculation finished')
         return
 
     if args.command == 'search_ut':
@@ -194,6 +201,7 @@ def main(argv=None):
         search_ut(first_u, last_u, vV=args.vV)
         elapsed = time() - start
         print(f'Elapsed: {elapsed:.6f}s')
+        system('say Calculation finished')
         return
 
     if args.command == 'search_t':

@@ -16,14 +16,15 @@ class V(IntFlag):
     F_GCD  = auto() # 0x00800
     F_TRIAL= auto() # 0x01000
     F_RHO  = auto() # 0x02000
-    F_PLUS1= auto() # 0x04000
+    F_DIAG = auto() # 0x04000
     SOLVE  = 0x10000
     S_FACT = auto() # 0x20000
     S_PART = auto() # 0x40000
     S_CUBIC= auto() # 0x80000
+    ALL = 0xFFFFFFFF
     
     @staticmethod
-    def log(flags, target, message):
+    def log(flags, target, message, print=print):
         """Prints message only if target is set within flags."""
         if flags and flags & target: print(message)
 
