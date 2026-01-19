@@ -56,7 +56,7 @@ The code in the supplement sub-folder is used to supplement this code. See it's 
 
 The data files in the several tree folders hold .bin files for product trees.
 I am reluctant to include in git because of size,
-They can be generated using supplement/prime_sieve.py
+See instructions for generating in supplement/README_supplement.md
 
 ### CODE ###
 Files in this folder:

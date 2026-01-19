@@ -96,18 +96,23 @@ AssertionError: Found solution (t, u, v, w): (11975, 51820,102481, 320000)
 1/11/2026Su
 python -m search_413 search_p_ut 2 6000 -v='OUTER'
 Elapsed: 89.794454s
+
 python -m search_413 search_p_ut 6001 10_000 -v='OUTER'
 Elapsed: 219.690742s
+
 python -m search_413 search_p_ut 10_001 20_000 -v='OUTER'
 Elapsed: 1289.239998s
+
 python -m search_413 search_p_ut 20_001 40_000 -v='OUTER'
-Elapsed: 12451.059217s $$$$$$$$$$$$$$ Was in pdb, so slow. Need to rerun ~2.5hr
+Elapsed: 12451.059217s Was in pdb, so slow. Reran on 1/15/2026
 
 1/12/2026M
 python -m search_413 search_p_ut 40_001 50_000 -v='OUTER'
 Elapsed: 5878.946322s
+
 python -m search_413 search_p_ut 50_001 51_819 -v='OUTER'
 Elapsed: 1270.406283s
+
 python -m search_413 search_p_ut 51_820 51_820 -v='OUTER'
 AssertionError: Found solution (t, u, v, w): (11975, 51820,102481, 320000)
 Have reached solution #0.
@@ -115,6 +120,7 @@ Have reached solution #0.
 Clean up in u=51_820 on either side of solution.
 python -m search_413 search_t 51_820 1 11_974 -v='OUTER'
 Elapsed: 2.969119s
+
 python -m search_413 search_t 51_820 11_976 51_819 -v='OUTER'
 Select inner generator for u 51820 state 20
 Elapsed: 9.876698s
@@ -122,12 +128,55 @@ Elapsed: 9.876698s
 Continue the search
 python -m search_413 search_p_ut 51_821 70_000 -v='OUTER'
 Elapsed: 15943.272157s
-python -m search_413 search_p_ut 70_001 150_000 -v='OUTER'
-Interrupted after u=95_150 completed
 
+python -m search_413 search_p_ut 70_001 150_000 -v='OUTER'
+Interrupted after u=95_150 completed. Rerun 1/15/2025
+
+1/15/2026
+Rerun of section run on 1/11/2026
+python -m search_413 search_p_ut 20_001 40_000 -v='OUTER|F_DIAG'
+Worker 7: count 26888200:
+factors 2.49671, others 0.0493329, avg time 0.000269
+common 7.17e-07 (0.27%), p-1 0.000113 (42.07%), gcd 6.16e-05 (22.93%), rho 9.34e-05 (34.74%)
+...Worker 2: count 26884200:
+factors 2.97965, others 0.0656387, avg time 0.000319
+common 5.31e-07 (0.17%), p-1 0.000129 (40.56%), gcd 6.84e-05 (21.45%), rho 0.000121 (37.82%)
+Elapsed: 8987.114177s
+
+Rerun 70_001 90_000
+python -m search_413 search_p_ut 70_001 90_000 -v='OUTER|F_DIAG'
+...Worker 4: count 71673000:
+factors 2.9827, others 0 .10722, avg time 0.000436
+common 5.77e-07 (0.13%), p-1 0.000173 (39.75%), gcd 4.88e-05 (11.20%), rho 0.000213 (48.92%)
+Elapsed: 32483.110118s ~9hrs
+
+1/17/2026Sa
+python -m search_413 search_p_ut 90_001 105_000 -v='OUTER|F_DIAG'
+...Worker 6: count 65518350:
+factors 2.98061, others 0.116603, avg time 0.000449
+common 6.07e-07 (0.14%), p-1 0.000173 (38.52%), gcd 4.92e-05 (10.96%), rho 0.000226 (50.39%)
+Elapsed: 30589.177334s
+
+1/18/2026Su
+python -m search_413 search_p_ut 105_001 110_000 -v='OUTER|F_DIAG'
+Worker 2: count 24081050:
+factors 2.98014, others 0.121147, avg time 0.000448
+common 5.29e-07 (0.12%), p-1 0.000171 (38.21%), gcd 5.38e-05 (12.00%), rho 0.000223 (49.67%)
+Elapsed: 11215.569338s
+
+python -m search_413 search_p_ut 110_001 115_000 -v='OUTER|F_DIAG'; date
+Worker 4: count 25198250:
+factors 2.99889, others 0.113661, avg time 0.000524
+common 5.1e-07 (0.10%), p-1 0.000171 (32.71%), gcd 0.000157 (29.90%), rho 0.000195 (37.30%)
+Elapsed: 13625.176736s
+
+1/19/2026M
+python -m search_413 search_p_ut 115_000 130_000 -v='OUTER|F_DIAG'; date
+Worker 3: count 82323150:
+factors 2.99772, others 0.117754, avg time 0.000567
+common 5.13e-07 (0.09%), p-1 0.000173 (30.50%), gcd 0.000172 (30.33%), rho 0.000222 (39.08%)
 
 DOING
-
 
 TODO
 

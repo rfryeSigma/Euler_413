@@ -9,7 +9,7 @@ and we call the solving module to search for solutions (x, y) to
 import concurrent.futures
 from multiprocessing import Pool
 from time import time
-from factoring import factor_tu, save_times, return_saved_times
+from factoring import factor_tu, return_saved_times
 from logging_413 import V, IntFlag, parse_flags
 from os import system
 from solving import solve_factors
@@ -19,19 +19,19 @@ def process_tu(t: int, u: int, vV: IntFlag=V.NONE,
                ) -> None:
     """Factor and solve for (t, u).
     Will abort with message if find solution"""
-    log(vV, V.PROCESS, f'Process t {t} in u {u}')
+    log(vV, V.PROCESS, f'Process t {t:_} in u {u:_}')
     factoring_results = factor_tu(t, u, vV)
     solving_results = solve_factors(*factoring_results, vV=vV)
     if solving_results is None: return
     system('say found solution')
     assert solving_results is None, \
-        f'Found solution (t, u, v, w): ({t}, {u},' \
+        f'Found solution (t, u, v, w): ({t:_}, {u:_},' \
         f'{solving_results[0]}, {solving_results[1]})'
 
 def search_inner_loop(u, vV: IntFlag=V.NONE,
                       log=V.log, process_tu=process_tu):
     u_mod_25 = u % 25
-    log(vV, V.OUTER, f'Outer step u {u} state {u_mod_25}')
+    log(vV, V.OUTER, f'Outer step u {u:_} state {u_mod_25}')
         
     # 1. Define the 'Wheel' for t based on u's state
     if u_mod_25 == 0:
@@ -59,7 +59,7 @@ def search_stride_worker(worker_id: int, first_u: int, last_u: int,
     # The 'stride' is the number of workers
     for u in range(first_u + worker_id, last_u + 1, workers):
         search_inner_loop(u, vV)
-    vV.log(vV, V.F_DIAG, return_saved_times())
+    vV.log(vV, V.F_DIAG, f'Worker {worker_id}: {return_saved_times()}')
 
 def search_p_ut(first_u :int, last_u :int, workers :int=8, vV: IntFlag=V.NONE,
            search_stride_worker=search_stride_worker) -> None:
@@ -98,7 +98,7 @@ def search_t(u :int, first_t: int=1, last_t :int=-1, vV: IntFlag=V.NONE,
     u_mod_25 = u % 25
     if last_t == -1: last_t = u - 1
          
-    log(vV, V.OUTER, f'Select inner generator for u {u} state {u_mod_25}')
+    log(vV, V.OUTER, f'Select inner generator for u {u:_} state {u_mod_25}')
     # 1. Define the 'Wheel' for t based on u's state
     if u_mod_25 == 0:
         # Rule: Skip t if t % 25 == 0

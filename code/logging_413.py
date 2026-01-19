@@ -3,6 +3,7 @@
 from enum import IntFlag, auto
 
 class V(IntFlag):
+    # Flags for selecting logging messages
     # Defining flags using auto() assigns powers of 2 (1, 2, 4, 8, ...)
     NONE   = 0x00000
     DEBUG  = auto() # 0x00001
@@ -21,7 +22,10 @@ class V(IntFlag):
     S_FACT = auto() # 0x20000
     S_PART = auto() # 0x40000
     S_CUBIC= auto() # 0x80000
-    ALL = 0xFFFFFFFF
+    ALL = (2**(S_CUBIC.bit_length())) - 1
+    # END Flags for selecting logging messages
+    # Flags for selecting actions
+    RHO1 = auto() # 0x100000 # call pollard_rho_one
     
     @staticmethod
     def log(flags, target, message, print=print):

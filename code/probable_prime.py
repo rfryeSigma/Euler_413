@@ -1,15 +1,16 @@
 from math import gcd, prod
 from random import randint
 
-# First 100 primes and their product
-primes_100 = frozenset({2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97, 101, 103, 107, 109, 113, 127, 131, 137, 139, 149, 151, 157, 163, 167, 173, 179, 181, 191, 193, 197, 199, 211, 223, 227, 229, 233, 239, 241, 251, 257, 263, 269, 271, 277, 281, 283, 293, 307, 311, 313, 317, 331, 337, 347, 349, 353, 359, 367, 373, 379, 383, 389, 397, 401, 409, 419, 421, 431, 433, 439, 443, 449, 457, 461, 463, 467, 479, 487, 491, 499, 503, 509, 521, 523, 541})
-M = prod(primes_100)
-
+primes_250 = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97, 101, 103, 107, 109, 113, 127, 131, 137, 139, 149, 151, 157, 163, 167, 173, 179, 181, 191, 193, 197, 199, 211, 223, 227, 229, 233, 239, 241, 251, 257, 263, 269, 271, 277, 281, 283, 293, 307, 311, 313, 317, 331, 337, 347, 349, 353, 359, 367, 373, 379, 383, 389, 397, 401, 409, 419, 421, 431, 433, 439, 443, 449, 457, 461, 463, 467, 479, 487, 491, 499, 503, 509, 521, 523, 541, 547, 557, 563, 569, 571, 577, 587, 593, 599, 601, 607, 613, 617, 619, 631, 641, 643, 647, 653, 659, 661, 673, 677, 683, 691, 701, 709, 719, 727, 733, 739, 743, 751, 757, 761, 769, 773, 787, 797, 809, 811, 821, 823, 827, 829, 839, 853, 857, 859, 863, 877, 881, 883, 887, 907, 911, 919, 929, 937, 941, 947, 953, 967, 971, 977, 983, 991, 997, 1009, 1013, 1019, 1021, 1031, 1033, 1039, 1049, 1051, 1061, 1063, 1069, 1087, 1091, 1093, 1097, 1103, 1109, 1117, 1123, 1129, 1151, 1153, 1163, 1171, 1181, 1187, 1193, 1201, 1213, 1217, 1223, 1229, 1231, 1237, 1249, 1259, 1277, 1279, 1283, 1289, 1291, 1297, 1301, 1303, 1307, 1319, 1321, 1327, 1361, 1367, 1373, 1381, 1399, 1409, 1423, 1427, 1429, 1433, 1439, 1447, 1451, 1453, 1459, 1471, 1481, 1483, 1487, 1489, 1493, 1499, 1511, 1523, 1531, 1543, 1549, 1553, 1559, 1567, 1571, 1579, 1583]
+small_limit = 50
+small_primes = frozenset(primes_250[:small_limit])
+M = prod(small_primes)
+large_limit = 150
+large_primes = frozenset(primes_250[small_limit:large_limit])
+M_large = prod(large_primes)
 
 def miller_rabin(n, bases, pow=pow):
-    if n < 2: return False
-    #if n == 2 or n == 3: return True # handled by primorial
-    
+    #if n == 2 or n == 3: return True # handled by primorial        
     d = n - 1
     s = 0
     while d % 2 == 0:
@@ -29,27 +30,8 @@ def miller_rabin(n, bases, pow=pow):
             return False
     return True
 
-def lucas_test(n, pow=pow):
-    """Simplified Strong Lucas Primality Test."""
-    if n < 2: return False
-    # Find D such that Jacobi(D, n) = -1
-    D, s = 5, 1
-    while True:
-        d_val = D * s
-        # Simplified Jacobi check (approximate for demo; in prod use a full Jacobi function)
-        if pow(d_val, (n-1)//2, n) == n-1: 
-            D = d_val
-            break
-        D += 2
-        s *= -1
-        if D > 1000: return True # Fallback for safety
-        
-    # Standard Lucas sequences would follow here; for 10^32, 
-    # Miller-Rabin with extra bases is often faster in Python than a full Lucas.
-    return True 
-
-def is_prime(n:int, lucas: bool=False, gcd=gcd, randint=randint, 
-            miller_rabin=miller_rabin, lucas_test=lucas_test):
+def is_prime(n:int, gcd=gcd, randint=randint, 
+            miller_rabin=miller_rabin):
     """
     Performs a easy and hard tests optimized for speed and reliability
 
@@ -68,9 +50,11 @@ def is_prime(n:int, lucas: bool=False, gcd=gcd, randint=randint,
     
     # 2. GCD Pre-filter (Massive speedup for composites)
     g = gcd(n, M)
-    if g > 1: return (n == g) and n in primes_100
-    
-    # 3. Deterministic Range (up to 2^64)
+    if g > 1: return (n == g) and n in small_primes
+    g = gcd(n, M_large)
+    if g > 1: return (n == g) and n in large_primes
+
+    # 3. Deterministic Range (up to 2^64). First 12 primes ok, but 7 faster
     DETERMINISTIC_BASES_64 = [2, 325, 9375, 28178, 450775, 9780504, 1795265022]
     if n < 18_446_744_073_709_551_616:
         return miller_rabin(n, DETERMINISTIC_BASES_64)
@@ -78,52 +62,86 @@ def is_prime(n:int, lucas: bool=False, gcd=gcd, randint=randint,
     # 4. Extended Range (up to 10^32)
     # We use deterministic bases + 5 random bases for "Computational Certainty"
     extended_bases = DETERMINISTIC_BASES_64 + [randint(2, n-2) for _ in range(5)]
-    return miller_rabin(n, extended_bases) and (lucas_test(n) if lucas else True)
+    return miller_rabin(n, extended_bases)
 
 
-def next_prime(start: int, is_prime=is_prime) -> int:
-    """
-    Finds the next prime greater than or equal to 'start'.
+# The positions in a 2-3-5 wheel (period of 30)
+# These are all numbers n where gcd(n, 30) == 1
+WHEEL_POS = [1, 7, 11, 13, 17, 19, 23, 29]
+# Forward gaps between WHEEL_POS plus 31-29
+WHEEL_GAPS = [6, 4, 2, 4, 2, 4, 6, 2]
+# Reverse gaps from 31 to 29, 29 to 23, ..., 11 to 7, 7 to 1
+PREV_GAPS = [2, 6, 4, 2, 4, 2, 4, 6] 
+ 
+def next_prime(start: int) -> int:
+    """Finds the next prime >= start using a 2-3-5 wheel."""
+    if start > 5:
+        # Get onto the wheel
+        base = (start // 30) * 30
+        rem = start % 30
+        
+        idx = 0
+        for i, p in enumerate(WHEEL_POS):
+            if base + p >= start:
+                idx = i
+                break
+        else:
+            # If no position in this block works, move to the first position of next block
+            base += 30
+            idx = 0        
+        candidate = base + WHEEL_POS[idx]
+        
+        # Search forward
+        while True:
+            if is_prime(candidate): return candidate
+            candidate += WHEEL_GAPS[idx]
+            idx = (idx + 1) % 8
+        assert False
 
-    Args:
-        start (int): The starting integer to search for the next prime.  
+    # Fallback for small numbers
+    if start <= 3: return 3 if start == 3 else 2
+    return 5
 
-    Returns:
-        int: The next prime number >= start.
-    """
-    if start <= 2: return 2
-    # Ensure we start with an odd number
-    candidate = start if start % 2 != 0 else start + 1
-    
-    while True:
-        if is_prime(candidate):
-            return candidate
-        candidate += 2  # Check only odd numbers
+def previous_prime(start: int) -> int:
+    """Finds the previous prime <= start using a 2-3-5 wheel."""
+    # Small primes handled manually because the wheel skips them
+    if start > 7:
+        # Valid positions relative to modulo 30:
+        # 1, 7, 11, 13, 17, 19, 23, 29
+        positions = [1, 7, 11, 13, 17, 19, 23, 29]
+        
+        # 1. Snap start to the wheel
+        base = (start // 30) * 30
+        rem = start % 30
+        
+        # Find the largest index i such that positions[i] <= rem
+        idx = -1
+        for i in range(len(positions) - 1, -1, -1):
+            if positions[i] <= rem:
+                idx = i
+                break
+        
+        # If rem < 1, we need to wrap around to the previous block of 30
+        if idx == -1:
+            base -= 30
+            idx = 7 # point to 29
+            
+        start = base + positions[idx]
 
+        # 2. Iterate backwards
+        while start > 7:
+            if is_prime(start):
+                return start
+            
+            idx -= 1
+            if idx < 0:
+                base -= 30
+                idx = 7
+            start = base + positions[idx]
 
-def previous_prime(start: int, is_prime=is_prime) -> int:
-    """
-    Finds the previous prime less than or equal to `start`.
-
-    Args:
-        start (int): The starting integer to search for the previous prime.
-
-    Returns:
-        int: The previous prime number <= start. If `start <= 2`
-             returns 2.
-    """
-    if start <= 2: return 2
-
-    # Ensure we start with an odd number <= start
-    candidate = start if start % 2 != 0 else start - 1
-
-    while candidate >= 3:
-        if is_prime(candidate):
-            return candidate
-        candidate -= 2  # Check only odd numbers going downwards
-
-    # If none found (shouldn't happen), return 2 as a safe fallback
-    return 2
+    # Final fallbacks for primes below the wheel's first entry (7)
+    if start >= 5: return 7 if start == 7 else 5
+    return 3 if start >= 3 else 2
 
 import unittest
 
@@ -181,7 +199,7 @@ class TestSimple(unittest.TestCase):
         prev_before_high = previous_prime(high - 1)
 
         self.assertTrue(
-            next_after_low == high or prev_before_high == low,
+            next_after_low == high and prev_before_high == low,
             msg=(f"Bounds are not adjacent primes: next_after_low={next_after_low}, "
                  f"prev_before_high={prev_before_high}"),
         )
@@ -195,13 +213,12 @@ class TestSlow(unittest.TestCase):
         # __main__ could set RUN_SLOW), so do the check inside the test.
         # 2**127 - 1 is a known Mersenne prime; very expensive to check
         n = 2**127 - 1
-        # large k for high confidence; slow by design
-        self.assertTrue(is_prime(n, lucas=True))
+        self.assertTrue(is_prime(n))
 
     def test_large_k_mersenne(self):
         # Same candidate with a very large k to stress the algorithm
         n = 2**521 - 1
-        self.assertTrue(is_prime(n, lucas=True))
+        self.assertTrue(is_prime(n))
 
     def test_carmichael_many_bases(self):
         # Run Miller-Rabin with many bases on several (composite) Carmichael numbers
@@ -210,17 +227,16 @@ class TestSlow(unittest.TestCase):
         carmichaels = [561, 1105, 1729, 2465, 2821, 41041, 825265, 321197185, 
                        5394826801, 1436697831295441]
         for c in carmichaels:
-            self.assertFalse(is_prime(c, lucas=True))
+            self.assertFalse(is_prime(c))
     
     def test_next_prime(self):
         p = 3
-        for _ in range(10):
-            for _ in range(2**13-2):
-                p = next_prime(p + 1)
-            self.assertEqual(p, 84017)
-            for _ in range(2**13-2):
-                p = previous_prime(p - 1)
-            self.assertEqual(p, 3)
+        for _ in range(1_000_000 - 2):
+            p = next_prime(p + 1)
+        self.assertEqual(p, 15_485_863)
+        for _ in range(1_000_000 - 2):
+            p = previous_prime(p - 1)
+        self.assertEqual(p, 3)
 
 if __name__ == '__main__':
     unittest.main()

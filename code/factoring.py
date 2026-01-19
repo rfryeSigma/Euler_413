@@ -28,46 +28,34 @@ from utilities_413 import load_tree, factor_tree_gen
 # Load and subset prime product trees
 tree357_13 = load_tree(-2, 'tree357_13') # 3,5,7mod8, 14 levels, length 2**13, 3 thru 115_223
 tree357_small = tree357_13[:7] # thru 421, sufficient for up to u = 100_000
-tree1_17 = load_tree(-2, 'tree1_17') # 1mod8, 17 levels, length 2**16, 17 thru 3_684_641
-tree1_small = tree1_17[:4] # thru 193, sufficient for up to u = 100_000
 
-# Tune the size of the 1mod8 tree
-#tree1 = tree1_17[:1] # just 17
-#tree1 = tree1_17[:2] # plus 41
-#tree1 = tree1_17[:3] # plus 73 thru 89
-#tree1 = tree1_17[:4] # plus 97 thru 193
-#tree1 = tree1_17[:5] # plus 233 thru 401
-#tree1 = tree1_17[:6] # plus 409 thru 857
-#tree1 = tree1_17[:7] # plus 881 thru 1801
-#tree1 = tree1_17[:8] # plus 1873 thru 3889
-#tree1 = tree1_17[:9] # plus 3929 thru 8377
-#tree1 = tree1_17[:10] # plus 8513 thru 18_233
-#tree1 = tree1_17[:11] # plus 18_257 thru 39_769
-#tree1 = tree1_17[:12] # plus 39_841 thru 84_913
-#tree1 = tree1_17[:13] # plus 84_961 thru 181_777
-#tree1 = tree1_17[:14] # plus 181_873 thru 389_057
-tree1 = tree1_17[:15] # plus 389_089 thru 823_777
-#tree1 = tree1_17[:16] # plus 823_841 thru 1_747_489
-#tree1 = tree1_17[:] # plus 1_747_513 thru 3_684_641
+level = 12 # select level (counting from primes at level 0) for processing tree1
+tree1 = [[]]* (level + 1)
+for i in range(level + 1): # truncate the top levels of prime factor tree
+    tree1[i] = load_tree(i, 'tree1_18') # 1mod8, 18 levels, length 2**17, 17 thru 7_766_713
+tree1_small = tree1[:4] # thru 193, sufficient for up to u = 100_000
+
+######## TUNE THIS FOR OPTIMAL FACTORS, AVG TIME #########
+num_indexes = 19 # number of indexes at selected level to scan for gcd test and factor
+assert num_indexes <= len(tree1[-1]) # 32
 
 # Build list of primes (both 357mod8 and 1mod8)
-p1_inx = searchsorted(tree1_17[0], tree357_13[0][-1], 'right') # inx highest prime
-primes_bounded = sorted([2] + tree357_13[0] + tree1_17[0][:p1_inx])[:len(tree357_13[0])]
-
+assert tree1[0][-1] > tree357_13[0][-1]
+# Find index in 1mod8 primes of highest prime in 357modd8 primes
+p1_inx = searchsorted(tree1[0], tree357_13[0][-1], 'right') # inx highest prime
+# Merge the primes
+primes_bounded = sorted([2] + tree357_13[0] + tree1[0][:p1_inx]) # len 10_891; ... 115_201, 115_211, 115_223]
 # Tune the size of prime powers for p-1
-#pp_len = 2**1
-#pp_len = 2**2
-#pp_len = 2**3
-#pp_len = 2**4
-#pp_len = 2**5
-#pp_len = 2**6
-#pp_len = 2**7
+#pp_len = 2**1 # thru 3
+#pp_len = 2**2 # thru 7
+#pp_len = 2**3 # thru 19
+#pp_len = 2**4 # thru 53
+#pp_len = 2**5 # thru 131
+#pp_len = 2**6 # thru 311
+#pp_len = 2**7 # thru 719
 pp_len = 2**8 # thru 1619
-#pp_len = 2**9
-#pp_len = 2**10
-#pp_len = 2**11
-#pp_len = 2**12
-#pp_len = len(primes_bounded) # 2**13 = 8192
+#pp_len = 2**9 # thru 3671
+#pp_len = 2**10 # thru 8161
 
 # Fill prime_powers with largest power q^k <= B
 prime_powers = [1] * pp_len
@@ -157,10 +145,14 @@ def p_minus_1(n :int, pp :list=prime_powers,
     #V.log(vV, V.F_P_1, f'simple p-1 fail {n}')
     return None
 
-def pollard_rho_probability(p: int, max_attempts: int=4,
-        steps_limit: int=3*2**8, steps_mult: float=2) -> None:
-    """Calculate the probability the pollard_rho_one will
-     fail to find prime p.
+# Globals for pollard rho routines
+max_attempts = 3
+brent_m = 2**8
+steps_mult = 1.6
+def pollard_rho_probability(p: int, max_attempts: int=max_attempts + 1,
+        steps_limit: int=3*brent_m, steps_mult: int=steps_mult) -> None:
+    """Calculate the probability the pollard_rho_one will fail
+    to find prime p.
     """
     prob_fail_cumulative = 1.0
     for attempt in range(max_attempts):
@@ -171,8 +163,8 @@ def pollard_rho_probability(p: int, max_attempts: int=4,
               f', prob_fail {prob_fail:.2f}'
               f', prob_fail_cumulative {prob_fail_cumulative}:.2f')
 
-def pollard_rho_one(n: int, max_attempts: int=3, brent_m: int=2**8,
-        steps_1: int=3*2**8, steps_mult: float=1.6, vV: IntFlag=V.NONE,
+def pollard_rho_one(n: int, max_attempts: int=max_attempts, brent_m: int=brent_m,
+        steps_1: int=3*brent_m, steps_mult: int=steps_mult, vV: IntFlag=V.NONE,
         max=max, min=min, log=V.log, gcd=gcd) -> int | None:
     """
     Attempt to find ONE non-trivial factor of n using Pollard's rho algorithm. 
@@ -265,22 +257,27 @@ def roots_and_rho(candidates: dict, factors: dict, others: dict, vV: IntFlag=V.N
             if isqrt(n)**2 == n:
                 n = isqrt(n)
                 c *= 2
-            if isqrt(n)**2 == n or round(cbrt(n))**3 == n:
-                import pdb; pdb.set_trace()
-                pass # handle 4th or 3rd power
+            if round(cbrt(n))**3 == n:
+                n= round(cbrt(n))
+                c *= 3
+            assert isqrt(n)**2 != n and round(cbrt(n))**3 != n
             # Check whether n is prime
             if is_prime(n):
                 factors[n] = factors_get(n, 0) + c
                 continue
-            factor = pollard_rho_one(n, vV=vV)
-            if factor is None:
+            if vV&V.RHO1: # call pollard_rho_one
+                factor = pollard_rho_one(n, vV=vV)
+                if factor is None:
+                    others[n] = others_get(n, 0) + c
+                    continue
+                new_candidates[factor] = new_candidates_get(factor, 0) + c
+                n //= factor
+                new_candidates[n] = new_candidates_get(n, 0) + c
+            else:
                 others[n] = others_get(n, 0) + c
                 continue
-            new_candidates[factor] = new_candidates_get(factor, 0) + c
-            n //= factor
-            new_candidates[n] = new_candidates_get(n, 0) + c
         candidates = new_candidates
-
+ 
 def factor_common(t: int, u: int,
                   gcd=gcd, is_prime=is_prime, factor_tree_gen=factor_tree_gen,
                   log=V.log) -> list:
@@ -300,10 +297,9 @@ def factor_common(t: int, u: int,
     if g % 2 == 0: # extract all 2s
         tz = (g & -g).bit_length() - 1
         factors[2] = factors_get(2, 0) + tz
-        evens = 2**tz
-        t_r //= evens
-        u_r //= evens
-        g //= evens
+        t_r >>= tz
+        u_r >>= tz
+        g >>= tz
     for tree in (tree357_small, tree1_small): # extract small primes
         if 1 == g:
             break
@@ -335,8 +331,8 @@ def factor_common(t: int, u: int,
         g //= g
         assert 1 == g
     #log(vV, V.F_COMMON, f'Common factors {factors}, reduced t, u {t_r}, {u_r}')
-    assert g == 1, f'Unresolved common residue {g} in t_r {t_r}, u_r {u_r}' \
-                f' reduced from t {t}, u {u}'
+    assert g == 1, f'Unresolved common residue {g} in t_r {t_r:_}, u_r {u_r:_}' \
+                f' reduced from t {t:_}, u {u:_}'
     return t_r, u_r, factors
 
 def factor_tu(t: int, u: int, vV: IntFlag=V.NONE,
@@ -353,7 +349,7 @@ def factor_tu(t: int, u: int, vV: IntFlag=V.NONE,
     :param vV:IntFlag logging options
     :return: list [common_factors, prime_factors, other_factors]
     """
-    log(vV, V.FACTOR, f'Factor t, u: {t}, {u}')
+    log(vV, V.FACTOR, f'Factor t, u: {t:_}, {u:_}')
     tf = time()
     t, u, common_factors = factor_common(t, u)
     tc = time()
@@ -361,82 +357,82 @@ def factor_tu(t: int, u: int, vV: IntFlag=V.NONE,
     factors_get = factors.get #localize
 
     m = t**4 + u**4
+    n = m # remainder of m after extracting factors
 
-    if m % 2 == 0: # extract all 2s
-        tz = (m & -m).bit_length() - 1
+    if n % 2 == 0: # extract all 2s
+        tz = (n & -n).bit_length() - 1
         factors[2] = factors_get(2, 0) + tz
-        evens = 2**tz
-        m //= evens
+        n >>= tz
 
     # extract p-1 primes
     candidates = []
-    while True:
-        if is_prime(m):
-            factors[m] = factors_get(m, 0) + 1
-            m = 1
-            break
-        n = p_minus_1_backtrack(m)
-        if n is None: break
+    while n > 1:
         if is_prime(n):
-            factors[n] = factors.get(n, 0) + 1
-        else: candidates.append(n)
-        m //= n
+            factors[n] = factors_get(n, 0) + 1
+            n = 1
+            break
+        f = p_minus_1_backtrack(n)
+        if f is None: break
+        if is_prime(f):
+            factors[f] = factors.get(f, 0) + 1
+        else: candidates.append(f)
+        n //= f
     t1 = time()
 
-    # extract 1mod8 primes
-    if 1 < m: candidates.append(m)
-    new_candidates = dict()
-    for n in candidates:
-        c = 1
-        # Check whether n is a perfect square or cube
-        if isqrt(n)**2 == n:
-            n = isqrt(n)
-            c *= 2
-        if round(cbrt(n))**3 == n:
-            n = round(cbrt(n))
-            c *= 3
-        if isqrt(n)**2 == n or round(cbrt(n))**3 == n:
-            import pdb; pdb.set_trace()
-            pass # handle 4th or 3rd power
-        log(vV, V.F_GCD, f'Feed {n} to GCD tree')
-        g = gcd(n, tree1[-1][0])
-        if 1 == g:
-            new_candidates[n] = new_candidates.get(n, 0) + c
-            continue
-        if is_prime(g):
-            pc = 0
-            while(n % g == 0):
-                pc += 1
-                n //= g
-            factors[g] = factors_get(g, 0) + c * pc
-        else:
-            for p in factor_tree_gen(g, tree1):
-                pc = 0
-                while (n % p == 0):
-                    pc += 1
-                    n //= p
-                factors[p] = factors.get(p, 0) + c * pc
-        if 1 < n:
-            if isqrt(n)**2 == n or round(cbrt(n))**3 == n:
-                import pdb; pdb.set_trace()
-                pass # handle 4th or 3rd power
+    # Extract 1mod8 primes
+    if 1 < n: candidates.append(n)
+    for index, test_gcd in enumerate(tree1[-1][:num_indexes]):
+        new_candidates = dict()
+        for n in candidates:
             if is_prime(n):
-                factors[n] = factors.get(n, 0) + c
+                factors[n] = factors_get(n, 0) + 1
+                continue
+            log(vV, V.F_GCD, f'Feed candidate {n:_} to {index} GCD tree')
+            g = gcd(n, test_gcd)
+            if 1 == g:
+                new_candidates[n] = new_candidates.get(n, 0) + 1
+                continue
+            if is_prime(g):
+                pc = 0
+                while(n % g == 0):
+                    pc += 1
+                    n //= g
+                factors[g] = factors_get(g, 0) + pc
             else:
-                new_candidates[n] = new_candidates.get(n, 0) + c
+                for p in factor_tree_gen(g, tree1, level, index, _func=factor_tree_gen):
+                    pc = 0
+                    while (n % p == 0):
+                        pc += 1
+                        n //= p
+                    factors[p] = factors.get(p, 0) + pc
+            if 1 < n:
+                if is_prime(n):
+                    factors[n] = factors.get(n, 0) + 1
+                else:
+                    new_candidates[n] = new_candidates.get(n, 0) + 1
+        if 0 == len(new_candidates): break
+        candidates = new_candidates
     tg = time()
-    
+
     # Pollard Rho with checks whether components are roots or prime
     # Updates factors, others in place.
     others = dict()
     if 0 < len(new_candidates):
         roots_and_rho(new_candidates, factors, others, vV) 
     tr = time()
+
+    # Verify factorization
+    n = 1
+    for p, c in factors.items():
+        n *= p**c
+    for p, c in others.items():
+        n *= p**c
+    assert n == m
+    
     if vV and vV & V.F_DIAG:
         save_times(tf, tc, t1, tg, tr, factors, others)
 
-    log(vV, V.FACTOR, f'{t}^4 + {u}^4 -> {factors} and {others}')
-    #import pdb; pdb.set_trace()
+    log(vV, V.FACTOR, f'{t:_}^4 + {u:_}^4 -> {factors} and {others}')
     return common_factors, factors, others
 
 saved_common  = 0.0 # Elapsed time on common factors
@@ -466,7 +462,7 @@ def return_saved_times() -> None:
     total = (saved_common + saved_p1 + saved_gcd + saved_rho)
     total_100 = total / 100.0
     c = float(saved_count)
-    return(f'count {saved_count}:' \
+    return(f'count {saved_count:_}:' \
           f'\nfactors {saved_factors / c:.6g}, others {saved_others / c:.6g}'
           f', avg time {total / c:.3g}' \
           f'\ncommon {saved_common / c:.3g} ({saved_common / total_100:.02f}%)' \
@@ -533,7 +529,7 @@ def main(argv=None):
         start = time()
         g = p_minus_1_backtrack(n, vV=args.vV)
         elapsed = time() - start
-        print(f'Found {g}, Elapsed: {elapsed:.6f}s')
+        print(f'Found {g:_}, Elapsed: {elapsed:.6f}s')
         return
 
     if args.command == 'rho1':
@@ -542,7 +538,7 @@ def main(argv=None):
         start = time()
         g = pollard_rho_one(n, max_attempts=max_attempts, vV=args.vV)
         elapsed = time() - start
-        print(f'Found {g}, Elapsed: {elapsed:.6f}s')
+        print(f'Found {g:_}, Elapsed: {elapsed:.6f}s')
         return
 
     if args.command == 'factor_tu':

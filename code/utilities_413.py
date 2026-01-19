@@ -72,19 +72,20 @@ def factor_tree_gen(g: int, tree: list, level: int | None = None, index: int = 0
         _func = factor_tree_gen
 
     # Check the "Left" child
-    left_index = index * 2
-    left_prod = tree[level-1][left_index]
+    index <<= 1
+    left_prod = tree[level-1][index]
     g_left = gcd(g, left_prod)
     if g_left > 1:
-        yield from _func(g_left, tree, level-1, left_index, _func=_func)
+        yield from _func(g_left, tree, level-1, index, _func=_func)
+        g //= g_left
 
     # Check the "Right" child
-    right_index = index * 2 + 1
-    if right_index < len(tree[level-1]):
-        right_prod = tree[level-1][right_index]
+    index |= 1
+    if index < len(tree[level-1]):
+        right_prod = tree[level-1][index]
         g_right = gcd(g, right_prod)
         if g_right > 1:
-            yield from _func(g_right, tree, level-1, right_index, _func=_func)
+            yield from _func(g_right, tree, level-1, index, _func=_func)
 
 def factor_tree(g: int, tree: list, level: int|None=None, index: int=0,
                 _func=None, len=len, gcd=gcd) -> list:
@@ -104,20 +105,21 @@ def factor_tree(g: int, tree: list, level: int|None=None, index: int=0,
     found_primes = []
     
     # Check the "Left" child
-    left_index = index * 2
-    left_prod = tree[level-1][left_index]
+    index <<= 1
+    left_prod = tree[level-1][index]
     g_left = gcd(g, left_prod)
     if g_left > 1:
-        found_primes.extend(_func(g_left, tree, level-1, left_index, 
+        found_primes.extend(_func(g_left, tree, level-1, index, 
                                   _func=_func))
-
+        g //= g_left
+    
     # Check the "Right" child
-    right_index = index * 2 + 1
-    if right_index < len(tree[level-1]): # check pass through
-        right_prod = tree[level-1][right_index]
+    index |= 1
+    if index < len(tree[level-1]): # check pass through
+        right_prod = tree[level-1][index]
         g_right = gcd(g, right_prod)
         if g_right > 1:
-            found_primes.extend(_func(g_right, tree, level-1, right_index, 
+            found_primes.extend(_func(g_right, tree, level-1, index, 
                                       _func=_func))
 
     return found_primes

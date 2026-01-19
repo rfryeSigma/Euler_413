@@ -221,7 +221,7 @@ def solve_factors(common: dict, factors: dict, others: dict, vV: IntFlag=V.NONE,
         if y is None:
             continue
         v, w = (x, y) if x < y else (y, x)
-        V.log(vV, V.SOLVE, f"Found solution v={v}, w={w} in partition {i}")
+        V.log(vV, V.SOLVE, f"Found solution v={v:_}, w={w:_} in partition {i}")
         return [v, w]
     return None
 
@@ -237,8 +237,8 @@ def solve_factors_all(common: dict, factors: dict, others: dict, vV: IntFlag=V.N
         if y is None:
             continue
         v, w = (x, y) if x < y else (y, x)
-        V.log(vV, V.SOLVE, f"Found solution v={v}, w={w} in partition {i}")
-        assert solution is None
+        V.log(vV, V.SOLVE, f"Found solution v={v:_}, w={w:_} in partition {i}")
+        assert solution is None # expect only one solution for given factors
         solution = [v, w]
     return solution
 
@@ -296,7 +296,7 @@ def main(argv=None):
     """
     args, rest = parser.parse_known_args(argv)
     if args.command == 'solve_tu':
-        from factoring import factor_tu
+        from factoring import factor_tu, return_saved_times
         t = eval(args.t)
         u = eval(args.u)
         common, factors, others = factor_tu(t, u, vV=args.vV)
@@ -310,6 +310,8 @@ def main(argv=None):
                 solve_factors(common, factors, others), number=1000) / 1000
         print(f'timeit: {elapsed:.8f}s')
         print(f'Found {results}')
+        if args.vV and args.vV & V.F_DIAG:
+            print(return_saved_times())
         return
  
     if args.command == 'solve_xm':  

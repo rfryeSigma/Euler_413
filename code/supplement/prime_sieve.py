@@ -408,10 +408,11 @@ class Test1Tree_fast(unittest.TestCase):
         tree = PrimeProductTree.build([2,3,5,7,11,13,17])
         self.assertEqual(tree[-1], [510510])
         self.assertEqual(tree[-2], [210, 2431])
-        PrimeProductTree.save(tree, 'test')
-        t2 = PrimeProductTree.load(-2, 'test')
+        tree_path = 'supplement/test'
+        PrimeProductTree.save(tree, tree_path)
+        t2 = PrimeProductTree.load(-2, tree_path)
         self.assertEqual(t2, tree)
-        g = PrimeProductTree.load(-1, 'test')
+        g = PrimeProductTree.load(-1, tree_path)
         self.assertEqual(g, 510510)
 
     def test_factor_fast(self):
