@@ -28,7 +28,6 @@ def load_tree(level: int, folder: str) -> list:
                 len_bytes = f.read(4)
                 if not len_bytes:
                     return nodes[:node_idx]
-                    break
                 length = int.from_bytes(len_bytes, 'little')
                 nodes[node_idx] = (int.from_bytes(f.read(length), 'little'))
             else:
@@ -194,4 +193,4 @@ def main(argv=None):
     return unittest.main(argv=[sys.argv[0]] + rest)
 
 if __name__ == "__main__":
-    raise SystemExit(main(sys.argv[1:]))
+    main()

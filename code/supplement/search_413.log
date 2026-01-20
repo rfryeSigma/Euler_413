@@ -176,8 +176,22 @@ Worker 3: count 82323150:
 factors 2.99772, others 0.117754, avg time 0.000567
 common 5.13e-07 (0.09%), p-1 0.000173 (30.50%), gcd 0.000172 (30.33%), rho 0.000222 (39.08%)
 
-DOING
+python -m search_413 search_p_ut 130_001 140_000 -v='OUTER|F_DIAG'; date
+Worker 4: count 60_476_500:
+factors 2.97469, others 0.133386, avg time 0.000371
+common 4.88e-07 (0.13%), p-1 0.000177 (47.56%), gcd 0.000192 (51.77%), rho 2e-06 (0.54%)
+Elapsed: 23545.752833s
 
+1/20/2026T
+python -m search_413 search_p_ut 140_001 180_000 -v='OUTER|F_DIAG'; date
+Worker 0: count 286718800:
+factors 2.97058, others 0.142232, avg time 0.000176
+common 7.16e-07 (0.41%), p-1 8.62e-05 (49.12%), gcd 8.67e-05 (49.37%), rho 1.94e-06 (1.11%)
+Elapsed: 58882.040354s > 16hr
+
+DOING
+3:54pm
+python -m search_413 search_p_ut 180_001 210_000 -v='OUTER|F_DIAG'; date
 TODO
 
 index=1, # 1: Noam Elkies 1988, found in partition 2

@@ -6,6 +6,7 @@ from factoring_strategy import factoring_strategy
 known_solutions = { # key format: (a,b,c,d)
     (95800, 217519, 414560, 422481): dict(
         index=0, # solution #0: Roger Frye 1988, found in partition 1
+        elkies_mn=(20,-9),
         tuvw=(11975, 51820, 102481, 320000),
         t_evens=1, t_primes={5: 2, 479: 1},
         u_evens=4, u_primes={5: 1, 2591: 1},
@@ -16,6 +17,7 @@ known_solutions = { # key format: (a,b,c,d)
 
     (2682440, 15365639, 18796760, 20615673): dict( # This solution has the 2nd smallest a.
         index=1, # 1: Noam Elkies 1988, found in partition 2
+        elkies_mn=(8,-5),
         tuvw=(335305, 2349595, 2625017, 17990656),
         t_evens=1, t_primes={5: 1, 67061: 1},
         u_evens=1, u_primes={5: 1, 469919: 1},
@@ -26,6 +28,7 @@ known_solutions = { # key format: (a,b,c,d)
 
     (34918520, 87865617, 106161120, 117112081): dict(
         index=2, # 2: Robert Gerbicz 2006, found in partition 2
+        elkies_mn=(60,-31), # curve $$y^2 = x^3 - 3144324x + 1152731552$$
         tuvw=(4364815, 13270140, 14623232, 102488849),
         t_evens=1, t_primes={5: 1, 7: 1, 13: 1, 53: 1, 181: 1},
         u_evens=4, u_primes={3: 2, 5: 1, 13: 1, 53: 1, 107: 1},
@@ -38,6 +41,7 @@ known_solutions = { # key format: (a,b,c,d)
     # Also d^4-c^4 has 2^16 factor, 4 more than usual
     (186668000, 260052385, 582665296, 589845921): dict(
         index=3, # 3: Seiji Tomita 2006, found in partition 19
+        elkies_mn=(28, -13),
         tuvw=(23333500, 72833162, 164896768, 424949153),
         t_evens=4, t_primes={5: 3, 23: 1, 2029: 1},
         u_evens=2, u_primes={36416581: 1},
@@ -48,6 +52,7 @@ known_solutions = { # key format: (a,b,c,d)
 
     (50237800, 632671960, 1670617271, 1679142729): dict(
         index=4, # 4: Seiji Tomita 2006, found in partition 3
+        elkies_mn=(44, -7), # Very large D
         tuvw=(6279725, 79083995, 4262729, 1674880000),
         t_evens=1, t_primes={5: 2, 239: 1, 1051: 1},
         u_evens=1, u_primes={5: 1, 15816799: 1},
@@ -58,6 +63,7 @@ known_solutions = { # key format: (a,b,c,d)
 
     (7592431981391, 22495595284040, 27239791692640, 29999857938609): dict(
         index=5, # 5: Seiji Tomita 2006, found in partition 45
+        elkies_mn=(148, -11),
         tuvw=(2811949410505, 3404973961580, 11203712978609, 18796144960000),
         t_evens=1, t_primes={5: 1, 19: 1, 29599467479: 1},
         u_evens=4, u_primes={5: 1, 170248698079: 1},
@@ -69,6 +75,7 @@ known_solutions = { # key format: (a,b,c,d)
 
     (558424440, 606710871, 769321280, 873822121): dict(
         index=6, # 6: Robert Gerbicz 2009, found in partition 34
+        elkies_mn=(36, 17),
         tuvw=(69803055, 96165160, 133555625, 740266496),
         t_evens=1, t_prime={3: 2, 5: 1, 7: 1, 19: 1, 107: 1, 109: 1},
         u_evens=8, u_primes={5: 1, 7: 1, 13: 1, 29: 1, 911: 1},
@@ -79,6 +86,7 @@ known_solutions = { # key format: (a,b,c,d)
 
     (588903336, 859396455, 1166705840, 1259768473): dict(
         index=7, # 7: Robert Gerbicz 2009, found in partition 3
+        elkies_mn=(12, -11),
         tuvw=(73612917, 145838230, 200186009, 1059582464),
         t_evens=1, t_primes={3: 2, 7: 1, 41: 1, 28499: 1},
         u_evens=2, u_primes={5: 1, 41: 1, 67: 1, 5309: 1},
@@ -90,6 +98,7 @@ known_solutions = { # key format: (a,b,c,d)
     # d^4-c^4 has 2^16 factor, 4 more than usual
     (686398000, 1237796960, 1662997663, 1787882337): dict(
         index=8, # 8: Robert Gerbicz 2009, found in partition 22
+        elkies_mn=(52, -7),
         tuvw=(85799750, 154724620, 62442337, 1725440000),
         t_evens=2, t_primes={5: 3, 343199: 1}, 
         u_evens=4, u_primes={5: 1, 71: 1, 108961: 1},
@@ -101,6 +110,7 @@ known_solutions = { # key format: (a,b,c,d)
 
     (92622401, 1553556440, 1593513080, 1871713857): dict(
         index=9, # 9: Robert Gerbicz 2009, found in partition 6
+        elkies_mn=(40, -9),
         tuvw=(194194555, 199189135, 889545728, 982168129),
         t_evens=1, t_primes={5: 1, 38838911: 1},
         u_evens=1, u_primes={5: 1, 257: 1, 379: 1, 409: 1},

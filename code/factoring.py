@@ -16,13 +16,12 @@ v or w is completely factored.
 When factoring the sum of 4th powers, the primes must be 2s or 1mod8,
 except for common factors of (t, u).
 """
-from math import cbrt, exp, gcd, isqrt
+from math import cbrt, exp, isqrt
+from gmpy2 import gcd, is_square, is_prime
 import random
 from time import time
 from logging_413 import V, IntFlag, parse_flags
 from numpy import searchsorted
-from probable_prime import is_prime, next_prime
-from supplement.prime_sieve import PrimeProductTree
 from utilities_413 import load_tree, factor_tree_gen
 
 # Load and subset prime product trees
@@ -36,7 +35,7 @@ for i in range(level + 1): # truncate the top levels of prime factor tree
 tree1_small = tree1[:4] # thru 193, sufficient for up to u = 100_000
 
 ######## TUNE THIS FOR OPTIMAL FACTORS, AVG TIME #########
-num_indexes = 19 # number of indexes at selected level to scan for gcd test and factor
+num_indexes = 20 # number of indexes at selected level to scan for gcd test and factor
 assert num_indexes <= len(tree1[-1]) # 32
 
 # Build list of primes (both 357mod8 and 1mod8)
@@ -53,8 +52,8 @@ primes_bounded = sorted([2] + tree357_13[0] + tree1[0][:p1_inx]) # len 10_891; .
 #pp_len = 2**5 # thru 131
 #pp_len = 2**6 # thru 311
 #pp_len = 2**7 # thru 719
-pp_len = 2**8 # thru 1619
-#pp_len = 2**9 # thru 3671
+#pp_len = 2**8 # thru 1619
+pp_len = 2**9 # thru 3671
 #pp_len = 2**10 # thru 8161
 
 # Fill prime_powers with largest power q^k <= B
@@ -254,13 +253,13 @@ def roots_and_rho(candidates: dict, factors: dict, others: dict, vV: IntFlag=V.N
             if 1 == n:
                 continue
             # Check whether n is a perfect square or cube
-            if isqrt(n)**2 == n:
+            if is_square(n):
                 n = isqrt(n)
                 c *= 2
             if round(cbrt(n))**3 == n:
                 n= round(cbrt(n))
                 c *= 3
-            assert isqrt(n)**2 != n and round(cbrt(n))**3 != n
+            assert not is_square(n) and round(cbrt(n))**3 != n
             # Check whether n is prime
             if is_prime(n):
                 factors[n] = factors_get(n, 0) + c
@@ -280,7 +279,7 @@ def roots_and_rho(candidates: dict, factors: dict, others: dict, vV: IntFlag=V.N
  
 def factor_common(t: int, u: int,
                   gcd=gcd, is_prime=is_prime, factor_tree_gen=factor_tree_gen,
-                  log=V.log) -> list:
+                  log=V.log) -> tuple:
     """
     Attempt to fully factor gcd(t, u)
     
@@ -331,8 +330,8 @@ def factor_common(t: int, u: int,
         g //= g
         assert 1 == g
     #log(vV, V.F_COMMON, f'Common factors {factors}, reduced t, u {t_r}, {u_r}')
-    assert g == 1, f'Unresolved common residue {g} in t_r {t_r:_}, u_r {u_r:_}' \
-                f' reduced from t {t:_}, u {u:_}'
+    assert g == 1, f'Unresolved common residue {g} in t_r {t_r}, u_r {u_r}' \
+                f' reduced from t {t}, u {u}'
     return t_r, u_r, factors
 
 def factor_tu(t: int, u: int, vV: IntFlag=V.NONE,
@@ -340,7 +339,7 @@ def factor_tu(t: int, u: int, vV: IntFlag=V.NONE,
               is_prime=is_prime, gcd=gcd, len=len,
               p_minus_1_backtrack=p_minus_1_backtrack,
               factor_tree_gen=factor_tree_gen,
-              ) -> list:
+              ) -> tuple:
     """
     Partially factor t^4 + u^4 into prime factor counts and others.
    
@@ -349,7 +348,7 @@ def factor_tu(t: int, u: int, vV: IntFlag=V.NONE,
     :param vV:IntFlag logging options
     :return: list [common_factors, prime_factors, other_factors]
     """
-    log(vV, V.FACTOR, f'Factor t, u: {t:_}, {u:_}')
+    log(vV, V.FACTOR, f'Factor t, u: {int(t):_}, {int(u):_}')
     tf = time()
     t, u, common_factors = factor_common(t, u)
     tc = time()
@@ -363,6 +362,7 @@ def factor_tu(t: int, u: int, vV: IntFlag=V.NONE,
         tz = (n & -n).bit_length() - 1
         factors[2] = factors_get(2, 0) + tz
         n >>= tz
+    else: tz = 0
 
     # extract p-1 primes
     candidates = []
@@ -381,13 +381,14 @@ def factor_tu(t: int, u: int, vV: IntFlag=V.NONE,
 
     # Extract 1mod8 primes
     if 1 < n: candidates.append(n)
+    p1_frags = len(candidates) + sum(factors.values()) - tz
     for index, test_gcd in enumerate(tree1[-1][:num_indexes]):
         new_candidates = dict()
         for n in candidates:
             if is_prime(n):
                 factors[n] = factors_get(n, 0) + 1
                 continue
-            log(vV, V.F_GCD, f'Feed candidate {n:_} to {index} GCD tree')
+            log(vV, V.F_GCD, f'Feed candidate {n} to {index} GCD tree')
             g = gcd(n, test_gcd)
             if 1 == g:
                 new_candidates[n] = new_candidates.get(n, 0) + 1
@@ -430,9 +431,9 @@ def factor_tu(t: int, u: int, vV: IntFlag=V.NONE,
     assert n == m
     
     if vV and vV & V.F_DIAG:
-        save_times(tf, tc, t1, tg, tr, factors, others)
+        save_times(tf, tc, t1, tg, tr, p1_frags, factors, others)
 
-    log(vV, V.FACTOR, f'{t:_}^4 + {u:_}^4 -> {factors} and {others}')
+    log(vV, V.FACTOR, f'{t}^4 + {u}^4 -> {factors} and {others}')
     return common_factors, factors, others
 
 saved_common  = 0.0 # Elapsed time on common factors
@@ -440,17 +441,20 @@ saved_p1      = 0.0 # Elapsed time on p-1 method
 saved_gcd     = 0.0 # Elapsed time on factor tree gcd method
 saved_rho     = 0.0 # Elapsed time on rho method
 saved_count   = 0 # Number of saved times
+saved_frags = 0 # Number of fragments found by p-1
 saved_factors = 0 # Number of factors
 saved_others  = 0 # NUmber of others
 def save_times(tf: float, tc: float, t1: float, tg: float, tr: float,
-               factors: dict, others: dict) -> None:
+               p1_frags: dict, factors: dict, others: dict) -> None:
     """Save cumulative factor count and elapsed time on components"""
-    global saved_common, saved_p1, saved_gcd, saved_rho, saved_count, saved_factors, saved_others
+    global saved_common, saved_p1, saved_gcd, saved_rho, saved_count, \
+        saved_frags, saved_factors, saved_others
     saved_common  += tc-tf
     saved_p1      += t1-tc
     saved_gcd     += tg-t1
     saved_rho     += tr-tg
     saved_count   += 1
+    saved_frags  += p1_frags
     saved_factors += sum(factors.values())
     saved_others  += sum(others.values())
 
@@ -463,8 +467,8 @@ def return_saved_times() -> None:
     total_100 = total / 100.0
     c = float(saved_count)
     return(f'count {saved_count:_}:' \
-          f'\nfactors {saved_factors / c:.6g}, others {saved_others / c:.6g}'
-          f', avg time {total / c:.3g}' \
+          f'\np1_frags {saved_frags / c:.6g}, factors {saved_factors / c:.6g},' \
+          f' others {saved_others / c:.6g}, avg time {total / c:.3g}' \
           f'\ncommon {saved_common / c:.3g} ({saved_common / total_100:.02f}%)' \
           f', p-1 {saved_p1 / c:.3g} ({saved_p1 / total_100:.02f}%)' \
           f', gcd {saved_gcd / c:.3g} ({saved_gcd / total_100:.02f}%)' \
@@ -529,7 +533,7 @@ def main(argv=None):
         start = time()
         g = p_minus_1_backtrack(n, vV=args.vV)
         elapsed = time() - start
-        print(f'Found {g:_}, Elapsed: {elapsed:.6f}s')
+        print(f'Found {g}, Elapsed: {elapsed:.6f}s')
         return
 
     if args.command == 'rho1':
@@ -538,7 +542,7 @@ def main(argv=None):
         start = time()
         g = pollard_rho_one(n, max_attempts=max_attempts, vV=args.vV)
         elapsed = time() - start
-        print(f'Found {g:_}, Elapsed: {elapsed:.6f}s')
+        print(f'Found {g}, Elapsed: {elapsed:.6f}s')
         return
 
     if args.command == 'factor_tu':
@@ -557,4 +561,4 @@ def main(argv=None):
     return unittest.main(argv=[sys.argv[0]] + rest)
 
 if __name__ == "__main__":
-    raise SystemExit(main(sys.argv[1:]))
+    main()

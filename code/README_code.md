@@ -67,11 +67,8 @@ factoring.py:
 logging_413.py:
     Common logging class for multi-case logging. Supports flag parsing.
 
-probable_prime.py:
-    Tests whether a number is prime.
-
 search_413.py:
-    Main entry point. Calls factor and solve scripts.
+    Main entry point. Searches ranges of (t,u). Calls factor and solve.
 
 solving.py:
     Partitions factors and attempts to solve cubic equation.

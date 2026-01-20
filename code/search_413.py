@@ -25,8 +25,8 @@ def process_tu(t: int, u: int, vV: IntFlag=V.NONE,
     if solving_results is None: return
     system('say found solution')
     assert solving_results is None, \
-        f'Found solution (t, u, v, w): ({t:_}, {u:_},' \
-        f'{solving_results[0]}, {solving_results[1]})'
+        f'Found solution (t, u, v, w): ({int(t):_}, {int(u):_},' \
+        f' {int(solving_results[0]):_}, {int(solving_results[1]):_})'
 
 def search_inner_loop(u, vV: IntFlag=V.NONE,
                       log=V.log, process_tu=process_tu):
@@ -218,4 +218,4 @@ def main(argv=None):
     return unittest.main(argv=[sys.argv[0]] + rest)
 
 if __name__ == "__main__":
-    raise SystemExit(main(sys.argv[1:]))
+    main()

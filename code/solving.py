@@ -11,7 +11,7 @@ from math import cbrt, prod
 from time import time
 from logging_413 import V, IntFlag, parse_flags
 
-def build_partition_bank(common: dict, factors: dict, others: dict) -> list:
+def build_partition_bank(common: dict, factors: dict, others: dict) -> tuple:
     """Build a list of all factors from the three dicts for partitioning.
     
     All of the 2s are assigned to the left_product.
@@ -221,7 +221,7 @@ def solve_factors(common: dict, factors: dict, others: dict, vV: IntFlag=V.NONE,
         if y is None:
             continue
         v, w = (x, y) if x < y else (y, x)
-        V.log(vV, V.SOLVE, f"Found solution v={v:_}, w={w:_} in partition {i}")
+        V.log(vV, V.SOLVE, f"Found solution v={v}, w={w} in partition {i}")
         return [v, w]
     return None
 
@@ -237,7 +237,7 @@ def solve_factors_all(common: dict, factors: dict, others: dict, vV: IntFlag=V.N
         if y is None:
             continue
         v, w = (x, y) if x < y else (y, x)
-        V.log(vV, V.SOLVE, f"Found solution v={v:_}, w={w:_} in partition {i}")
+        V.log(vV, V.SOLVE, f"Found solution v={v}, w={w} in partition {i}")
         assert solution is None # expect only one solution for given factors
         solution = [v, w]
     return solution
@@ -326,4 +326,4 @@ def main(argv=None):
     return unittest.main(argv=[sys.argv[0]] + rest) 
 
 if __name__ == "__main__":
-    raise SystemExit(main(sys.argv[1:]))
+    main()
