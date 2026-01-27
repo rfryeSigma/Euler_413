@@ -32,7 +32,7 @@ level = 12 # select level (counting from primes at level 0) for processing tree1
 tree1 = [[]]* (level + 1)
 for i in range(level + 1): # truncate the top levels of prime factor tree
     tree1[i] = load_tree(i, 'tree1_18') # 1mod8, 18 levels, length 2**17, 17 thru 7_766_713
-tree1_small = tree1[:4] # thru 193, sufficient for up to u = 100_000
+tree1_small = tree1[:5] # thru 401, sufficient for up to u = 280_765
 
 ######## TUNE THIS FOR OPTIMAL FACTORS, AVG TIME #########
 num_indexes = 20 # number of indexes at selected level to scan for gcd test and factor
@@ -252,14 +252,15 @@ def roots_and_rho(candidates: dict, factors: dict, others: dict, vV: IntFlag=V.N
         for n, c in candidates_items():
             if 1 == n:
                 continue
-            # Check whether n is a perfect square or cube
-            if is_square(n):
+            # Check whether n is a perfect square or higher or a cube
+            while is_square(n):
                 n = isqrt(n)
                 c *= 2
             if round(cbrt(n))**3 == n:
                 n= round(cbrt(n))
                 c *= 3
-            assert not is_square(n) and round(cbrt(n))**3 != n
+            assert round(cbrt(n))**3 != n, f'n'
+
             # Check whether n is prime
             if is_prime(n):
                 factors[n] = factors_get(n, 0) + c
@@ -270,7 +271,7 @@ def roots_and_rho(candidates: dict, factors: dict, others: dict, vV: IntFlag=V.N
                     others[n] = others_get(n, 0) + c
                     continue
                 new_candidates[factor] = new_candidates_get(factor, 0) + c
-                n //= factor
+                n //= factor ** c
                 new_candidates[n] = new_candidates_get(n, 0) + c
             else:
                 others[n] = others_get(n, 0) + c
@@ -299,34 +300,50 @@ def factor_common(t: int, u: int,
         t_r >>= tz
         u_r >>= tz
         g >>= tz
+    if 1 == g: return t_r, u_r, factors
+    c = 1
+    while is_square(g):
+        g = isqrt(g)
+        c *= 2
+    if is_prime(g):
+        t_r //= g ** c
+        u_r //= g ** c
+        factors[g] = factors_get(g, 0) + c
+        return t_r, u_r, factors
     for tree in (tree357_small, tree1_small): # extract small primes
         if 1 == g:
             break
         g2 = gcd(g, tree[-1][0])
+        if 1 == g2:
+            continue
         if is_prime(g2):
-            c = 0
+            pc = 0
             while(g % g2 == 0):
-                c += 1
-                t_r //= g2
-                u_r //= g2
+                pc += 1
                 g //= g2
-            assert 0 < c
-            factors[g2] = factors_get(g2, 0) + c
+            assert 0 < c * pc
+            assert t_r % (g2 ** (c * pc)) == 0
+            assert u_r % (g2 ** (c * pc)) == 0
+            t_r //= g2 ** (c * pc)
+            u_r //= g2 ** (c * pc)
+            factors[g2] = factors_get(g2, 0) + c * pc
         else:
             for p in factor_tree_gen(g2, tree):
-                c = 0
+                pc = 0
                 while(g % p == 0):
-                    c += 1
-                    t_r //= p
-                    u_r //= p
+                    pc += 1
                     g //= p
-                assert 0 < c
-                factors[p] = factors.get(p, 0) + c
+                assert 0 < c * pc
+                assert t_r % (p ** (c * pc)) == 0
+                assert u_r % (p ** (c * pc)) == 0
+                t_r //= p ** (c * pc)
+                u_r //= p ** (c * pc)
+                factors[p] = factors.get(p, 0) + c * pc
     # NOTE: could check for integer power first, but none seen yet
     if 1 != g and is_prime(g):
         factors[g] = factors.get(g, 0) + 1
-        t_r //= g
-        u_r //= g
+        t_r //= g * c
+        u_r //= g * c
         g //= g
         assert 1 == g
     #log(vV, V.F_COMMON, f'Common factors {factors}, reduced t, u {t_r}, {u_r}')

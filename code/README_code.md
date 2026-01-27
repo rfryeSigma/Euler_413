@@ -14,7 +14,7 @@ Define new variables:
 so that
     a = 2^3 * t and b = 2^3 * u .
 And since 2 * v + 2 * w = 2 * d, and 2 * v - 2 * w = 2 * c ,
-    d = v + w and c = v - w
+    d = w + v and c = w - v
 
 Then the left side of the equation becomes
     (2^3 * t)^4 + (2^3 * u)^4 = 2^12 * (t^4 + u^4) = 2^12 * m
@@ -31,11 +31,11 @@ Putting this all together, we want to solve the equations
     t^4 + u^4 = m; 2^9 * m = x * (y^3 + x^2 * y)
 
 ### PROCESS ###
-We begin our solution process by search for small pairs t < u .
+We begin our solution process by searching for pairs t < u .
 
 Modulo 5 and accounting for symmetries, the original equation
 has only 1 non-trivial solution: 0 + 0 + 1 = 1 . This is the
-same as the modulo 8 solution which allowed us to choose a and b.
+same as the modulo 8 solution which allowed us to reduce (a,b) to (t,u).
 But the modulo 5 condition is independent, so one or both of (t, u)
 must be 0 mod 5. If both t and u were 0 mod 25, the other terms
 would have to be the same mod 25, and the solution would be trivial.
@@ -49,12 +49,25 @@ If we can solve the monotonically increasing cubic function
     f(y; x) = y^3 + x^2 * y - 2^9 * m / x
 for the root y, then we can convert x and y back to c and d.
 
+The flow of control is that search_413.py selects (t, u) pairs
+and calls factoring and then solving to  find (v, w).
+When a solution is found, search_414.py raises an assertion error
+to interrupt the search process.
+
 ### FOLDERS ###
-The code in this folder uses this method to find solutions.
+The code in this folder uses this method to find solutions by factoring.
 
-The code in the supplement sub-folder is used to supplement this code. See it's README.
+The code in the elliptical sub_folder attempts to match factoring solutions 
+with Elliptical Curve solutions. See it's README.
 
-The data files in the several tree folders hold .bin files for product trees.
+There is a play folder, but it is not registered in GitHub. 
+It contains experimental code.
+
+The code in the supplement sub-folder is used to supplement this code. 
+See it's README.
+
+The data files in the several tree folders hold .bin files for prime 
+product trees.
 I am reluctant to include in git because of size,
 See instructions for generating in supplement/README_supplement.md
 
@@ -69,6 +82,9 @@ logging_413.py:
 
 search_413.py:
     Main entry point. Searches ranges of (t,u). Calls factor and solve.
+
+solutions.py:
+    Database of known solutions.
 
 solving.py:
     Partitions factors and attempts to solve cubic equation.

@@ -189,9 +189,94 @@ factors 2.97058, others 0.142232, avg time 0.000176
 common 7.16e-07 (0.41%), p-1 8.62e-05 (49.12%), gcd 8.67e-05 (49.37%), rho 1.94e-06 (1.11%)
 Elapsed: 58882.040354s > 16hr
 
-DOING
-3:54pm
+1/21/2026W
 python -m search_413 search_p_ut 180_001 210_000 -v='OUTER|F_DIAG'; date
+Worker 6: count 262_076_700:
+p1_frags 2.14354, factors 3.01713, others 0.126899, avg time 0.000189
+common 6.77e-07 (0.36%), p-1 0.000123 (65.28%), gcd 6.42e-05 (33.97%), rho 7.49e-07 (0.40%)
+Elapsed: 57946.431435s ~16hr
+
+python -m search_413 search_p_ut 210_001 220_000 -v='OUTER|F_DIAG'; date
+Worker 0: count 96_319_700:
+p1_frags 2.14236, factors 3.01603, others 0.131414, avg time 0.000189
+common 6.43e-07 (0.34%), p-1 0.000122 (64.33%), gcd 6.6e-05 (34.94%), rho 7.43e-07 (0.39%)
+Elapsed: 21221.136271s ~6hr
+
+python -m search_413 search_p_ut 220_001 230_000 -v='OUTER|F_DIAG'; date
+Worker 4: count 100_796_500:
+p1_frags 2.14166, factors 3.01502, others 0.133591, avg time 0.000193
+common 6.73e-07 (0.35%), p-1 0.000124 (64.04%), gcd 6.81e-05 (35.21%), rho 7.8e-07 (0.40%)
+Elapsed: 22740.578695s ~6hrs
+
+1/22/2026R
+python -m search_413 search_p_ut 230_001 240_000 -v='OUTER|F_DIAG'; date
+Worker 6: count 105_278_900:
+p1_frags 2.14108, factors 3.01416, others 0.135679, avg time 0.000192
+common 5.89e-07 (0.31%), p-1 0.000124 (64.46%), gcd 6.7e-05 (34.87%), rho 7.08e-07 (0.37%)
+Elapsed: 23422.589309s ~6hr
+
+python -m search_413 search_p_ut 240_001 255_000 -v='OUTER|F_DIAG'; date
+Worker 2: count 166_323_150:
+p1_frags 2.14036, factors 3.01333, others 0.138141, avg time 0.000194
+common 5.98e-07 (0.31%), p-1 0.000124 (63.98%), gcd 6.84e-05 (35.33%), rho 7.39e-07 (0.38%)
+Elapsed: 37306.591292s ~10.5hr
+
+python -m search_413 search_p_ut 255_001 260_000 -v='OUTER|F_DIAG'; date
+Worker 2: count 57_681_050:
+p1_frags 2.13986, factors 3.0127, others 0.139958, avg time 0.000197
+common 6.66e-07 (0.34%), p-1 0.000124 (63.20%), gcd 7.09e-05 (36.05%), rho 7.96e-07 (0.40%)
+Elapsed: 13205.146822s ~3.5hr
+
+1/23/2026F
+python -m search_413 search_p_ut 260_001 270_000 -v='OUTER|F_DIAG'; date
+Worker 0: count 118_719_700:
+p1_frags 2.13932, factors 3.01171, others 0.14141, avg time 0.000197
+common 5.14e-07 (0.26%), p-1 0.000126 (63.99%), gcd 6.98e-05 (35.38%), rho 7.24e-07 (0.37%)
+Elapsed: 27075. ~7.5hr
+
+1/24/2026Sa
+python -m search_413 search_p_ut 270_001 280_000 -v='OUTER|F_DIAG'; date
+Worker 6: count 123_198_900:
+p1_frags 2.13889, factors 3.01154, others 0.143149, avg time 0.0002
+common 5.13e-07 (0.26%), p-1 0.000128 (63.81%), gcd 7.11e-05 (35.56%), rho 7.53e-07 (0.38%)
+Elapsed: 28438.219603s ~8hr
+
+1/25/2026Su
+python -m search_413 search_p_ut 280_001 290_000 -v='OUTER|F_DIAG'; date
+Worker 2: count 127_682_100:
+p1_frags 2.13833, factors 3.01063, others 0.14496, avg time 0.0002
+common 4.95e-07 (0.25%), p-1 0.000127 (63.76%), gcd 7.11e-05 (35.63%), rho 7.25e-07 (0.36%)
+Elapsed: 29353.306365s ~8hr
+
+python -m search_413 search_p_ut 290_000 300_000 -v='OUTER|F_DIAG'; date
+Worker 3: count 132_162_100:
+p1_frags 2.13779, factors 3.00968, others 0.146611, avg time 0.000201
+common 5e-07 (0.25%), p-1 0.000128 (63.47%), gcd 7.23e-05 (35.91%), rho 7.48e-07 (0.37%)
+Elapsed: 30677.304907s ~8.5hr
+
+python -m search_413 search_p_ut 300_001 310_000 -v='OUTER|F_DIAG'; date
+Worker 2: count 136_642_100:
+p1_frags 2.13715, factors 3.00887, others 0.148297, avg time 0.000203
+common 5.01e-07 (0.25%), p-1 0.000128 (63.29%), gcd 7.31e-05 (36.09%), rho 7.66e-07 (0.38%)
+Elapsed: 31869.592820s ~9hr
+
+1/26/2026M
+python -m search_413 search_p_ut 310_001 315_000 -v='OUTER|F_DIAG'; date
+Worker 4: count 69_998_250:
+p1_frags 2.13671, factors 3.00827, others 0.149296, avg time 0.000209
+common 5.37e-07 (0.26%), p-1 0.000133 (63.50%), gcd 7.49e-05 (35.86%), rho 8.11e-07 (0.39%)
+Elapsed: 16856.595479s ~4.5hr
+
+python -m search_413 search_p_ut 315_001 320_000 -v='OUTER|F_DIAG'; date
+Worker 2: count 71_121_050:
+p1_frags 2.13691, factors 3.00865, others 0.150132, avg time 0.000207
+common 5.18e-07 (0.25%), p-1 0.000131 (63.20%), gcd 7.47e-05 (36.16%), rho 7.9e-07 (0.38%)
+Elapsed: 16914.663111s ~6.5hr
+
+DOING
+4:40pm
+python -m search_413 search_p_ut 320_001 340_000 -v='OUTER|F_DIAG'; date
+
 TODO
 
 index=1, # 1: Noam Elkies 1988, found in partition 2
