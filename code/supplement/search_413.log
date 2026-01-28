@@ -273,12 +273,48 @@ p1_frags 2.13691, factors 3.00865, others 0.150132, avg time 0.000207
 common 5.18e-07 (0.25%), p-1 0.000131 (63.20%), gcd 7.47e-05 (36.16%), rho 7.9e-07 (0.38%)
 Elapsed: 16914.663111s ~6.5hr
 
-DOING
-4:40pm
+1/27/2026T
 python -m search_413 search_p_ut 320_001 340_000 -v='OUTER|F_DIAG'; date
+Worker 4: count 295_673_000:
+p1_frags 2.13623, factors 3.0076, others 0.152054, avg time 0.00021
+common 5.14e-07 (0.25%), p-1 0.000132 (63.12%), gcd 7.6e-05 (36.25%), rho 7.97e-07 (0.38%)
+Elapsed: 71260.561878s ~20hr
+
+python -m search_413 search_p_ut 340_001 360_000 -v='OUTER|F_DIAG'; date
+AssertionError: Found solution (t, u, v, w): (173_800, 345_953, 1_069_568, 1_743_433)
+Tue Jan 27 23:16:45 MST 2026
+This is M28130_7=dict(info='MacLeod (1997)'
+
+Clean up around solution:
+python -m solving solve_tu 173_800 345_953 -av=ALL
+Found [1069568, 1743433] (and no others)
+python -m search_413 search_p_ut 340_001 345_952 -v='OUTER|F_DIAG'; date
+Elapsed: 22109.299900s
+python -m search_413 search_t 345_953 1 173_800 -v='OUTER|F_DIAG'; date
+AssertionError: Found solution (t, u, v, w): (173_800, 345_953, 1_069_568, 1_743_433)
+python -m search_413 search_t 345_953 173_801 345_952 -v='OUTER|F_DIAG'; date
+Elapsed: 9.703609s
+Round out to even 1_000
+python -m search_413 search_p_ut 345_954 346_000 -v='OUTER|F_DIAG'; date
+Elapsed: 232.342982s
+ython -m search_413 search_p_ut 346_001 350_000 -v='OUTER|F_DIAG'; date
+Worker 6: count 62_361_160:
+p1_frags 2.13549, factors 3.0064, others 0.154747, avg time 0.00021
+common 5.48e-07 (0.26%), p-1 0.00013 (61.77%), gcd 7.88e-05 (37.55%), rho 8.65e-07 (0.41%)
+Elapsed: 15110.940236s ~4hr
+
+DOING
+2:06pm
+python -m search_413 search_p_ut 350_001 370_000 -v='OUTER|F_DIAG'; date
 
 TODO
 
-index=1, # 1: Noam Elkies 1988, found in partition 2
-        tuvw=(335_305, 2_349_595, 2_625_017, 17_990_656),
-46 times as far as solution #0
+M28130_7=dict(info='MacLeod (1997)',
+	abcd=(673_865, 1_390_400, 2_767_624, 2_813_001),
+	tuvw=(173_800, 345_953, 1_069_568, 1_743_433),
+	v_evens=2**9, v_primes={2_089: 1},
+	w_evens=2**0, w_primes={1_743_433: 1},
+	common={},
+	factors={73: 1, 2_089: 1, 1_743_433: 1, 57_308_689_481: 1},
+	others={},
+),
