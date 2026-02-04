@@ -17,7 +17,7 @@ When factoring the sum of 4th powers, the primes must be 2s or 1mod8,
 except for common factors of (t, u).
 """
 from math import cbrt, exp, isqrt
-from gmpy2 import gcd, is_square, is_prime
+from gmpy2 import gcd, is_prime, is_square
 import random
 from time import time
 from logging_413 import V, IntFlag, parse_flags

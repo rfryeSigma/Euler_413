@@ -7,29 +7,25 @@ If we can solve the monotonically increasing cubic function
     f(y; x) = y^3 + x^2 * y - 2^9 * m / x
 for the root y, then x and y solve the equation.
 """
-from math import cbrt, prod
+from math import cbrt, ceil, isqrt, prod
 from time import time
 from logging_413 import V, IntFlag, parse_flags
 
 def build_partition_bank(common: dict, factors: dict, others: dict) -> tuple:
     """Build a list of all factors from the three dicts for partitioning.
     
-    All of the 2s are assigned to the left_product.
-    Any 2s in factors are multiplied by the default 2**9 in the equation.
-        This is not actually necessary, but simplifies the search space.
-        Furthermore, the x or y containing the 2s is more likely to be fully factored.
+    Any 2s in various factors are multiplied by the default 2**9 in the equation.
     All of the `common` factors are raised to 4th power for distribution.
     The remaining factors and their powers are partitioned in all possible ways.
     The `others` factors are chosen for the left product last because they are
-        more likely to be in the (xy^3 + yx^3) term.
+        more likely to be in the (y^3 + x^2y) term.
     
     :param common: dict of common factors of t and u
     :param factors: dict of prime factors of m
     :param others: dict of other factors of m
  
-    :return (list): [total_product (including 2**9), 
-                     twos_product, 
-                     [list of fragments for partitioning] ]
+    :return (tuple): (total_product (including 2**9), 
+                      [list of fragments for partitioning] )
 
     Example:
         common = {5: 1); factors = {2: 10, 26777: 1, 102481: 1}; others = {4216393: 1}
@@ -45,9 +41,10 @@ def build_partition_bank(common: dict, factors: dict, others: dict) -> tuple:
         del factors[2]
 
     # Fill bank of factors to partition
-    bank_len = sum(common.values()) + sum(factors.values()) + sum(others.values())
+    bank_len = 1 + sum(common.values()) + sum(factors.values()) + sum(others.values())
     bank = [1]*bank_len
-    bank_inx = 0
+    bank[0] = twos_product
+    bank_inx = 1
     for p, count in common.items():
         for _ in range(count):
             bank[bank_inx] = p**4
@@ -59,21 +56,17 @@ def build_partition_bank(common: dict, factors: dict, others: dict) -> tuple:
                 bank_inx += 1
     assert bank_inx == bank_len
 
-    m512 = prod(bank) * twos_product # total product of all factors including 2**9
-    return m512, twos_product, bank
+    m512 = prod(bank) # total product of all factors including 2**9
+    return m512, bank
 
-def partition_fragments(m512: int, twos_product: int, bank: list,
+def partition_fragments(m512: int, bank: list,
                         range=range, len=len) -> int:
     """Yield left_product where left_product < right_product
     and the products come from partitioning `factors` into two groups and multiplying.
     
-    Two twos_product is always assigned to the left_product.
-        This is not actually necessary, but simplifies the search space.
-        Furthermore, the x or y containing the 2s is more likely to be fully factored.
     The fragments in bank are partitioned in all possible ways.
     
     :param m512: total product of all factors including 2**9   
-    :param twos_product: product of all 2s
     :param bank: list of fragments for partitioning 
  
     ;yield: left_product
@@ -91,43 +84,38 @@ def partition_fragments(m512: int, twos_product: int, bank: list,
            2**10 * 5**4 * 102481},
            ....
     """
-    init_left = twos_product
-    init_right = m512 // twos_product
-    if init_left **2 >= init_right: return None
-
     # Generate partitions
-    left_product_set = set()
+    left_product_set = set() # for catching duplicates
     add_to_set = left_product_set.add # localize
-    partition_index = -1 # Each bit flags whether corresponding factor is in left_product
+    partition_index = 0 # Each bit flags whether corresponding factor is in left_product
     max_index = 2 ** len(bank) - 1 # all factor inclusion flags on
     while partition_index < max_index:
         # Bump partition index and use to select factors
         partition_index += 1
-        left_product = init_left
-        right_product = init_right
-        for i in range(len(bank)):
-            if partition_index & 2**i:
-                v = bank[i]
-                left_product *= v
-                right_product //= v
+        left_product = 1
+        temp_index = partition_index
+        while temp_index:
+            # Isolate the lowest set bit (e.g., 101100 -> 000100)
+            lsb = temp_index & -temp_index
+            # Get the index of that bit (e.g., 4 -> index 2)
+            i = lsb.bit_length() - 1
+            left_product *= bank[i]
+            # Clear the lowest set bit to move to the next one
+            temp_index ^= lsb
         # Skip if reached max left product
-        if left_product **2 >= right_product:
-            continue
+        if left_product **3 >= m512: continue
         # Avoid duplicates
-        if left_product in left_product_set:
-            continue
+        if left_product in left_product_set: continue
         add_to_set(left_product)
         # Yield partition
         yield left_product
 
     return None
 
-def solve_cubic_by_cardano(x: int, c: int, cbrt=cbrt, round=round) -> int | None:
-    """Attempt to find an integer root of 
-        y^3 + x^2 * y - c = 0
-    for y using Cardono's formula for the depressed cubic.
-        y^3 + p * y + q = 0
-    so p = x^2, q = -c.
+def solve_integer_cubic(x: int, c: int) -> int | None:
+    """
+    Finds an integer root y for the equation y^3 + (x^2 * y) - c = 0
+    using binary search.
 
     Since x^2 > 0, the cubic is strictly increasing (monotonic), and hence
     there is at most one real root.
@@ -138,28 +126,25 @@ def solve_cubic_by_cardano(x: int, c: int, cbrt=cbrt, round=round) -> int | None
     Returns:
         int | None: The integer y or None.
     """
-    p = x * x
-    q = -c
-    discriminant = (q / 2) ** 2 + (p / 3) ** 3
-    if discriminant < 0:
-        return None  # No real roots
-
-    sqrt_discriminant = discriminant ** 0.5
-    u_cubed = -q / 2 + sqrt_discriminant
-    v_cubed = -q / 2 - sqrt_discriminant
-
-    u = round(cbrt(u_cubed)) if u_cubed >= 0 else -round(cbrt(-u_cubed))
-    v = round(cbrt(v_cubed)) if v_cubed >= 0 else -round(cbrt(-v_cubed))
-
-    y = u + v
-    if y < 0:
-        return None
-
-    # Verify that y is an integer root
-    if y**3 + p * y == c:
-        return y
-    return None
-
+    low = 1
+    high = ceil(cbrt(c)) # A safe upper bound since x and c are positive
+    mid = (low + high) // 2
+    while low <= high:
+        
+        
+        # Calculate f(mid) = mid^3 + x^2 * mid
+        # We rewrite it slightly for efficiency: mid * (mid^2 + x^2)
+        val = mid * (mid**2 + x**2)
+        
+        if val == c:
+            return mid  # Found the integer root
+        elif val < c:
+            low = mid + 1
+        else:
+            high = mid - 1
+        mid = (low + high) // 2
+    return None  # No integer root exists
+    
 def solve_xm(x: int, m: int, vV=V.NONE) -> list|None:
     """Given x and m in the equation
         t^4 + u^4 = m; 2^9 * m = x * (y^3 + x^2 * y)
@@ -186,11 +171,11 @@ def solve_xm(x: int, m: int, vV=V.NONE) -> list|None:
     """
     assert (2**9 * m) % x == 0, "2^9 * m must be divisible by x"
     c =  2**9 * m // x
-    return solve_cubic_by_cardano(x, c)
+    return solve_integer_cubic(x, c)
 
 def solve_factors(common: dict, factors: dict, others: dict, vV: IntFlag=V.NONE,
                   partition_fragments=partition_fragments, 
-                  solve_cubic_by_cardano=solve_cubic_by_cardano) -> list|None:
+                  solve_integer_cubic=solve_integer_cubic) -> list|None:
     """Given factors of m in the equations
         t^4 + u^4 = m; 2^9 * m = x * (y^3 + x^2 * y)
     search for integer solution x, y and return sorted pair v, w.
@@ -215,9 +200,9 @@ def solve_factors(common: dict, factors: dict, others: dict, vV: IntFlag=V.NONE,
         others {}
         -> [v, w] = [2625017, 17990656]
     """
-    m512, twos_product, bank = build_partition_bank(common, factors, others)
-    for i, x in enumerate(partition_fragments(m512, twos_product, bank)):
-        y = solve_cubic_by_cardano(x, m512 // x)
+    m512, bank = build_partition_bank(common, factors, others)
+    for i, x in enumerate(partition_fragments(m512, bank)):
+        y = solve_integer_cubic(x, m512 // x)
         if y is None:
             continue
         v, w = (x, y) if x < y else (y, x)
@@ -227,13 +212,13 @@ def solve_factors(common: dict, factors: dict, others: dict, vV: IntFlag=V.NONE,
 
 def solve_factors_all(common: dict, factors: dict, others: dict, vV: IntFlag=V.NONE,
                   partition_fragments=partition_fragments, 
-                  solve_cubic_by_cardano=solve_cubic_by_cardano) -> list|None:
+                  solve_integer_cubic=solve_integer_cubic) -> list|None:
     """Same as solve_factors, but does not stop if a factor is found.
     """
     solution = None
-    m512, twos_product, bank = build_partition_bank(common, factors, others)
-    for i, x in enumerate(partition_fragments(m512, twos_product, bank)):
-        y = solve_cubic_by_cardano(x, m512 // x)
+    m512, bank = build_partition_bank(common, factors, others)
+    for i, x in enumerate(partition_fragments(m512, bank)):
+        y = solve_integer_cubic(x, m512 // x)
         if y is None:
             continue
         v, w = (x, y) if x < y else (y, x)

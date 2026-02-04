@@ -303,18 +303,78 @@ p1_frags 2.13549, factors 3.0064, others 0.154747, avg time 0.00021
 common 5.48e-07 (0.26%), p-1 0.00013 (61.77%), gcd 7.88e-05 (37.55%), rho 8.65e-07 (0.41%)
 Elapsed: 15110.940236s ~4hr
 
-DOING
-2:06pm
+1/29/2026R
 python -m search_413 search_p_ut 350_001 370_000 -v='OUTER|F_DIAG'; date
+Worker 4: count 322_553_000:
+p1_frags 2.13499, factors 3.00576, others 0.156376, avg time 0.000207
+common 5.09e-07 (0.25%), p-1 0.000128 (61.91%), gcd 7.76e-05 (37.46%), rho 8.01e-07 (0.39%)
+Elapsed: 76852.080744s ~21.5hr
+
+python -m search_413 search_p_ut 370_001 375_000 -v='OUTER|F_DIAG'; date
+Worker 0: count 83_054_395:
+p1_frags 2.13734, factors 2.84155, others 0.148637, avg time 0.0002
+common 6.27e-07 (0.31%), p-1 0.000124 (62.09%), gcd 7.42e-05 (37.20%), rho 7.81e-07 (0.39%)
+Elapsed: 19120.071120s ~7.5hr
+
+1/30/2026F
+python -m search_413 search_p_ut 375_001 390_000 -v='OUTER|F_DIAG'; date
+Worker 2: count 258_878_412:
+p1_frags 2.13661, factors 2.84122, others 0.150041, avg time 0.000199
+common 6.24e-07 (0.31%), p-1 0.000122 (61.54%), gcd 7.5e-05 (37.75%), rho 7.95e-07 (0.40%)
+Elapsed: 59399.638008s ~16.5hr
+
+python -m search_413 search_p_ut 390_001 395_000 -v='OUTER|F_DIAG'; date
+Worker 6: count 89_214_549:
+p1_frags 2.1364, factors 2.83908, others 0.151039, avg time 0.000199
+common 6.16e-07 (0.31%), p-1 0.000122 (61.28%), gcd 7.55e-05 (38.01%), rho 7.95e-07 (0.40%)
+Elapsed: 20428.831181s ~6hr
+
+python -m search_413 search_p_ut 395_001 410_000 -v='OUTER|F_DIAG'; date
+Worker 5: count 270_276_120:
+p1_frags 2.13588, factors 2.83904, others 0.152519, avg time 0.000202
+common 6.18e-07 (0.31%), p-1 0.000124 (61.39%), gcd 7.64e-05 (37.90%), rho 8.12e-07 (0.40%)
+Elapsed: 62773.247173s ~17.5hr
+
+2/1/2026Su
+python -m search_413 search_p_ut 410_001 425_000 -v='OUTER|F_DIAG'; date
+Worker 4: count 284_946_737:
+p1_frags 2.13552, factors 2.83809, others 0.15409, avg time 0.0002
+common 5.91e-07 (0.30%), p-1 0.000122 (60.96%), gcd 7.67e-05 (38.35%), rho 7.92e-07 (0.40%)
+Elapsed: 65585.726323s 1~3.5hr
+
+2/2/2026M
+python -m search_413 search_p_ut 425_001 440_000 -v='OUTER|F_DIAG'; date
+Worker 0: count 293_983_277:
+p1_frags 2.13504, factors 2.83741, others 0.155668, avg time 0.000205
+common 6.04e-07 (0.29%), p-1 0.000126 (61.47%), gcd 7.76e-05 (37.84%), rho 8.09e-07 (0.39%)
+Elapsed: 69204.304175s ~19hr
+
+2/3/2026T
+python -m search_413 search_p_ut 440_001 455_000 -v='OUTER|F_DIAG'; date
+Worker 1: count 299_698_376:
+p1_frags 2.13434, factors 2.83719, others 0.157454, avg time 0.000211
+common 6.28e-07 (0.30%), p-1 0.000131 (61.81%), gcd 7.92e-05 (37.49%), rho 8.47e-07 (0.40%)
+Elapsed: 72713.407971s ~20hr
+
+python -m search_413 search_p_ut 455_001 465_000 -v='OUTER|F_DIAG'; date
+Worker 3: count 210_552_230:
+p1_frags 2.13438, factors 2.83742, others 0.158755, avg time 0.000206
+common 6.14e-07 (0.30%), p-1 0.000125 (60.66%), gcd 7.95e-05 (38.63%), rho 8.39e-07 (0.41%)
+Elapsed: 49820.297761s ~ 14hr
+
+DOING
+9:20a
+python -m search_413 search_p_ut 465_001 475_000 -v='OUTER|F_DIAG'; date
+
 
 TODO
-
-M28130_7=dict(info='MacLeod (1997)',
-	abcd=(673_865, 1_390_400, 2_767_624, 2_813_001),
-	tuvw=(173_800, 345_953, 1_069_568, 1_743_433),
-	v_evens=2**9, v_primes={2_089: 1},
-	w_evens=2**0, w_primes={1_743_433: 1},
-	common={},
-	factors={73: 1, 2_089: 1, 1_743_433: 1, 57_308_689_481: 1},
+Next known solution: u=878_575 .
+B16430_8=dict(info='Bernstein (2001)',
+	abcd=(3_642_840, 7_028_600, 16_281_009, 16_430_513),
+	tuvw=(455_355, 878_575, 74_752, 16_355_761),
+	v_evens=2**10, v_primes={73: 1},
+	w_evens=2**0, w_primes={41: 1, 398_921: 1},
+	common={5: 1},
+	factors={2: 1, 398_921: 1, 30_039_049: 1, 41: 1, 73: 1, 14_249: 1},
 	others={},
 ),

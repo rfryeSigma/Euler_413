@@ -7,7 +7,7 @@ and we call the solving module to search for solutions (x, y) to
     m = 2^-9 * (x + y^3 + x^2 * y)
 """
 import concurrent.futures
-from multiprocessing import Pool
+from multiprocessing import Process, Queue
 from time import time
 from factoring import factor_tu, return_saved_times
 from logging_413 import V, IntFlag, parse_flags
@@ -53,29 +53,65 @@ def search_inner_loop(u, vV: IntFlag=V.NONE,
     for t in t_generator:
         process_tu(t, u, vV)
 
-def search_stride_worker(worker_id: int, first_u: int, last_u: int, 
-                         workers: int, vV: IntFlag):
-    """Processes every Nth 'u'"""
-    # The 'stride' is the number of workers
-    for u in range(first_u + worker_id, last_u + 1, workers):
-        search_inner_loop(u, vV)
-    vV.log(vV, V.F_DIAG, f'Worker {worker_id}: {return_saved_times()}')
+def chunk_generator(first_u: int, last_u: int, workers: int):
+    """
+    Ensures all workers get work by tapering down at the end.
+    """
+    total_tasks = last_u - first_u + 1
+    current = first_u
 
-def search_p_ut(first_u :int, last_u :int, workers :int=8, vV: IntFlag=V.NONE,
-           search_stride_worker=search_stride_worker) -> None:
+    # Cap chunk size so one chunk doesn't eat the remainder.
+    while current <= last_u:
+        # Don't let a single chunk take more than remaining work per worker
+        # and never exceed a reasonable max (like 500)
+        remaining = last_u - current + 1
+        max_chunk = max(1, min(remaining // workers, 500))
+        
+        yield (current, current + max_chunk)
+        current += max_chunk
+
+def persistent_worker(worker_id: int, task_queue, vV: IntFlag):
+    # This is the 'Local State' for this specific process
+    # Initialize your timers/counters here if they aren't global
+    
+    while True:
+        task_range = task_queue.get()
+        if task_range is None: # The signal to stop
+            break
+            
+        start_u, end_u = task_range
+        for u in range(start_u, end_u):
+            search_inner_loop(u, vV)
+            
+    # CRITICAL: This runs ONLY ONCE when all work is done
+    # This ensures return_saved_times() contains the cumulative data
+    report = f'Worker {worker_id}: {return_saved_times()}'
+    vV.log(vV, V.F_DIAG, report)
+
+def search_p_ut(first_u: int, last_u: int, workers: int=8, vV: IntFlag=V.NONE):
     """
-    Performs the search in parallel using a wheel-based lookup for
-    t (smallest variable) based on the successive modular states
-    of range on u. (second smallest variable)
+    Performs the search in parallel using a dynamic work pool.
     """
-    with Pool(processes=workers) as pool:
-        async_results = [
-            pool.apply_async(search_stride_worker, 
-                             args=(i, first_u, last_u, workers, vV))
-            for i in range(workers)
-        ]
-        for res in async_results:
-            _ = res.get() # This waits for results
+    task_queue = Queue()
+    
+    # 1. Start the workers
+    processes = []
+    for i in range(workers):
+        p = Process(target=persistent_worker, args=(i, task_queue, vV))
+        p.start()
+        processes.append(p)
+        
+    # 2. Feed the dynamically sized chunks into the queue
+    for chunk in chunk_generator(first_u, last_u, workers):
+        task_queue.put(chunk)
+        
+    # 3. Add 'None' sentinels so workers know when to finish and report
+    for _ in range(workers):
+        task_queue.put(None)
+        
+    # 4. Wait for the final reports
+    for p in processes:
+        p.join()
 
 def search_ut(first_u :int, last_u :int, vV: IntFlag=V.NONE, 
               search_inner_loop=search_inner_loop) -> None:
