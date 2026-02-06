@@ -369,10 +369,16 @@ p1_frags 2.13366, factors 2.8362, others 0.160038, avg time 0.000206
 common 5.79e-07 (0.28%), p-1 0.000125 (60.74%), gcd 7.95e-05 (38.58%), rho 8.14e-07 (0.40%)
 Elapsed: 56563.060937s ~15.5hr
 
-DOING
-6:30a
+2/6/2026Fr
 python -m search_413 search_p_ut 475_001 490_000 -v='OUTER|F_DIAG'; date
+Worker 4: count 324_437_150:
+p1_frags 2.13294, factors 2.83421, others 0.161179, avg time 0.00021
+common 5.76e-07 (0.27%), p-1 0.000129 (61.21%), gcd 8.02e-05 (38.12%), rho 8.24e-07 (0.39%)
+Elapsed: 87597.455326s ~23.5hr
 
+DOING
+8a
+python -m search_413 search_p_ut 490_001 505_000 -v='OUTER|F_DIAG'; date
 
 TODO
 Next known solution: u=878_575 .

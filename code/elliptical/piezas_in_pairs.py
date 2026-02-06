@@ -112,7 +112,7 @@ abcd_to_small_u((85818832944459457142858489, 226369052354324181334408840, 265071
 def is_square(u) -> bool:
     """Return whether a rational is a perfect square"""
     n = numerator(u)
-    if isqrt(n)**2 != n: return False
+    if 0 >= n or isqrt(n)**2 != n: return False
     d = denominator(u)
     return isqrt(d)**2 == d
 
@@ -137,7 +137,7 @@ def uv_to_Pk(u, v):
     P3 = (4 - 2*u - 4*v + u*v2) * (4*u - 4*u2 + 2*u3 + 8*v - 8*u*v - 4*v2 + 2*u*v2 + u3*v2)
     return (P0, P1, P2, P3)
 
-def uv_to_D(u, v):
+def uv_to_D(u, v, verbose=False):
     """Calculate a new EC parameter D from u, v
     """
     u2 = u * u
@@ -155,7 +155,8 @@ def uv_to_D(u, v):
     if is_square(D2):
         return un_square(D2)
     else:
-        print(f'u {u}, v {v} to D2 {D2} is not a perfect square ')
+        if verbose:
+            print(f'u {u}, v {v} to D2 {D2} is not a perfect square ')
     return None
 
 u = QQ(-9) / QQ(20)
@@ -201,9 +202,9 @@ def abcd_to_small_xyz(abcd: tuple, thresh: int=10_000) -> list:
     """
     xyz_list = []
     for u, v in combinations(abcd_to_small_u(abcd), 2):
-        xyz = uv_to_xyz(u, v)
-        if xyz is None: continue
-        for x, y, z in xyz:
+        pair = uv_to_xyz(u, v)
+        if pair is None: continue
+        for x, y, z in pair:
             xyz_list.append((x, y, z))
     return xyz_list
 
@@ -234,3 +235,70 @@ abcd_to_small_xyz((414560, 217519, 95800, 422_481))
 # 422481 (1 in table)
 # 1679142729 (7 in table)
 # 29999857938609 (12 in table)
+
+def known_to_unknown(max_d: int=int(1e27)) -> None:
+    """For all abcd in known, make new xyz from permutations of u.
+    Check whether the denominators are below max_d and in known.
+    Report any new xyz.
+    """
+    new_xyz = list()
+    new_denoms = set()
+    known_denoms = set()
+    for val in known.values():
+        abcd = val['abcd']
+        known_denoms.add(abcd[-1])
+    for val in known.values():
+        abcd = val['abcd']
+        for u, v in combinations(abcd_to_small_u(abcd, thresh=9e99), 2):
+            pair = uv_to_xyz(u, v)
+            if pair is None: continue
+            for xyz in pair:
+                d = lcm([denominator(x) for x in xyz])
+                if d >= max_d or d in known_denoms: continue
+                if d in new_denoms: continue
+                new_denoms.add(d)
+                new_xyz.append(xyz)
+                print(f'Found new {xyz} from {abcd} with u {u}, v {v}')
+    print(f'Found {len(new_xyz)} new xyz')
+    return sorted(new_xyz)
+
+known_to_unknown()
+# Found new (535607712470322407570378200/918310142223097801006397529, 250530677254015598463660440/918310142223097801006397529, -889106559932545369165762471/918310142223097801006397529) from (95800, 217519, 414560, 422481) with u -1041/320, v 52463/660460
+# Found new (118194421251475239056505903/123188180833923372056627153, 66491673395168374249746120/123188180833923372056627153, -62831773759131557571594880/123188180833923372056627153) from (2164632, 31669120, 41084175, 44310257) with u -12065/12396, v -84558637/193874100
+# Found new (46402888024739111034420161/174088703841632292189275073, -92419682545114696981174360/174088703841632292189275073, -170289556324371670328363560/174088703841632292189275073) from (27450160, 108644015, 146627384, 156646737) with u -136/133, v -63528125/85096232
+# Found new (411177854471028470696556192/504068891841730072306483681, 106958136069417067994530335/504068891841730072306483681, -435117527990435060232042280/504068891841730072306483681) from (39110088360, 49796687200, 71826977313, 76973733409) with u -267904/221337, v -1245/5012
+# Found 4 new xyz
+[(46402888024739111034420161/174088703841632292189275073,
+  -92419682545114696981174360/174088703841632292189275073,
+  -170289556324371670328363560/174088703841632292189275073),
+ (535607712470322407570378200/918310142223097801006397529,
+  250530677254015598463660440/918310142223097801006397529,
+  -889106559932545369165762471/918310142223097801006397529),
+ (411177854471028470696556192/504068891841730072306483681,
+  106958136069417067994530335/504068891841730072306483681,
+  -435117527990435060232042280/504068891841730072306483681),
+ (118194421251475239056505903/123188180833923372056627153,
+  66491673395168374249746120/123188180833923372056627153,
+  -62831773759131557571594880/123188180833923372056627153)]
+"""
+123_188_180_833_923_372_056_627_153;
+118194421251475239056505903,
+66491673395168374249746120,
+62831773759131557571594880
+
+174_088_703_841_632_292_189_275_073;
+170289556324371670328363560,
+92419682545114696981174360,
+46402888024739111034420161
+
+504_068_891_841_730_072_306_483_681;
+435117527990435060232042280,
+411177854471028470696556192, 
+106958136069417067994530335
+
+918_310_142_223_097_801_006_397_529;
+535607712470322407570378200,
+250530677254015598463660440,
+889106559932545369165762471 
+
+"""
