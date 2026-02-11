@@ -58,7 +58,9 @@ to interrupt the search process.
 The code in this folder uses this method to find solutions by factoring.
 
 The code in the elliptical sub_folder attempts to match factoring solutions 
-with Elliptical Curve solutions. See it's README.
+with Elliptical Curve solutions. This effort has become more succesful
+than the effort in the main code folder.
+See elliptical/README.
 
 There is a play folder, but it is not registered in GitHub. 
 It contains experimental code.

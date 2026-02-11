@@ -1,0 +1,25 @@
+This is a log of what ranges have been searched using brute.py 
+in Math,
+
+2/10/2026T
+brute_search(4, 1000, 1, 47, 20, 9)
+(1000/47, -9/20) -> d 422481
+	known #1: (414560/422481, 95800/422481, 217519/422481)
+(1000/47, -9/20) -> d 1679142729
+	known #17: (-632671960/1679142729, -1670617271/1679142729, 50237800/1679142729)
+uv_count 2181396, D_count 1, big_count 0, knowns 2 : {1, 17}
+new_xyz 0
+elapsed: 5.9163s
+
+DOING
+datetime.now(); brute_search(4, 1520, 1, 1865, 1520, 1865); datetime.now()
+datetime.datetime(2026, 2, 10, 23, 45, 24, 876310)
+
+So far, found:
+#3, #34 with vm 132, vn 1865
+#14, #13 with vm 200, vn 1617
+
+TODO
+Keep track of (v, u) that have found a solution.
+Invert u, v
+Implement parallel.

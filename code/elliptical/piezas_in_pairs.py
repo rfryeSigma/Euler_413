@@ -29,7 +29,7 @@ def verify_uvw(u, v, w) -> bool:
 
 def xyz_to_uvw(xyz: tuple) -> tuple:
     """Convert (x, y, z) representing x^4 + y^4 + z^4 = 1
-    to EC parameters (u, v, w)
+    to parameters (u, v, w)
     """
     x, y, z = xyz
     x_y, y_z, z_x = x - y, y - z, z - x
@@ -38,7 +38,7 @@ def xyz_to_uvw(xyz: tuple) -> tuple:
     w = (z_x*z_x - y*y -1) / (z*z - z*x + x*x + z_x)
     assert verify_uvw(u, v, w), f'{u}, {v}, {w}'
     return u, v, w
-
+    
 # Seems to work best when a, b, c in increasing size
 xyz_to_uvw(abcd_to_xyz((95_800, 217_519, 414_560, 422_481)))
 (1000/47, -1041/320, -9/20)
@@ -68,7 +68,7 @@ def abcd_to_small_u(abcd: tuple, thresh: int=10_000) -> list:
             u_list.append(u)
     return sorted(u_list)
 
-"""The 11 solutions on curve C1:
+"""The 12 solutions on curve C1:
 1. 422481; 414560, 217519, 95800 (Frye, 1988); C1, u = -9/20.
 abcd_to_small_u((414560, 217519, 95800, 422_481))
 [-1041/320, -4209/3500, -9/20, 30080/6007, 1000/47]
@@ -81,13 +81,17 @@ abcd_to_small_u((2767624, 1390400, 673865, 2813001))
 abcd_to_small_u((1670617271, 632671960, 50237800, 1679142729))
 [-1041/320, -9/20, 1000/47]
 
-25. 15434547801; 15355831360, 5821981400, 140976551 (Tomita, 2007); C1
+23. 15434547801; 15355831360, 5821981400, 140976551 (Tomita, 2007); C1
 abcd_to_small_u((15355831360, 5821981400, 140976551, 15434547801))
 [-1425/412, -9/20, 5728/215]
 
 42. 29999857938609; 27239791692640, 22495595284040, 7592431981391 (Tomita, 2006); C1
 abcd_to_small_u((27239791692640, 22495595284040, 7592431981391, 29999857938609))
 [-4209/3500, -9/20, 30080/6007]
+
+46. 573646321871961; 514818101299289, 440804942580160, 130064300991400 (Tomita, 2008); C1
+abcd_to_small_u((130_064_300_991_400, 440_804_942_580_160, 514_818_101_299_289, 573_646_321_871_961))
+[-9/20, 34225/6692]
 
 58 101783028910511968041; 99569174129827461335, 21710111037730547416, 54488888702794271560 (Piezas, 2024); C1
 abcd_to_small_u((99569174129827461335, 21710111037730547416, 54488888702794271560, 101783028910511968041))
@@ -237,7 +241,7 @@ abcd_to_small_xyz((414560, 217519, 95800, 422_481))
 # 29999857938609 (12 in table)
 
 def known_to_unknown(max_d: int=int(1e27)) -> None:
-    """For all abcd in known, make new xyz from permutations of u.
+    """For all abcd in known, make new xyz from combinations of u.
     Check whether the denominators are below max_d and in known.
     Report any new xyz.
     """
@@ -262,7 +266,7 @@ def known_to_unknown(max_d: int=int(1e27)) -> None:
     print(f'Found {len(new_xyz)} new xyz')
     return sorted(new_xyz)
 
-known_to_unknown()
+# known_to_unknown()
 # Found new (535607712470322407570378200/918310142223097801006397529, 250530677254015598463660440/918310142223097801006397529, -889106559932545369165762471/918310142223097801006397529) from (95800, 217519, 414560, 422481) with u -1041/320, v 52463/660460
 # Found new (118194421251475239056505903/123188180833923372056627153, 66491673395168374249746120/123188180833923372056627153, -62831773759131557571594880/123188180833923372056627153) from (2164632, 31669120, 41084175, 44310257) with u -12065/12396, v -84558637/193874100
 # Found new (46402888024739111034420161/174088703841632292189275073, -92419682545114696981174360/174088703841632292189275073, -170289556324371670328363560/174088703841632292189275073) from (27450160, 108644015, 146627384, 156646737) with u -136/133, v -63528125/85096232
@@ -297,8 +301,209 @@ known_to_unknown()
 106958136069417067994530335
 
 918_310_142_223_097_801_006_397_529;
+889106559932545369165762471,
 535607712470322407570378200,
-250530677254015598463660440,
-889106559932545369165762471 
-
+250530677254015598463660440
 """
+
+def known_to_unknown_inv(max_d: int=int(1e27)) -> None:
+    """For all abcd in known, make new xyz from combinations of 
+    inverses of u.
+    Check whether the denominators are below max_d and in known.
+    Report any new xyz.
+    """
+    one = QQ(1)
+    new_xyz = list()
+    new_denoms = set()
+    known_denoms = set()
+    found_big = 0
+    found_raw = 0
+    for val in known.values():
+        abcd = val['abcd']
+        known_denoms.add(abcd[-1])
+    for val in known.values():
+        abcd = val['abcd']
+        for uu, vv in combinations(abcd_to_small_u(abcd, thresh=9e99), 2):
+            for u, v in ((uu, one/vv), (one/uu, vv), (one/uu, one/vv)):
+                pair = uv_to_xyz(QQ(1)/u, QQ(1)/v)
+                if pair is None: continue
+                for xyz in pair:
+                    d = lcm([denominator(x) for x in xyz])
+                    if d >= max_d:
+                        found_big += 1
+                        continue
+                    found_raw += 1
+                    if d in known_denoms or d in new_denoms: continue
+                    new_denoms.add(d)
+                    new_xyz.append(xyz)
+                    print(f'Found new {xyz} from {abcd} with u {u}, v {v}')
+    print(f'Found {found_big} too big and {found_raw} ok'
+          f', but only {len(new_xyz)} new xyz')
+    return sorted(new_xyz)
+
+# known_to_unknown_inv()
+# Found 1962 too big and 2694 ok, but only 0 new xyz
+
+def known_to_unknown_all_u(max_d: int=int(1e27)) -> None:
+    """For all abcd in known, collect u. From combinations of all u.
+    Check whether the denominators are below max_d and in known.
+    Report any new xyz.
+    """
+    new_xyz = list()
+    new_denoms = set()
+    known_denoms = set()
+    u_set = set()
+    found_raw = 0
+    found_big = 0
+    for val in known.values():
+        abcd = val['abcd']
+        known_denoms.add(abcd[-1])
+        abcd = val['abcd']
+        for u in abcd_to_small_u(abcd, thresh=9e99):
+            u_set.add(u)
+    for u, v in combinations(u_set, 2):
+        pair = uv_to_xyz(u, v)
+        if pair is None: continue
+        for xyz in pair:
+            d = lcm([denominator(x) for x in xyz])
+            if d >= max_d: 
+                found_big += 1
+                continue
+            found_raw += 1
+            if d in known_denoms or d in new_denoms: continue
+            new_denoms.add(d)
+            new_xyz.append(xyz)
+            print(f'Found new {xyz} with u {u}, v {v}')
+    print(f'Found {found_big} too big and {found_raw} ok'
+          f', but only {len(new_xyz)} new xyz')
+    return sorted(new_xyz)
+
+#known_to_unknown_all_u()
+#Found 1962 too big and 2328 ok, but only 0 new xyz
+
+def check_new_d_size() -> None:
+    """For all abcd in known, make new xyz from combinations of u.
+    Check whether any new denominators are below current d.
+    """
+    count = 0
+    for i, val in enumerate(known.values(), start=1):
+        abcd = val['abcd']
+        d = abcd[-1]
+        for u, v in combinations(abcd_to_small_u(abcd, thresh=9e99), 2):
+            pair = uv_to_xyz(u, v)
+            if pair is None: continue
+            for xyz in pair:
+                new_d = lcm([denominator(x) for x in xyz])
+                if new_d >= d: continue
+                count += 1
+    return count
+
+#check_new_d_size()
+#183
+# This means that solutions larger than known can find solutions less than 1e27.
+# But it's not clear that any will be new, since they were derived from known.
+
+def large_known_to_unknown(min_d: int=int(1e27), max_d: int=int(1e40)) -> None:
+    """For all abcd in known, make new xyz from combinations of u.
+    Keep those in range min_d <= new_d < max_d
+    Use these to find new xvz and report those with new_d < min_d,
+    but not in known.
+    """
+    known_denoms = set()
+    big_denoms = set()
+    big_xyz = list()
+    new_denoms = set()
+    new_xyz = list()
+    # Collect big xyz from known abcd, and their denominators.
+    for val in known.values():
+        abcd = val['abcd']
+        known_denoms.add(abcd[-1])
+        for u, v in combinations(abcd_to_small_u(abcd, thresh=9e99), 2):
+            pair = uv_to_xyz(u, v)
+            if pair is None: continue
+            for xyz in pair:
+                d = lcm([denominator(x) for x in xyz])
+                if d < min_d or d >= max_d: continue
+                if d in big_denoms: continue
+                big_denoms.add(d)
+                big_xyz.append(xyz)
+    print(f'Found {len(big_denoms)} big xyz') 
+    # Collect more big xyz from big_xyz  
+    for xyz in big_xyz:
+        d = lcm([denominator(x) for x in xyz])
+        assert all(d == denominator(x) for x in xyz)
+        abcd = [numerator(x) for x in xyz] + [d]
+        for u, v in combinations(abcd_to_small_u(abcd, thresh=9e99), 2):
+            pair = uv_to_xyz(u, v)
+            if pair is None: continue
+            for xyz in pair:
+                d = lcm([denominator(x) for x in xyz])
+                if d < min_d or d >= max_d: continue
+                if d in big_denoms: continue
+                big_denoms.add(d)
+                big_xyz.append(xyz)
+    print(f'Found {len(big_denoms)} big xyz') 
+    # Collect new small xyz from all big_xyz  
+    for xyz in big_xyz:
+        d = lcm([denominator(x) for x in xyz])
+        assert all(d == denominator(x) for x in xyz)
+        abcd = [numerator(x) for x in xyz] + [d]
+        for u, v in combinations(abcd_to_small_u(abcd, thresh=9e99), 2):
+            pair = uv_to_xyz(u, v)
+            if pair is None: continue
+            for xyz in pair:
+                d = lcm([denominator(x) for x in xyz])
+                if d >= min_d or d in known_denoms: continue
+                if d in new_denoms: continue
+                new_denoms.add(d)
+                new_xyz.append(xyz)
+                print(f'Found new {xyz} from {abcd} with u {u}, v {v}')
+    print(f'Found {len(new_xyz)} new xyz')
+    return sorted(new_xyz)
+
+#large_known_to_unknown()
+#Found 77 big xyz
+#Found 78 big xyz
+#Found 0 new xyz
+
+def known_to_unknown_all_uu(max_d: int=int(1e27)) -> None:
+    """For all abcd in known, collect u. For all (u, u),
+    check whether the denominators are below max_d and in known.
+    Report any new xyz.
+    """
+    new_xyz = list()
+    new_denoms = set()
+    known_denoms = set()
+    u_set = set()
+    found_raw = 0
+    found_big = 0
+    found_known = 0
+    for val in known.values():
+        abcd = val['abcd']
+        known_denoms.add(abcd[-1])
+        abcd = val['abcd']
+        for u in abcd_to_small_u(abcd, thresh=9e99):
+            u_set.add(u)
+    for u in u_set:
+        pair = uv_to_xyz(u, u)
+        if pair is None: continue
+        for xyz in pair:
+            d = lcm([denominator(x) for x in xyz])
+            if d >= max_d: 
+                found_big += 1
+                continue
+            found_raw += 1
+            if d in new_denoms: continue
+            if d in known_denoms: 
+                found_known += 1
+                continue
+            new_denoms.add(d)
+            new_xyz.append(xyz)
+            print(f'Found new {xyz} with u {u}, v {u}')
+    print(f'Found {found_big} too big and {found_raw} ok'
+          f' and {found_known} in known'
+          f', but only {len(new_xyz)} new xyz')
+    return sorted(new_xyz)
+
+#known_to_unknown_all_uu()
+#Found 0 too big and 0 ok and 0 in known, but only 0 new xyz

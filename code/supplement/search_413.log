@@ -1,4 +1,4 @@
-This is a log of what ranges have been searched and results confirmed and found.
+This is a log of what ranges have been searched using search_413.py .
 
 12/29/2025
 Code is just a skeleton now, so these results are experiments
@@ -376,9 +376,24 @@ p1_frags 2.13294, factors 2.83421, others 0.161179, avg time 0.00021
 common 5.76e-07 (0.27%), p-1 0.000129 (61.21%), gcd 8.02e-05 (38.12%), rho 8.24e-07 (0.39%)
 Elapsed: 87597.455326s ~23.5hr
 
-DOING
-8a
+2/7/2026Sa
 python -m search_413 search_p_ut 490_001 505_000 -v='OUTER|F_DIAG'; date
+Worker 1: count 334_787_865:
+p1_frags 2.13289, factors 2.83327, others 0.162602, avg time 0.000212
+common 5.92e-07 (0.28%), p-1 0.000129 (60.94%), gcd 8.15e-05 (38.38%), rho 8.56e-07 (0.40%)
+Elapsed: 91332.363589s ~25.5hr
+
+2/8/2026Su
+python -m search_413 search_p_ut 505_001 520_000 -v='OUTER|F_DIAG'; date
+Worker 7: count 343_542_827:
+p1_frags 2.13212, factors 2.83296, others 0.164214, avg time 0.000221
+common 6.52e-07 (0.29%), p-1 0.000135 (60.98%), gcd 8.48e-05 (38.30%), rho 9.32e-07 (0.42%)
+Elapsed: 97953.179739s ~27hr
+
+DOING
+Abandon this tyoe of search for now.
+I will be running searches using code in elliptical subfolder.
+
 
 TODO
 Next known solution: u=878_575 .
