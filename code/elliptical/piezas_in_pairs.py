@@ -11,6 +11,7 @@ https://math.stackexchange.com/questions/1853223/distribution-of-primitive-pytha
 from solutions import known
 from itertools import combinations
 from math import isqrt
+from sage.all import Integer, QQ, Rational, gcd, lcm, numerator, denominator
 
 def abcd_to_xyz(abcd: tuple) -> tuple:
     """Convert (a, b, c, d) representing a^4 + b^4 + c^4 = d^4 
@@ -70,46 +71,39 @@ def abcd_to_small_u(abcd: tuple, thresh: int=10_000) -> list:
 
 """The 12 solutions on curve C1:
 1. 422481; 414560, 217519, 95800 (Frye, 1988); C1, u = -9/20.
-abcd_to_small_u((414560, 217519, 95800, 422_481))
 [-1041/320, -4209/3500, -9/20, 30080/6007, 1000/47]
 
 2. 2813001; 2767624, 1390400, 673865 (MacLeod 1997); C1, u = -9/20.
-abcd_to_small_u((2767624, 1390400, 673865, 2813001))
 [-1425/412, -9/20, 34225/6692, 5728/215]
 
 17. 1679142729; 1670617271, 632671960, 50237800 (Tomita, 2006); C1, u = -9/20.
-abcd_to_small_u((1670617271, 632671960, 50237800, 1679142729))
 [-1041/320, -9/20, 1000/47]
 
 23. 15434547801; 15355831360, 5821981400, 140976551 (Tomita, 2007); C1
-abcd_to_small_u((15355831360, 5821981400, 140976551, 15434547801))
 [-1425/412, -9/20, 5728/215]
 
 42. 29999857938609; 27239791692640, 22495595284040, 7592431981391 (Tomita, 2006); C1
-abcd_to_small_u((27239791692640, 22495595284040, 7592431981391, 29999857938609))
 [-4209/3500, -9/20, 30080/6007]
 
 46. 573646321871961; 514818101299289, 440804942580160, 130064300991400 (Tomita, 2008); C1
-abcd_to_small_u((130_064_300_991_400, 440_804_942_580_160, 514_818_101_299_289, 573_646_321_871_961))
 [-9/20, 34225/6692]
 
 58 101783028910511968041; 99569174129827461335, 21710111037730547416, 54488888702794271560 (Piezas, 2024); C1
-abcd_to_small_u((99569174129827461335, 21710111037730547416, 54488888702794271560, 101783028910511968041))
 [-9/20]
+
 75. 120175486227071990769561; 30248376090268690676600, 118508989446504950664160, 56915898438422390129561 (Tomita, 2024); C1
-abcd_to_small_u((30248376090268690676600, 118508989446504950664160, 56915898438422390129561, 120175486227071990769561))
 [-9/20]
+
 80. 1171867103503245199920081; 1165970778032514255823760, 440517744543240750721000, 59421842165791512201169 (Tomita, 2024); C1
-abcd_to_small_u((1165970778032514255823760, 440517744543240750721000, 59421842165791512201169, 1171867103503245199920081))
 [-9/20]
+
 84. 6714012701109174954871521; 1758067984180618846616200, 6632467268281371571709360, 3057432874236989781768479 (Tomita, 2024); C1
-abcd_to_small_u((1758067984180618846616200, 6632467268281371571709360, 3057432874236989781768479, 6714012701109174954871521))
-[-9/20]
+-9/20]
+
 87. 21291952935426564624339201; 5328636655728999148343576, 20991236668646283695879935, 10137374115207940432133560 (Tomita, 2024); C1
-abcd_to_small_u((5328636655728999148343576, 20991236668646283695879935, 10137374115207940432133560, 21291952935426564624339201))
 [-9/20]
+
 92. 227529118288906398066378489, 85818832944459457142858489, 226369052354324181334408840, 2650718685573298353948640 (Piezas, 2024); C1
-abcd_to_small_u((85818832944459457142858489, 226369052354324181334408840, 2650718685573298353948640, 227529118288906398066378489))
 [-9/20]
 """
 
@@ -306,6 +300,42 @@ def known_to_unknown(max_d: int=int(1e27)) -> None:
 250530677254015598463660440
 """
 
+def given_to_unknown(given: tuple, max_d: int=int(1e27)) -> None:
+    """For given abcd, make new xyz from combinations of u.
+    Check whether the denominators are below max_d and in known.
+    Report any new xyz.
+    """
+    a, b, c, d = given
+    assert 0 < a < b < c < d
+    assert gcd(given) == 1
+    assert a**4 + b**4 + c**4 == d**4
+    new_denoms = set((d,))
+    new_xyz = list()
+    known_denoms = set()
+    for val in known.values():
+        abcd = val['abcd']
+        known_denoms.add(abcd[-1])
+    for u, v in combinations(abcd_to_small_u(given, thresh=9e99), 2):
+        pair = uv_to_xyz(u, v)
+        if pair is None: continue
+        for xyz in pair:
+            d = lcm([denominator(x) for x in xyz])
+            print(f'denom {d}')
+            if d in known_denoms: 
+                print('\tknown')
+                continue
+            if d >= max_d:
+                print(f'\tbig {float(d):.4e}')
+                continue
+            if d in new_denoms: 
+                print('\trepeat')
+                continue
+            new_denoms.add(d)
+            new_xyz.append(xyz)
+            print(f'Found new {xyz} from {abcd} with u {u}, v {v}')
+    print(f'Found {len(new_xyz)} new xyz')
+    return sorted(new_xyz)
+
 def known_to_unknown_inv(max_d: int=int(1e27)) -> None:
     """For all abcd in known, make new xyz from combinations of 
     inverses of u.
@@ -358,7 +388,6 @@ def known_to_unknown_all_u(max_d: int=int(1e27)) -> None:
     for val in known.values():
         abcd = val['abcd']
         known_denoms.add(abcd[-1])
-        abcd = val['abcd']
         for u in abcd_to_small_u(abcd, thresh=9e99):
             u_set.add(u)
     for u, v in combinations(u_set, 2):

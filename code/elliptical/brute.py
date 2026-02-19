@@ -7,6 +7,8 @@ from solutions import known
 from datetime import datetime
 from itertools import combinations
 from math import isqrt
+from multiprocessing import Process, Queue
+from sage.all import Integer, QQ, Rational, gcd, lcm, numerator, denominator
 from timeit import repeat, time
 
 def abcd_to_xyz(abcd: tuple) -> tuple:
@@ -17,7 +19,7 @@ def abcd_to_xyz(abcd: tuple) -> tuple:
     x, y, z = A/D, B/D, C/D
     return x, y, z
 
-def xyz_to_u(x :Integer, y :Integer, z :Integer) -> Rational:
+def xyz_to_u(x :Rational, y :Rational, z :Rational) -> Rational:
     """Convert (x, y, z) representing x^4 + y^4 + z^4 = 1
     to single parameter u.
     """
@@ -27,10 +29,10 @@ def xyz_to_u(x :Integer, y :Integer, z :Integer) -> Rational:
 
 def abcd_to_u_set(abcd: tuple) -> set:
     """Convert (a, b, c, d) to (x, y, z) and then consider
-    2 permutations and 8 combinations of signs on (x, y, z).
+    3 permutations and 8 combinations of signs on (x, y, z).
     Since the u, v, w formulas rotate (x, y, z), only swap y, z.
     to generate the set of all EC parameters u.
-    There will be 4 duplicates, so return unique 12.
+    There will be 12 duplicates, so return unique 12.
     """
     u_set = set()
     xx, yy, zz = abcd_to_xyz(abcd)
@@ -148,59 +150,8 @@ Skipping vn 634023165233 in #94
 ('175_812, 93_017', '712_772, 4_037_701')
 """
 
-def is_square(u) -> bool:
-    """Return whether a rational is a perfect square"""
-    n = numerator(u)
-    if 0 >= n or isqrt(n)**2 != n: return False
-    d = denominator(u)
-    return isqrt(d)**2 == d
-
-def un_square(u):
-    """Return isqrt of numerator and denominator of a rational"""
-    n = isqrt(numerator(u))
-    d = isqrt(denominator(u))
-    r = QQ(n) / QQ(d)
-    assert r * r == u, f'{u}, {r}'
-    return r
-
-def v_to_D_coeffs(v):
-    """
-    Returns pre-calculated coefficients for the polynomial in u.
-    Returns a list [c0, c1, c2, c3, c4] corresponding to powers of u.
-    """
-    v2 = v*v
-    v3 = v2*v
-    v4 = v3*v
-    
-    # Based on the symmetry matrix we derived:
-    c0 = 4*v4 - 16*v3 + 32*v - 48
-    c1 = -8*v4 + 48*v3 - 64*v2 + 32*v + 32
-    c2 = -16*v3 + 48*v2 - 64*v
-    c3 = -4*v4 + 8*v3 - 16*v2 + 48*v - 16
-    c4 = v4 - 4*v3 - 8*v + 4
-    
-    return [c0, c1, c2, c3, c4]
-
-def u_to_D(u, coeffs):
-    """
-    Evaluates the polynomial c4*u^4 + c3*u^3 + c2*u^2 + c1*u + c0
-    using Horner's Method for maximum inner-loop speed.
-    """
-    c0, c1, c2, c3, c4 = coeffs
-    D2 = c0 + u*(c1 + u*(c2 + u*(c3 + u*c4)))
-    if is_square(D2): return un_square(D2)
-    else: return None
-
-def vu_to_P0(v, u):
-    """Calculate the EC parameters Pk from v, u
-    """
-    u2 = u * u
-    v2 = v * v
-    P0 = (2 + u2) * (2 + v2) * (12 - 8*u + 2*u2 - 8*v + 2*v2 + u2*v2)
-    return P0
-
-def vu_to_Pk(v, u):
-    """Calculate the EC parameters Pk from v, u
+def uv_to_Pk(u: Rational, v: Rational) -> tuple:
+    """Calculate the parameters Pk from u, v
     """
     u2 = u * u
     u3 = u2 * u
@@ -212,13 +163,13 @@ def vu_to_Pk(v, u):
     P3 = (4 - 2*u - 4*v + u*v2) * (4*u - 4*u2 + 2*u3 + 8*v - 8*u*v - 4*v2 + 2*u*v2 + u3*v2)
     return (P0, P1, P2, P3)
 
-def uvD_to_xyz(u, v, D):
+def uvD_to_xyz(u: Rational, v: Rational, D: Rational) -> tuple:
     """Calculate (x, y, z) from u, v
     """
-    P0, P1, P2, P3 = vu_to_Pk(v, u)
+    P0, P1, P2, P3 = uv_to_Pk(u, v)
+    denom = P0 + D*D
     u2 = u * u
     v2 = v * v
-    denom = P0 + D*D
     x1 = (u2 - 2*u + 2) * (v2 - 2*v)
     y1 = 2*(u + v - 2) * (u + v - u*v)
     z1 = (v2 - 2*v + 2) * (u2 - 2*u)
@@ -230,107 +181,585 @@ def uvD_to_xyz(u, v, D):
         pair[inx] = (x, y, z)
     return pair
 
-def brute_search(first_vm: int, last_vm: int,
-                 first_vn: int, last_vn: int,
-                 last_um: int, last_un: int,
-                 max_d: int=int(1e27)) -> None:
-    """Search for solutions with v over given range
-    and u ranging from minimal value to less than v.
-    The rationals v and u are constructed from 
-        m a postive multiple of 4
-        and a signed odd n.
-        The rational can be m/n or n/m
-    There are duplicates and swap duplicates, but faster not to filter
+def u_to_D_coeffs_int(um: int, un: int) -> tuple:
     """
-    # Look up known index from denominator.
+    Returns int coefficients C0...C4 such that Ci / un^4 
+    are the rational coefficients.
+    """
+    um2, un2 = um*um, un*un
+    um3, un3 = um2*um, un2*un
+    um4, un4 = um2*um2, un2*un2
+ 
+    um_un3 = um * un3
+    shared_um4_um3un = um4 - 4 * um3 * un
+    
+    c0 = 4 * (shared_um4_um3un + 8 * um_un3 - 12 * un4)
+    c1 = 8 * (6 * um3 * un - um4 - 8 * um2 * un2 + 4 * um_un3 + 4 * un4)
+    c2 = 16 * (3 * um2 * un2 - um3 * un - 4 * um_un3)
+    c3 = 4 * (2 * um3 * un - um4 - 4 * um2 * un2 + 12 * um_un3 - 4 * un4)
+    c4 = shared_um4_um3un - 8 * um_un3 + 4 * un4
+    return [c0, c1, c2, c3, c4]
+
+def v_to_D_int(vm: int, vn: int, Ci: tuple, un: int) -> None|Rational:
+    """
+    Evaluates the homogeneous polynomial V and checks if it's a square.
+    V = C0*vn^4 + vm*(C1*vn^3 + vm*(C2*vn^2 + vm*(C3*vn + vm*C4)))
+    """
+    c0, c1, c2, c3, c4 = Ci
+    vn2 = vn * vn
+    vn3 = vn2 * vn
+    vn4 = vn2 * vn2
+    
+    # Homogeneous Horner's Method
+    V = c0 * vn4 + vm * (c1 * vn3 + vm * (c2 * vn2 + vm * (c3 * vn + vm * c4)))    
+    if V < 0: return None
+    # Bitwise filter: 75% of non-squares exit here in 1 cycle
+    #if (V & 15) not in (0, 1, 4, 9): return None
+    
+    root, rem = Integer(V).sqrtrem()
+    if rem == 0:
+        # Reconstruct Rational D = sqrt(V) / (un^2 * vn^2)
+        return QQ(root) / (un**2 * vn**2)
+    return None
+
+def search_generator_int(
+        first_um: int, last_um: int, first_un: int, last_un: int,
+        last_vm: int, last_vn: int):
+    
+    for um in range(first_um, last_um + 1, 4):
+        print(f'um {um}')
+        for un in range(first_un, last_un + 1, 2):
+            if gcd(um, un) != 1: continue
+            
+            # (u_num, u_den) pairs for: u, -u, 1/u, -1/u
+            u_variants = [(um, un), (-um, un), (un, um), (-un, um)]
+            
+            for u_num, u_den in u_variants:
+                coeffs = u_to_D_coeffs_int(u_num, u_den)
+
+                # Logic block 1: vn = um, vd > un
+                vm = um
+                for vn in range(un + 2, last_vn + 1, 2):
+                    if gcd(vm, vn) != 1: continue
+                    for v_num, v_den in [(vm, vn), (-vm, vn), (vn, vm), (-vn, vm)]:
+                        D = v_to_D_int(v_num, v_den, coeffs, u_den)
+                        if D is not None:
+                            yield (QQ(u_num)/u_den, QQ(v_num)/v_den, D)
+                
+                # Logic block 2: vm > um
+                for vm in range(um + 4, last_vm + 1, 4):
+                    for vn in range(1, last_vn + 1, 2):
+                        if gcd(vm, vn) != 1: continue
+                        for v_num, v_den in [(vm, vn), (-vm, vn), (vn, vm), (-vn, vm)]:
+                            D = v_to_D_int(v_num, v_den, coeffs, u_den)
+                            if D is not None:
+                                yield (QQ(u_num)/u_den, QQ(v_num)/v_den, D)
+
+def find_solutions_int(first_um: int, last_um: int, first_un: int, last_un: int,
+                   last_vm: int, last_vn: int,
+                   max_d: int=int(1e27)) -> None | tuple:
+    """Search for solutions with u over smaller range
+    and v ranging from current u to larger range.
+    The rationals u, v are constructed from 
+        a postive multiple of 4 (m) and a signed odd value (n)
+        The rational can be m/n, m/(-n), n/m, -n/m
+    Breaks out of search if finds a new solution.
+    """
+    # Build search generator
+    assert first_um%4 == last_um%4 == last_vm%4 == 0
+    assert first_un%2 == last_un%2 == last_vn%2 == 1
+    assert 4 <= first_um <= last_um < last_vm
+    assert 1 <= first_un <= last_un < last_vn
+    uv_est = int((last_um - first_um + 1) * (last_un - first_un + 1) 
+              * last_vm * last_vn / (2.0 * 2.0)) # tends to be high
+
+    # Look up index of known solution with denominator.
     d_to_known_inx = {val['abcd'][-1]: inx 
             for inx, val in enumerate(known.values(), start=1)}
-    found_knowns = set() # indexes of known solutions found in search
 
-    # Search loop
-    assert first_vm % 4 == 0 and last_vm % 4 == 0, "m must be multiple of 4"
-    assert 4 <= first_vm <= last_vm, "first_vm must be at least 4"
-    assert first_vn % 2 == 1 and last_vn % 2 == 1, "n must be odd"
-    assert 1 <= first_vn <= last_vn
-    assert last_um % 4 == 0 and last_un % 2 == 1
-    assert 4 <= last_um <= last_vm, "u must be less than v"
-    assert 1 <= last_un <= last_vn, "u must be less than v"
-    new_xyz = list()
-    uv_count = 0
     D_count = 0
     big_count = 0
+    found_knowns = set() # indexes of known solutions found in search
+    found_new = False
     start = time.time()
-    for vm in range(first_vm, last_vm + 1, 4):
-        vu_set = set() # (v, u) pairs already searched to avoid duplicates
-        for vn_raw in range(first_vn, last_vn + 1, 2):
-            for vns in (vn_raw, -vn_raw):
-                for v in (QQ(vm) / QQ(vns), QQ(vns) / QQ(vm)):
-                    coeffs = v_to_D_coeffs(v)
-                    for um in range(4, min(vm, last_um) + 1, 4):
-                        for un_raw in range(1, min(vn_raw, last_un) + 1, 2):
-                            for uns in (un_raw, -un_raw):
-                                for u in (QQ(um) / QQ(uns), QQ(uns) / QQ(um)):
-                                    if u == v:  continue
-                                    uv_count += 1
-                                    D = u_to_D(u, coeffs)
-                                    if D is not None:
-                                        D_count += 1
-                                        pair = uvD_to_xyz(u, v, D)
-                                        for xyz in pair:
-                                            d = lcm([denominator(x) for x in xyz])
-                                            print(f'({v}, {u}) -> d {d}')
-                                            if d >= max_d:
-                                                big_count += 1
-                                                print(f'\tbig {float(d):.4e}')
-                                                continue
-                                            if d in d_to_known_inx:
-                                                inx = d_to_known_inx[d]
-                                                found_knowns.add(inx)
-                                                print(f'\tknown #{inx}: {xyz}')
-                                                continue
-                                            print('\tnew{xyz}')
-                                            new_xyz.append(xyz)
 
+    for u, v, D in search_generator_int(first_um, last_um, first_un, last_un, last_vm, last_vn):
+        if found_new: break
+        print(f'{u}, {v} -> D {D}')
+        D_count += 1
+        pair = uvD_to_xyz(u, v, D)
+        for xyz in pair:
+            d = lcm([denominator(x) for x in xyz])
+            if d >= max_d:
+                big_count += 1
+                print(f'\tbig {float(d):.4e}')
+                continue
+            if d in d_to_known_inx:
+                inx = d_to_known_inx[d]
+                found_knowns.add(inx)
+                print(f'\tknown #{inx}: {xyz}')
+                continue
+            print(f'\n\nNEW ({u}, {v}) -> {xyz}')
+            found_new = True
+            break
     elapsed = time.time() - start
-    print(f'uv_count {uv_count}, D_count {D_count}, big_count {big_count}'
-          f', knowns {len(found_knowns)} : {found_knowns}')
-    print(f'new_xyz {len(new_xyz)}')
-    for inx, xyz in enumerate(new_xyz, start=1):
-        print(f'\t{inx}: {xyz}')
+    print(f'uv_est {uv_est}, D_count {D_count}, big_count {big_count}'
+          f'\nknowns {len(found_knowns)}: {found_knowns}')
     print(f'elapsed: {elapsed:.4f}s')
+    if found_new:
+        return u, v, xyz
 
 """
-brute_search(4, 100, 1, 101)
-elapsed: 4.2316s Just counting uv
-6887996
-
-brute_search(4, 100, 1, 101)
-elapsed: 68.7418s Just checking existence of D, no D found.
-(6887996, 0)
-
-brute_search(4, 1000, 1, 47, 20, 9)
-elapsed: 6.3267s Just checking existence of D, 1 D found.
-(2398980, 1)
-
-brute_search(1000, 1000, 47, 47, 20, 9)
-(1000/47, -9/20) -> d 422481
+find_solutions_int(4, 20, 1, 9, 1000, 1041)
+um 4
+um 8
+-5/8, -477/692 -> D 64335705/30647296
+	known #7: (18796760/20615673, 2682440/20615673, -15365639/20615673)
+	known #20: (2448718655/3393603777, -664793200/3393603777, -3134081336/3393603777)
+um 12
+um 16
+um 20
+-9/20, -1041/320 -> D 2126704839/40960000
+	known #17: (1670617271/1679142729, 632671960/1679142729, -50237800/1679142729)
+	known #1: (-95800/422481, -414560/422481, -217519/422481)
+-9/20, 1000/47 -> D 495260031/441800
 	known #1: (414560/422481, 95800/422481, 217519/422481)
-(1000/47, -9/20) -> d 1679142729
 	known #17: (-632671960/1679142729, -1670617271/1679142729, 50237800/1679142729)
-uv_count 400, D_count 1, big_count 0, knowns 2 : {1, 17}
-new_xyz 0
-elapsed: 0.0026s
+uv_est 19909125, D_count 3, big_count 0
+knowns 4: {17, 20, 1, 7}
+elapsed: 81.8371s
 
-brute_search(4, 1000, 1, 47, 20, 9)
-(1000/47, -9/20) -> d 422481
+find_solutions_int(4, 20, 1, 29, 1000, 1865)
+um 4
+um 8
+-5/8, -1617/200 -> D 708019737/2560000
+	known #14: (630662624/638523249, 275156240/638523249, 219076465/638523249)
+	known #13: (-260052385/589845921, -582665296/589845921, -186668000/589845921)
+-5/8, -477/692 -> D 64335705/30647296
+	known #7: (18796760/20615673, 2682440/20615673, -15365639/20615673)
+	known #20: (2448718655/3393603777, -664793200/3393603777, -3134081336/3393603777)
+um 12
+-29/12, 1865/132 -> D 4566509815/2509056
+	known #34: (894416022327/2051764828361, -125777308440/2051764828361, 2032977944240/2051764828361)
+	known #3: (-8332208/8707481, -5507880/8707481, -1705575/8707481)
+um 16
+um 20
+-9/20, -1041/320 -> D 2126704839/40960000
+	known #17: (1670617271/1679142729, 632671960/1679142729, -50237800/1679142729)
+	known #1: (-95800/422481, -414560/422481, -217519/422481)
+-9/20, -1425/412 -> D 3894577617/67897600
+	known #23: (15355831360/15434547801, 5821981400/15434547801, -140976551/15434547801)
+	known #2: (-673865/2813001, -2767624/2813001, -1390400/2813001)
+-9/20, 1000/47 -> D 495260031/441800
 	known #1: (414560/422481, 95800/422481, 217519/422481)
-(1000/47, -9/20) -> d 1679142729
 	known #17: (-632671960/1679142729, -1670617271/1679142729, 50237800/1679142729)
-uv_count 2181396, D_count 1, big_count 0, knowns 2 : {1, 17}
-new_xyz 0
-elapsed: 5.9163s
-
-datetime.now(); brute_search(4, 1520, 1, 1865, 1520, 1865); datetime.now()
-datetime.datetime(2026, 2, 10, 23, 45, 24, 876310)
+uv_est 114930625, D_count 6, big_count 0
+knowns 10: {1, 34, 3, 2, 7, 13, 14, 17, 20, 23}
+elapsed: 451.4831s
 
 """
+
+def search_inner_loop_gen(um, first_un, last_un, last_vm, last_vn):
+    print(f'um {um}')
+    for un in range(first_un, last_un + 1, 2):
+        print(f'un {un}')
+        if gcd(um, un) != 1: continue
+        
+        # (u_num, u_den) pairs for: u, -u, 1/u, -1/u
+        u_variants = [(um, un), (-um, un), (un, um), (-un, um)]
+        
+        for u_num, u_den in u_variants:
+            coeffs = u_to_D_coeffs_int(u_num, u_den)
+
+            # Logic block 1: vn = um, vd > un
+            vm = um
+            for vn in range(un + 2, last_vn + 1, 2):
+                if gcd(vm, vn) != 1: continue
+                for v_num, v_den in [(vm, vn), (-vm, vn), (vn, vm), (-vn, vm)]:
+                    D = v_to_D_int(v_num, v_den, coeffs, u_den)
+                    if D is not None:
+                        yield (QQ(u_num)/u_den, QQ(v_num)/v_den, D)
+            
+            # Logic block 2: vm > um
+            for vm in range(um + 4, last_vm + 1, 4):
+                for vn in range(1, last_vn + 1, 2):
+                    if gcd(vm, vn) != 1: continue
+                    for v_num, v_den in [(vm, vn), (-vm, vn), (vn, vm), (-vn, vm)]:
+                        D = v_to_D_int(v_num, v_den, coeffs, u_den)
+                        if D is not None:
+                            yield (QQ(u_num)/u_den, QQ(v_num)/v_den, D)
+
+def persistent_worker(worker_id: int, task_queue, result_queue,
+                      first_un, last_un, last_vm, last_vn):
+    # This is the 'Local State' for this specific process
+    while True:
+        task_range = task_queue.get()
+        if task_range is None: # The signal to stop
+            result_queue.put(None)
+            break
+            
+        start_u, end_u = task_range
+        for um in range(start_u, end_u, -4):
+            for r in search_inner_loop_gen(um, 
+                    first_un, last_un, last_vm, last_vn):
+                result_queue.put(r)
+
+def chunk_generator(first_u: int, last_u: int, workers: int):
+    """
+    Ensures all workers get work by tapering down at the end.
+    Allocates from end to beginning because larger u take longer.
+    """
+    current = last_u
+
+    # Cap chunk size so one chunk doesn't eat the remainder.
+    while current >= first_u:
+        # Don't let a single chunk take more than remaining work per worker
+        # and never exceed a reasonable max (like 50)
+        remaining = (current - first_u) // 4 + 1
+        max_chunk = max(1, min(remaining // workers, 50))
+        yield (current, current - 4 * max_chunk)
+        current -= 4 * max_chunk
+
+def search_generator_p_int(first_um: int, last_um: int,
+                first_un: int, last_un: int, last_vm: int, last_vn: int,
+                workers: int=8):
+    """
+    Performs the search in parallel using a dynamic work pool.
+    """
+    task_queue = Queue()
+    result_queue = Queue()
+
+    processes = []
+    for i in range(workers):
+        p = Process(target=persistent_worker,
+                    args=(i, task_queue, result_queue, # Pass both queues
+                          first_un, last_un, last_vm, last_vn))
+        p.start()
+        processes.append(p)
+        
+    for chunk in chunk_generator(first_um, last_um, workers):
+        task_queue.put(chunk)
+        
+    for _ in range(workers):
+        task_queue.put(None)
+
+    # Listen for results while workers are running
+    finished_workers = 0
+    while finished_workers < workers:
+        result = result_queue.get() 
+        if result is None:
+            finished_workers += 1
+        else:
+            yield result # Send (u, v, D) back to the main function
+
+    # Cleanup
+    for p in processes:
+        p.join()
+
+def find_solutions_p_int(first_um: int, last_um: int, first_un: int, last_un: int,
+                   last_vm: int, last_vn: int, workers: int=8,
+                   max_d: int=int(1e27)) -> None | tuple:
+    """Parallel search for solutions with u over smaller range
+    and v ranging from current u to larger range.
+    The rationals u, v are constructed from 
+        a postive multiple of 4 (m) and a signed odd value (n)
+        The rational can be m/n, m/(-n), n/m, -n/m
+    Breaks out of search if finds a new solution.
+    """
+    # Build search generator
+    assert first_um%4 == last_um%4 == last_vm%4 == 0
+    assert first_un%2 == last_un%2 == last_vn%2 == 1
+    assert 4 <= first_um <= last_um < last_vm
+    assert 1 <= first_un <= last_un < last_vn
+    uv_est = int((last_um - first_um + 1) * (last_un - first_un + 1) 
+              * last_vm * last_vn / (2.0 * 2.0)) # tends to be high
+
+    # Look up index of known solution with denominator.
+    d_to_known_inx = {val['abcd'][-1]: inx 
+            for inx, val in enumerate(known.values(), start=1)}
+
+    D_count = 0
+    big_count = 0
+    found_knowns = set() # indexes of known solutions found in search
+    found_new = False
+    start = time.time()
+
+    for u, v, D in search_generator_p_int(
+            first_um, last_um, first_un, last_un, last_vm, last_vn, workers):
+        print(f'{u}, {v} -> D {D}')
+        D_count += 1
+        pair = uvD_to_xyz(u, v, D)
+        for xyz in pair:
+            d = lcm([denominator(x) for x in xyz])
+            if d >= max_d:
+                big_count += 1
+                print(f'\tbig {float(d):.4e}')
+                continue
+            if d in d_to_known_inx:
+                inx = d_to_known_inx[d]
+                found_knowns.add(inx)
+                print(f'\tknown #{inx}: {xyz}')
+                continue
+            print(f'\n\nNEW ({u}, {v}) -> {xyz}')
+            found_new = True
+            break
+        if found_new: break
+    elapsed = time.time() - start
+    print(f'uv_est {uv_est}, D_count {D_count}, big_count {big_count}'
+          f'\nknowns {len(found_knowns)}: {found_knowns}')
+    print(f'elapsed: {elapsed:.4f}s')
+    if found_new:
+        return u, v, xyz
+
+def known_to_big_v(lim_d_known: int=int(1e27), lim_d: int=int(1e40)) -> tuple:
+    """Use known solutions to generate sets of v,
+    and use them to generate new solutions below lim_d,
+    and use them to generate a big set of v.
+    If any of the new solutions are below lim_d_known
+    and not in set of known, report new solution.
+    
+    Return big_v_set, known_denoms  
+    """    
+    known_denoms = set(val['abcd'][-1] for val in known.values())
+    denoms = set()
+    denoms.update(known_denoms)
+    big_v_set = set()
+    for val in known.values():
+        # use known solutions to generate set of v,
+        abcd = val['abcd']
+        u_set = abcd_to_u_set(abcd)
+        assert 12 == len(u_set)
+        big_v_set.update(u_set)
+
+        # use v_set to generate solutions
+        v_n_d_pairs = [(numerator(v), denominator(v)) for v in u_set]
+        for i, (u_num, u_den) in enumerate(v_n_d_pairs[:-1]):
+            coeffs = u_to_D_coeffs_int(u_num, u_den)
+            for v_num, v_den in v_n_d_pairs[i+1:]:
+                D = v_to_D_int(v_num, v_den, coeffs, u_den)
+                if D is None: continue
+                pair = uvD_to_xyz(QQ(u_num)/u_den, QQ(v_num)/v_den, D)
+                assert pair is not None
+                for xyz in pair:
+                    d = lcm([denominator(x) for x in xyz])
+                    if d >= lim_d: continue
+                    if d in denoms: continue
+                    denoms.add(d)
+                    abc = sorted(abs(x) * d for x in xyz)
+                    abc_d = abc + [d]
+                    if d < lim_d_known:
+                        assert d in known_denoms, f'New solution: {QQ(u_num)/u_den}, {QQ(v_num)/v_den} -> {abc_d}'
+                    v_set = abcd_to_u_set(abc_d)
+                    assert 12 == len(v_set)
+                    big_v_set.update(v_set)
+    # Restrict v_set to numerator and denominator < lim_d
+    v_set = set()
+    for v in big_v_set:
+        if max(abs(numerator(v)), abs(denominator(v))) < lim_d:
+            v_set.add(v)
+    return big_v_set, known_denoms
+
+"""
+% python -m elliptical.brute known_v_to_brute_u 
+1003 without big
+1723 with big
+"""
+def known_v_to_brute_u(min_umn: int=1, max_umn=10, 
+                    lim_d_known: int=int(1e27), lim_d: int=int(1e40)) -> None|tuple:
+    """Use known solutions to generate a big set of v,
+    Select the v with either numerator or denominator above max_unm,
+    and brute force search on these v with u in given umn range.
+    Break out of search if find a new solution below max_d_known.
+    """
+    big_v_set, known_denoms = known_to_big_v(lim_d_known, lim_d)
+    use_v_set = set()
+    for v in big_v_set:
+        v_num = numerator(v)
+        v_den = denominator(v)
+        assert 0 < v_den
+        v_max = max(abs(v_num), v_den)
+        if  max_umn < v_max < lim_d:
+            use_v_set.add((v_num, v_den))
+    print(f'Using {len(use_v_set)} of {len(big_v_set)} v')
+
+    assert 1 <= min_umn <= max_umn 
+    
+    #first_um = 4 + min_umn - (min_umn & 0b11) if min_umn & 0b11 else min_umn
+    min_un = min_umn | 0b1
+    last_um = last_un = max_umn
+
+    denoms = set()
+    denoms.update(known_denoms)
+    D_count = 0
+    big_count = 0
+    known_count = 0
+    for um in range(4, last_um + 1, 4):
+        print(f'um {um}')
+        first_un = min_un if um < min_un else 1
+        for un in range(first_un, last_un + 1, 2):
+            if gcd(um, un) != 1: continue
+            #print(f'un {un}')
+            u_variants = [(um, un), (-um, un), (un, um), (-un, um)]            
+            for u_num, u_den in u_variants:
+                coeffs = u_to_D_coeffs_int(u_num, u_den)
+                for v_num, v_den in use_v_set:
+                    D = v_to_D_int(v_num, v_den, coeffs, u_den)
+                    if D is None: continue
+                    u = QQ(u_num)/u_den
+                    v = QQ(v_num)/v_den
+                    D_count += 1
+                    pair = uvD_to_xyz(u, v, D)
+                    for xyz in pair:
+                        d = lcm([denominator(x) for x in xyz])
+                        if d >= lim_d_known:
+                            big_count += 1
+                            continue
+                        if d in known_denoms:
+                            known_count += 1
+                            continue
+                        if d in denoms: continue
+                        denoms.add(d)
+                        # FOUND NEW !!!!!!!
+                        abc = sorted(abs(x) * d for x in xyz)
+                        abc_d = abc + [d]
+                        assert d in known_denoms, f'New solution: {QQ(u_num)/u_den}, {QQ(v_num)/v_den} -> {abc_d}'
+    print(f'V count {len(use_v_set)}, D_count {D_count}, big_count {big_count}, known_count {known_count}')
+
+"""
+V count 1317, D_count 36, big_count 32, known_count 40
+python -m elliptical.brute known_v_to_brute_u 1 10  1.78s user 0.27s system 99% cpu 2.060 total
+
+V count 1312, D_count 138, big_count 128, known_count 148
+python -m elliptical.brute known_v_to_brute_u 1 100  8.73s user 0.29s system 99% cpu 9.040 total
+
+V count 1312, D_count 102, big_count 96, known_count 108
+python -m elliptical.brute known_v_to_brute_u 11 100  8.62s user 0.29s system 99% cpu 8.919 total
+
+V count 1299, D_count 256, big_count 228, known_count 284
+python -m elliptical.brute known_v_to_brute_u 1 1000  691.66s user 1.96s system 99% cpu 11:34.64 total
+
+V count 1288, D_count 101, big_count 112, known_count 90
+python -m elliptical.brute known_v_to_brute_u 1001 2000  2057.17s user 4.57s system 99% cpu 34:23.39 total
+"""
+
+def search_v_to_brute_u_gen(um: int, min_un: int, 
+                            last_um: int, last_un: int,
+                            use_v_set: set):
+    print(f'um {um}')
+    first_un = min_un if um < min_un else 1
+    for un in range(first_un, last_un + 1, 2):
+        if gcd(um, un) != 1: continue
+        u_variants = [(um, un), (-um, un), (un, um), (-un, um)]            
+        for u_num, u_den in u_variants:
+            coeffs = u_to_D_coeffs_int(u_num, u_den)
+            for v_num, v_den in use_v_set:
+                D = v_to_D_int(v_num, v_den, coeffs, u_den)
+                if D is not None:
+                        yield (QQ(u_num)/u_den, QQ(v_num)/v_den, D)
+
+def persistent_worker_v_to_brute_u(worker_id: int, task_queue, result_queue,
+                min_un: int, last_um: int, last_un: int, use_v_set: set):
+    # This is the 'Local State' for this specific process
+    while True:
+        task_range = task_queue.get()
+        if task_range is None: # The signal to stop
+            result_queue.put(None)
+            break
+            
+        start_u, end_u = task_range
+        for um in range(start_u, end_u, -4):
+            for r in search_v_to_brute_u_gen(um, min_un, 
+                            last_um, last_un, use_v_set):
+                result_queue.put(r)
+
+def search_generator_v_to_brute_u(min_un: int, last_um: int, last_un: int, 
+                                  use_v_set: set, workers: int=8):
+    """ Parallel search generator for known_v_to_brute_u_p .
+    """
+    task_queue = Queue()
+    result_queue = Queue()
+
+    processes = []
+    for i in range(workers):
+        p = Process(target=persistent_worker_v_to_brute_u,
+                    args=(i, task_queue, result_queue, # Pass both queues
+                          min_un, last_um, last_un, use_v_set))
+        p.start()
+        processes.append(p)
+        
+    for chunk in chunk_generator(4, last_um, workers):
+        task_queue.put(chunk)
+        
+    for _ in range(workers):
+        task_queue.put(None)
+
+    # Listen for results while workers are running
+    finished_workers = 0
+    while finished_workers < workers:
+        result = result_queue.get() 
+        if result is None:
+            finished_workers += 1
+        else:
+            yield result # Send (u, v, D) back to the main function
+
+    # Cleanup
+    for p in processes:
+        p.join()
+
+def known_v_to_brute_u_p(min_umn: int=1, max_umn=10, 
+                    lim_d_known: int=int(1e27), lim_d: int=int(1e40)) -> None|tuple:
+    """ Parallel version of known_v_to_brute_u .
+    Use known solutions to generate a big set of v,
+    Select the v with either numerator or denominator above max_unm,
+    and brute force search on these v with u in given umn range.
+    Break out of search if find a new solution below max_d_known.
+    """
+    big_v_set, known_denoms = known_to_big_v(lim_d_known, lim_d)
+    use_v_set = set()
+    for v in big_v_set:
+        v_num = numerator(v)
+        v_den = denominator(v)
+        assert 0 < v_den
+        v_max = max(abs(v_num), v_den)
+        if  max_umn < v_max < lim_d:
+            use_v_set.add((v_num, v_den))
+    print(f'Using {len(use_v_set)} of {len(big_v_set)} v')
+
+    assert 1 <= min_umn <= max_umn 
+    min_un = min_umn | 0b1
+    last_um = last_un = max_umn
+
+    D_count = 0
+    big_count = 0
+    known_count = 0
+    for u, v, D in search_generator_v_to_brute_u(
+            min_un, last_um, last_un, use_v_set):
+        D_count += 1
+        pair = uvD_to_xyz(u, v, D)
+        for xyz in pair:
+            d = lcm([denominator(x) for x in xyz])
+            if d >= lim_d_known:
+                big_count += 1
+                continue
+            if d in known_denoms:
+                known_count += 1
+                continue
+            if d in denoms: continue
+            denoms.add(d)
+            # FOUND NEW !!!!!!!
+            abc = sorted(abs(x) * d for x in xyz)
+            abc_d = abc + [d]
+            assert d in known_denoms, f'New solution: {QQ(u_num)/u_den}, {QQ(v_num)/v_den} -> {abc_d}'
+    print(f'V count {len(use_v_set)}, D_count {D_count}, big_count {big_count}, known_count {known_count}')
+
+"""
+V count 1299, D_count 256, big_count 228, known_count 284
+python -m elliptical.brute known_v_to_brute_u_p 1 1000  749.37s user 4.07s system 764% cpu 1:38.54 total
+"""
+if __name__ == "__main__":
+    import sys
+    command = eval(sys.argv[1])
+    print(command)
+    args = list(map(int, sys.argv[2:]))
+    result = command(*args)
+    print(result)

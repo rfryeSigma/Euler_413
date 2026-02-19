@@ -57,7 +57,6 @@ def chunk_generator(first_u: int, last_u: int, workers: int):
     """
     Ensures all workers get work by tapering down at the end.
     """
-    total_tasks = last_u - first_u + 1
     current = first_u
 
     # Cap chunk size so one chunk doesn't eat the remainder.
