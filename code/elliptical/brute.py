@@ -4,11 +4,13 @@ https://math.stackexchange.com/questions/4857229/on-why-solutions-to-x4y4z4-1-co
 
 """
 from solutions import known
+import csv
 from datetime import datetime
 from itertools import combinations
-from math import isqrt
+from math import isqrt, gcd
 from multiprocessing import Process, Queue
-from sage.all import Integer, QQ, Rational, gcd, lcm, numerator, denominator
+from numpy import searchsorted
+from sage.all import Integer, QQ, Rational, lcm, numerator, denominator
 from timeit import repeat, time
 
 def abcd_to_xyz(abcd: tuple) -> tuple:
@@ -605,9 +607,9 @@ def known_v_to_brute_u(min_umn: int=1, max_umn=10,
                 for v_num, v_den in use_v_set:
                     D = v_to_D_int(v_num, v_den, coeffs, u_den)
                     if D is None: continue
+                    D_count += 1
                     u = QQ(u_num)/u_den
                     v = QQ(v_num)/v_den
-                    D_count += 1
                     pair = uvD_to_xyz(u, v, D)
                     for xyz in pair:
                         d = lcm([denominator(x) for x in xyz])
@@ -687,6 +689,7 @@ def search_generator_v_to_brute_u(min_un: int, last_um: int, last_un: int,
         p.start()
         processes.append(p)
         
+    #for chunk in chunk_generator(4, min_un, workers): # patch to run only remainder quadrant
     for chunk in chunk_generator(4, last_um, workers):
         task_queue.put(chunk)
         
@@ -756,6 +759,127 @@ def known_v_to_brute_u_p(min_umn: int=1, max_umn=10,
 V count 1299, D_count 256, big_count 228, known_count 284
 python -m elliptical.brute known_v_to_brute_u_p 1 1000  749.37s user 4.07s system 764% cpu 1:38.54 total
 """
+
+def uv_to_solutions_explore(u_e, s_u_o, v_e, s_v_o):
+    """Explore which orderings of parts of u and v generate unique solutions.
+    """
+    for u_num, u_den in ((u_e, s_u_o), (s_u_o, u_e)):
+        coeffs = u_to_D_coeffs_int(u_num, u_den)
+        for v_num, v_den in ((v_e, s_v_o), (s_v_o, v_e)):
+            D = v_to_D_int(v_num, v_den, coeffs, u_den)
+            if D is None:
+                print(u_num, u_den, v_num, v_den, 'FAIL')
+                continue
+            u = QQ(u_num)/u_den
+            v = QQ(v_num)/v_den
+            pair = uvD_to_xyz(u, v, D)
+            for xyz in pair:
+                d = lcm([denominator(x) for x in xyz])
+                print(u_num, u_den, v_num, v_den, d)
+
+"""
+Only one ordering produces two solutions. And both can be negative.
+>>> uv_to_solutions_explore(20, -9, 320, -1041)
+20 -9 320 -1041 FAIL
+20 -9 -1041 320 FAIL
+-9 20 320 -1041 FAIL
+-9 20 -1041 320 1679142729
+-9 20 -1041 320 422481
+
+And other signs fail including both positive
+>>> uv_to_solutions_explore(20, -9, 320, 1041)
+>>> uv_to_solutions_explore(20, 9, 320, 1041)
+>>> uv_to_solutions_explore(20, 9, 320, -1041)
+"""
+
+def make_uv_table(max_umn: int, max_vmn: int,
+                  lim_d_known: int=int(1e27), lim_d: int=int(1e40)) -> None:
+    """Make a table of all the extended known u, v and the solutions they generate
+    """
+    big_v_set, known_denoms = known_to_big_v(lim_d_known, lim_d)
+    print(f'big_v_set has {len(big_v_set)}')
+
+    # Separate the even and odd parts of the v
+    evens = set() # set of abs values of even numerators, denominators
+    odds = set() # set of abs values of odd numerators, denominators
+    for v in big_v_set:
+        for n in (numerator(v), denominator(v)):
+            n = abs(n)
+            if n % 2 == 0: evens.add(n)
+            else: odds.add(n)
+    print(f'even parts {len(evens)} up to {max(evens):.2e}')
+    print(f'odd parts {len(odds)} up to {max(odds):.2e}')
+
+    # Generate each possible rational from the evens and odds and their solutions
+    evens = sorted(evens)
+    u_evens_max_inx = searchsorted(evens, max_umn, 'left')
+    v_evens_max_inx = searchsorted(evens, max_vmn, 'left')
+    odds = sorted(odds)
+    u_odds_max_inx = searchsorted(odds, max_umn, 'left')
+    v_odds_max_inx = searchsorted(odds, max_vmn, 'left')
+    count = 0
+    D_count = 0
+    with open('solutions_uv.csv', 'w', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerow(['u_num', 'u_den', 'v_num', 'v_den', 'd', 'c', 'b', 'a'])
+        for u_inx_e, u_e in enumerate(evens[: u_evens_max_inx]):
+            for u_o in odds[:u_odds_max_inx]:
+                if gcd(u_e, u_o) != 1: continue
+                for u_num, u_den in ((-u_o, u_e), (u_e, -u_o), (u_o, u_e), (u_e, u_o)):
+                    coeffs = u_to_D_coeffs_int(u_num, u_den)
+                    for v_e in evens[u_inx_e + 1: v_evens_max_inx]:
+                        for v_o in odds[: v_evens_max_inx]:
+                            if gcd(v_e, v_o) != 1: continue
+                            for v_num, v_den in ((-v_o, v_e), (v_e, -v_o), (v_o, v_e), (v_e, v_o)):
+                                count +=1
+                                D = v_to_D_int(v_num, v_den, coeffs, u_den)
+                                if D is None: continue
+                                D_count += 1
+                                u = QQ(u_num)/u_den
+                                v = QQ(v_num)/v_den
+                                pair = uvD_to_xyz(u, v, D)
+                                for xyz in pair:
+                                    d = int(lcm([denominator(x) for x in xyz]))
+                                    c, b, a = sorted([abs(int(x * d)) for x in xyz], reverse=True)
+                                    row = [u_num, u_den, v_num, v_den, d, c, b, a]
+                                    writer.writerow(row)
+                                    if d < lim_d_known:
+                                        assert d in known_denoms, f'New solution: {row}'
+    print(count, D_count)
+    
+""" 
+% python -m elliptical.brute make_uv_table 1_000 1_000
+<function make_uv_table at 0x174075800>
+big_v_set has 1723
+even parts 1720 up to 4.33e+77
+odd parts 1722 up to 4.29e+76
+2231008 6
+cpu 3.714 total
+
+u_num,u_den,v_num,v_den,d,c,b,a
+201,4,136,-133,156646737,146627384,108644015,27450160
+201,4,136,-133,16003017,14173720,12552200,4479031
+201,4,-1005,568,16003017,14173720,12552200,4479031
+201,4,-1005,568,156646737,146627384,108644015,27450160
+-5,8,-477,692,20615673,18796760,15365639,2682440
+-5,8,-477,692,3393603777,3134081336,2448718655,664793200
+-9,20,-1041,320,1679142729,1670617271,632671960,50237800
+-9,20,-1041,320,422481,414560,217519,95800
+-93,80,400,-37,12197457,11289040,8282543,5870000
+-93,80,400,-37,1787882337,1662997663,1237796960,686398000
+136,-133,-1005,568,156646737,146627384,108644015,27450160
+136,-133,-1005,568,16003017,14173720,12552200,4479031
+
+% time python -m elliptical.brute make_uv_table 1_000_000 12_000_000
+900173248 132
+cpu 9:59.07 total
+
+% time python -m elliptical.brute make_uv_table 12_000_000 100_000_000
+2840930576 191
+cpu 32:04.23 total
+"""
+
+
 if __name__ == "__main__":
     import sys
     command = eval(sys.argv[1])

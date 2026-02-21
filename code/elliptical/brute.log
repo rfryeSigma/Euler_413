@@ -129,9 +129,22 @@ I interrupted it when it was down in ther 35_000 range because I forgot
 that it had to do that quardrant. 
 Will have to temporarly modify the code to just rerun that quadrant.
 
-Doing 
-7:40am
+Run just remainder quadrant
 python -m elliptical.brute known_v_to_brute_u_p 40_001 55_000; date
-I interrupted it when it was down in ther 35_000 range because I forgot
-that it had to do that quardrant.
+V count 1255, D_count 0, big_count 0, known_count 0
+
+2/20/2026F
+% time python -m elliptical.brute make_uv_table 12_000_000 100_000_000
+big_v_set has 1723
+even parts 1720 up to 4.33e+77
+odd parts 1722 up to 4.29e+76
+2840930576 191
+cpu 32:04.23 total
+
+Doing 
+2/20/2026F 7:01m
+python -m elliptical.brute known_v_to_brute_u_p 55_001 65_000; date
+Using 1254 of 1723 v
+
+
 TODO

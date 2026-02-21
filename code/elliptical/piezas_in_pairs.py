@@ -336,6 +336,55 @@ def given_to_unknown(given: tuple, max_d: int=int(1e27)) -> None:
     print(f'Found {len(new_xyz)} new xyz')
     return sorted(new_xyz)
 
+"""
+Try given_to_unknown on this because single instance of large m;
+G11711_9=dict(info='Gerbicz (2006)', inx=10, m=(-11846053, -175812), #1
+	abcd=(34_918_520, 87_865_617, 106_161_120, 117_112_081)
+Got 48 instances of these solutions:
+denom 34238025288322679405354616563477029005724489
+	big 3.4238e+43
+denom 117112081
+	known (self #10)
+denom 260287541309927516774944395501019390909441
+	big 2.6029e+41
+denom 8977719037716931209242354862251506081
+	big 8.9777e+36
+denom 2175104571261090113597217084658315231197601
+	big 2.1751e+42
+denom 770434682741003632538662302763920812378546089
+	big 7.7043e+44
+denom 155167626417955678403177021093032851769
+	big 1.5517e+38
+denom 2514791169008299704387544895514279222169
+	big 2.5148e+39
+denom 1337708431159105319650766827003729921
+	big 1.3377e+36
+
+Try this one because single instance of large m:
+T82023_12=dict(info='Tomita (2024)', inx=31, m=(-68256, 135125), #1
+	abcd=(78_558_599_440, 337_210_257_575, 814_295_112_544, 820_234_293_081)
+As expected it returned itself and a bunch of big solutions, but also
+denom 12214291847502204701241 (#71, m=(2265, 184))
+	known
+which also has a u (-68256, 135125)
+
+Try this one because single instance of large m occurring late:
+P17968_25=dict(info='Piezas (2024)', inx=85, m=(1000, 47), #1
+	abcd=(21_904_850_878_998_429_166_561, 867_970_652_747_799_735_398_360, 1_771_894_249_938_641_198_780_200, 1_796_867_575_393_608_033_006_561)
+Of course it generates the solution #1 in addition to itself and many big.
+
+Try this one because single instance of large m occurring late:
+T89973_25=dict(info='Tomita (2024)', inx=88, m=(201, 4), #1
+	abcd=(1_749_772_249_172_099_623_115_896, 6_550_300_128_305_909_879_699_935, 8_281_143_989_708_209_432_415_360, 8_997_319_881_974_346_759_473_697)
+In addition to itself an many big, it generates
+denom 16003017 (#5, m=(-136, 133))
+	known
+because #5 has several small m: 
+    (-136, 133, 2350494728938),
+    (-1005, 568, 272168104170)
+    (201, 4, 1949327532528)
+
+"""
 def known_to_unknown_inv(max_d: int=int(1e27)) -> None:
     """For all abcd in known, make new xyz from combinations of 
     inverses of u.
