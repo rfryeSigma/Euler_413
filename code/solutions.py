@@ -22,6 +22,8 @@ https://math.stackexchange.com/questions/4857229/on-why-solutions-to-x4y4z4-1-co
 The final table by Tito Piezas III
 https://math.stackexchange.com/questions/1853223/distribution-of-primitive-pythagorean-triples-ppt-and-of-solutions-of-a4b4
 has 93 solutions.
+
+Then I found 4 more, and Tomita foudn 3 more for a round 100.
 """
 from gmpy2 import digits, gcd, is_prime, is_square, isqrt
 from math import ceil, prod

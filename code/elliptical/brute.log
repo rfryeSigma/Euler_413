@@ -141,10 +141,19 @@ odd parts 1722 up to 4.29e+76
 2840930576 191
 cpu 32:04.23 total
 
-Doing 
-2/20/2026F 7:01m
+2/21/2026Sa
 python -m elliptical.brute known_v_to_brute_u_p 55_001 65_000; date
+V count 1254, D_count 4, big_count 4, known_count 4
+~32.5hr
+
+Doing 
+date; python -m elliptical.brute known_v_to_brute_u_p 65_001 75_000; date
+Sat Feb 21 16:24:57 MST 2026
+<function known_v_to_brute_u_p at 0x15388d6c0>
 Using 1254 of 1723 v
 
+
+
+Coding in curves_tomita.py
 
 TODO
