@@ -85,8 +85,12 @@ logging_413.py:
 search_413.py:
     Main entry point. Searches ranges of (t,u). Calls factor and solve.
 
+solutions_uv.csv:
+    Table mapping (u, v) pairs to solutions they generate.
+    Built by make_uv_table in elliptical/brute.py .
+
 solutions.py:
-    Database of known solutions.
+    Database of known solutions and python code to update known table.
 
 solving.py:
     Partitions factors and attempts to solve cubic equation.
