@@ -9,6 +9,7 @@ from sage.all import Integer, QQ, lcm, ceil, gcd, solve, sqrt, var, \
 def mn_to_coeffs_y2(m: int, n: int) -> tuple:
     """Apply m, n to Tomita's eq 1 (Elkies' eq 3b)
     (2m^2+n^2)y^2=-(6m^2-8mn+3n^2)x^2-2(2m^2-n^2)x-2mn
+    a0 y^2 = a2 x^2 + a4 x + a6
     and return the evaluated coefficients (a0, a2, a4, a6)
     for Tomita's eq. 3
     """

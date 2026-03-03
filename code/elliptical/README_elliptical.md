@@ -5,6 +5,8 @@ Folder misc (not released)
     Contains notes and code for several suggestions from Gemini.
     They all failed.
 
+NOTES_sage.md -- Notes on how to install SageMath and use it.
+
 brute.log -- log of progress using brute.py
 
 brute.py -- do a brute force search on quartic surfaces.

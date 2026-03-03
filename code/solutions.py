@@ -448,18 +448,21 @@ def make_known(verbose: bool=True):
     Report or add a potential new field.
     If v: copy new table entries.
     """
+    prev_d = 0
     for p_inx, (key, val) in enumerate(known.items(), start=1):
-        if isinstance(val, tuple):
+        if isinstance(val, tuple): # adding new entry
             assert 2 == len(val), f'{p_inx}, {key}, {val}'
             assert isinstance(val[0], tuple), f'{p_inx}, {key}, {val}'
             assert isinstance(val[1], str), f'{p_inx}, {key}, {val}'
             info = val[1]
             a, b, c, d = abcd = sorted(val[0])
-        elif isinstance(val, dict):
+        elif isinstance(val, dict): # verifying and augmenting old entry
             info = val['info']
             a, b, c, d = abcd = val['abcd']
         assert verify_abcd(abcd, False), f'{abcd}'
         key2 = make_key(info, d)
+        assert prev_d < d
+        prev_d = d
         t, u, v, w = tuvw = make_tuvw(abcd)
         assert verify_tuvw(abcd, tuvw)
         m = tuvw_to_u_list(tuvw)
