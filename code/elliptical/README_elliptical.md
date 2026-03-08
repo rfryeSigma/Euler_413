@@ -15,8 +15,12 @@ curves_piezas.py -- attempt to understand Pieza's explanation of elliptic curves
 
 curves_tomita.md -- notes on Tomita's method using elliptic curves. And sage code.
 
-curve_tomita.py -- Tomita's method implemented in sage python.
+curves_tomita.py -- Experiments with Tomita's method implemented in sage python.
 
 pezas_in_pairs.py -- use piezas method to map solutions to new solutions.
+
+solutions_curves.log -- log of outputs of solutions_curves.py
+
+solutions_curves.py -- Efficient implementation of Tomita's method in sage python.
 
 solve_for_mn.py -- identify (m, n) pairs for known solutions.

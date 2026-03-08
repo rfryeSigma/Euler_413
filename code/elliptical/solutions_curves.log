@@ -1,0 +1,460 @@
+This is a log of outputs from routines in solutions_curves.py
+The idea is to keep track of what works for specific (m, n) and points.
+
+find_point_instantly(QQ(20/-9))
+(-1687/5406, -1231/1802)
+time python -m elliptical.solutions_curves get_optimized_rational_points -20/9
+[(49/318, 23/106), (1/354, 75/118), (-287/598, 211/598), (-63/598, 435/598), 
+(94/679, 208/679), (-367/1358, 971/1358), (142/1407, 208/469), 
+(-391/1418, 1009/1418), (126/1447, 696/1447), (52/1669, 992/1669)]
+cpu 47.900 total
+
+Use first quad point
+make_quartic(QQ(20/-9), (QQ(49/318), QQ(23/106)))
+(1/318*(43169*k^2 - 121578*k - 657351)/(881*k^2 + 4083), 
+ -1/106*(20263*k^2 + 285806*k - 93909)/(881*k^2 + 4083), 
+ 4858767860*k^4 - 1337905101*k^3 + 32584720500*k^2 - 48737893941*k - 89364400362, 
+ 4)
+
+q_res = make_quartic(QQ(20/-9), (QQ(49/318), QQ(23/106)))
+type(res[0])
+<class 'sage.symbolic.expression.Expression'>
+type(res[2])
+<class 'sage.rings.polynomial.polynomial_rational_flint.Polynomial_rational_flint'>
+q_res[2]
+4858767860*k^4 - 1337905101*k^3 + 32584720500*k^2 - 48737893941*k - 89364400362
+start=time(); find_quartic_points(q_res[2], 1, 100); elapsed=time()-start; elapsed
+[-59/81]
+0.060794830322265625
+start=time(); find_quartic_points(q_res[2], 1, 1000); elapsed=time()-start; elapsed
+[-59/81]
+4.063196897506714
+start=time(); find_quartic_points_filter(q_res[2], 1, 1000); elapsed=time()-start; elapsed
+[-59/81]
+5.771265029907227
+start=time(); find_quartic_points_p(q_res[2], 1, 1000); elapsed=time()-start; elapsed
+[-59/81]
+6.221987962722778
+start=time();find_quartic_point_convergents(q_res[2], interp=20_000, max_conv=20);elapsed=time()-start;elapsed
+seeds [0.0, -1.01319921808073] ... [1.9505108318763547, 1.9506590321988846, 1.95080723252141]
+have 86472 candidates
+[-59/81]
+3.2030909061431885
+start=time(); find_quartic_point_adaptive(q_res[2], 100, 60, 60); elapsed=time()-start; elapsed
+roots [-1.01334741840326, 1.95080723252141]
+Testing 2_960 candidates from 3_212 seeds
+found -59/81
+[-59/81]
+0.5016732215881348
+
+q_res[2].real_roots()
+[-1.01334741840326, 1.95080723252141]
+QQ(-59/81).n()
+-0.728395061728395
+k_to_abcd(QQ(20/-9), (QQ(49/318), QQ(23/106)), QQ(-59/81))
+x -159380/422481, y 85060/140827
+t_sq 47314515361/178490195361
+t 217519/422481
+r 95800/422481, s -414560/422481
+95800 414560 217519 422481
+([95800, 217519, 414560], 422481)
+F42248_6, m=(-9, 20)
+
+Try 2nd quad point 
+make_quartic(QQ(20/-9), (QQ(1/354), QQ(75/118)))
+(1/354*(881*k^2 - 396450*k - 513135)/(881*k^2 + 4083),
+ -1/118*(66075*k^2 + 172406*k - 306225)/(881*k^2 + 4083), 
+ 4989162908*k^4 - 12488373225*k^3 - 2115861696*k^2 - 141550385625*k - 22928645214, 
+ 4)
+q_res[2].real_roots()
+[-0.161975202879409, 4.24086989241307]
+start=time();find_quartic_points(q_res[2], 1, 3000);elapsed=time()-start;elapsed
+[-457/2836]
+37.17874598503113
+QQ(-457/2836).n()
+-0.161142454160790
+>>> start=time();find_quartic_point_convergents(q_res[2], interp=10_000_000, max_conv=20);elapsed=time()-start;elapsed
+seeds [0.0, -0.1619747625949432] ... [4.240869011844141, 4.240869452128606, 4.24086989241307]
+have 18785801 candidates
+[]
+1560.2192740440369
+
+q_res[2](QQ(-457/2836))
+-477847477613881425625/4043011004176
+-0.161142454160790
+>>> nx, nz = (-457, 2836)
+>>> nx, nz
+(-457, 2836)
+>>> c0, c1, c2, c3, c4 = q_res[2].list()
+<class 'sage.rings.rational.Rational'>
+>>> rhs = (c4 * nx**4 + 
+...                c3 * nx**3 * nz + 
+...                c2 * nx**2 * nz**2 +
+...                c1 * nx * nz**3 +
+...                c0 * nz**4)
+>>> rhs
+-7645559641822102810000
+>>> abs(rhs).is_square()
+True
+start=time();find_quartic_point_adaptive(q_res[2], 3000, 50, 6_000);elapsed=time()-start;elapsed
+roots [-0.161975202879409, 4.24086989241307]
+Testing 534_838 candidates from 251_449 seeds
+found -457/2836
+[-457/2836]
+38.60538172721863
+
+k_to_abcd(QQ(20/-9), (QQ(1/354), QQ(75/118)), QQ(-457/2836))
+x -1037945311/3358285458, y 767763077/1119428486
+t_sq 2523836548840000/2819520304353567441
+t 50237800/1679142729
+r 632671960/1679142729, s -1670617271/1679142729
+632671960 1670617271 50237800 1679142729
+([50237800, 632671960, 1670617271], 1679142729)
+T16791_10=dict(info='Tomita (2006)', inx=17, m=(-9, 20),
+
+Try negative branch of first quad point
+q_res = make_quartic(QQ(20/-9), (QQ(49/318), QQ(-23/106)))
+(1/318*(43169*k^2 + 121578*k - 657351)/(881*k^2 + 4083),
+ 1/106*(20263*k^2 - 285806*k - 93909)/(881*k^2 + 4083), 
+ 4858767860*k^4 + 1337905101*k^3 + 32584720500*k^2 + 48737893941*k - 89364400362, 
+ 4)
+find_quartic_points(q_res[2], 1, 1000)
+[59/81]
+k_to_abcd(QQ(20/-9), (QQ(49/318), QQ(-23/106)), QQ(59/81))
+x -159380/422481, y -85060/140827
+t_sq 47314515361/178490195361
+t 217519/422481
+r -414560/422481, s 95800/422481
+414560 95800 217519 422481
+([95800, 217519, 414560], 422481)
+Same results as positive branch with r, s swapped
+
+Try 3rd quad point
+q_res = make_quartic(QQ(20/-9), (QQ(-287/598), QQ(211/598)))
+(-1/598*(252847*k^2 + 371782*k - 311897)/(881*k^2 + 4083),
+ -1/598*(185891*k^2 - 1483718*k - 861513)/(881*k^2 + 4083),
+ 12494639778*k^4 + 58368472763*k^3 - 88924223160*k^2 + 45415677347*k - 362032649000, 
+ 4)
+find_quartic_points(q_res[2], 15_001, 16_000)
+[]
+Allow improper points:
+found 3000/1249
+k_to_abcd(QQ(20/-9), (QQ(-287/598), QQ(211/598)), QQ(3000/1249))
+x -2093759/5626002, y 1147163/1875334
+t_sq 1933212160000/7912974626001
+t 1390400/2813001
+r 673865/2813001, s -2767624/2813001
+673865 2767624 1390400 2813001
+([673865, 1390400, 2767624], 2813001)
+M28130_7=dict(info='MacLeod (1997)', inx=2, m=(-9, 20)
+
+Try 4th quad point
+q_res = make_quartic(QQ(20/-9), (QQ(-63/598), QQ(435/598)))
+-1/598*(55503*k^2 + 766470*k + 602695)/(881*k^2 + 4083),
+ -1/598*(383235*k^2 + 345466*k - 1776105)/(881*k^2 + 4083), 
+ 10541818702*k^4 - 58610811195*k^3 - 48567512424*k^2 - 379681843875*k + 79642765784, 
+ 4)
+q_res[2].real_roots()
+[0.203230193241565, 6.94683132573871]
+start=time();find_quartic_points(q_res[2], 1, 3000);elapsed=time()-start;elapsed
+[1335/2941]
+36.617985010147095
+(QQ(1335/2941).n()
+0.453927235634138
+start=time();find_quartic_point_adaptive(q_res[2], 3000, 200, 100_000);elapsed=time()-start;elapsed
+roots [0.203230193241565, 6.94683132573871]
+Testing 10_565_876 candidates from 19_731_372 seeds
+[]
+2989.276962995529
+
+k_to_abcd(QQ(20/-9), (QQ(-63/598), QQ(435/598)), QQ(1335/2941))
+x -159380/422481, y 85060/140827
+t_sq 47314515361/178490195361
+t 217519/422481
+r 95800/422481, s -414560/422481
+95800 414560 217519 422481
+([95800, 217519, 414560], 422481)
+Same results as first quad point
+
+Try 5th quad point
+q_res = make_quartic(QQ(20/-9), (QQ(94/679), QQ(208/679)))
+q_res[2].real_roots()
+[-0.849029018097810, 2.21883749941188]
+start=time();find_quartic_points(q_res[2], 1, 3000);elapsed=time()-start;elapsed
+36.55212426185608
+start=time();find_quartic_points(q_res[2], 3001, 6000);elapsed=time()-start;elapsed
+112.73122692108154
+start=time();find_quartic_points(q_res[2], 6001, 10_000);elapsed=time()-start;elapsed
+264.2021782398224
+start=time();find_quartic_points(q_res[2], 10_001, 15_000);elapsed=time()-start;elapsed
+[-6735/11261]
+535.2110152244568
+start=time();find_quartic_points(q_res[2], 15_001, 20_000);elapsed=time()-start;elapsed
+[]
+738.7885863780975
+
+k_to_abcd(QQ(20/-9), (QQ(94/679), QQ(208/679)), QQ(-6735/11261))
+x -2093759/5626002, y 1147163/1875334
+t_sq 1933212160000/7912974626001
+t 1390400/2813001
+r 673865/2813001, s -2767624/2813001
+673865 2767624 1390400 2813001
+([673865, 1390400, 2767624], 2813001)
+M28130_7=dict(info='MacLeod (1997)', inx=2, m=(-9, 20)
+
+
+Try 6th quad point (-367/1358, 971/1358)
+q_res = make_quartic(QQ(20/-9), (QQ(-367/1358), QQ(971/1358)))
+(-1/1358*(323327*k^2 + 1710902*k + 454343)/(881*k^2 + 4083),
+ -1/1358*(855451*k^2 - 1044118*k - 3964593)/(881*k^2 + 4083), 
+ 12163995192*k^4 - 434836864163*k^3 - 219114660420*k^2 - 1286304224027*k + 1268692821770, 
+ 4)
+find_quartic_points(q_res[2], 1, 20_000)
+[]
+allow imprpoper points
+find_quartic_points(q_res[2], 1, 5_000)
+found 2043/1969
+k_to_abcd(QQ(20/-9), (QQ(-367/1358), QQ(971/1358)), QQ(2043/1969))
+x -159380/422481, y 85060/140827
+t_sq 47314515361/178490195361
+t 217519/422481
+r 95800/422481, s -414560/422481
+95800 414560 217519 422481
+([95800, 217519, 414560], 422481)
+original solution
+
+Try 7th quad point (142/1407, 208/469)
+q_res = make_quartic(QQ(20/-9), (QQ(142/1407), QQ(208/469)))
+(2/1407*(62551*k^2 - 549744*k - 1301526)/(881*k^2 + 4083),
+ -2/469*(91624*k^2 + 530473*k - 424632)/(881*k^2 + 4083), 
+ 1456362887087*k^4 - 1329606440448*k^3 + 5703717417210*k^2 - 29010059200512*k - 19628074874025, 
+ 1)
+find_quartic_points(q_res[2], 1, 20_000)
+[-1486/4427]
+k_to_abcd(QQ(20/-9), (QQ(142/1407), QQ(208/469)), QQ(-1486/4427))
+x -159380/422481, y 85060/140827
+t_sq 47314515361/178490195361
+t 217519/422481
+r 95800/422481, s -414560/422481
+95800 414560 217519 422481
+([95800, 217519, 414560], 422481)
+Same as first
+
+
+Try 8th quad point (-391/1418, 1009/1418)
+q_res = make_quartic(QQ(20/-9), (QQ(-391/1418), QQ(1009/1418)))
+(-1/1418*(344471*k^2 + 1777858*k + 442631)/(881*k^2 + 4083),
+ -1/1418*(888929*k^2 - 1153822*k - 4119747)/(881*k^2 + 4083), 
+ 11432851530*k^4 - 476793958801*k^3 - 229483790820*k^2 - 1372640178481*k + 1408025167928, 
+ 4)
+find_quartic_points(q_res[2], 1, 20_000)
+[]
+allow improper points
+find_quartic_points(q_res[2], 20_001, 50_000)
+[] still fail
+
+
+Try 9th quad point (126/1447, 696/1447)
+q_res = make_quartic(QQ(20/-9), (QQ(126/1447), QQ(696/1447)))
+(2/1447*(55503*k^2 - 613176*k - 1297622)/(881*k^2 + 4083),
+ -2/1447*(306588*k^2 + 1554851*k - 1420884)/(881*k^2 + 4083), 
+ 1517375350975*k^4 - 1666524070656*k^3 + 4929142168410*k^2 - 32622228427776*k - 18561859387417, 
+ 1)
+find_quartic_points(q_res[2], 1, 20_000)
+[]
+allow improper points
+find_quartic_points(q_res[2], 1, 5_000)
+found 2526/1081
+k_to_abcd(QQ(20/-9), (QQ(126/1447), QQ(696/1447)), QQ(2526/1081))
+x -159380/422481, y -85060/140827
+t_sq 47314515361/178490195361
+t 217519/422481
+r -414560/422481, s 95800/422481
+414560 95800 217519 422481
+([95800, 217519, 414560], 422481)
+same as original
+
+
+Try 10th quad point (52/1669, 992/1669)
+q_res = make_quartic(QQ(20/-9), (QQ(52/1669), QQ(992/1669)))
+(2/1669*(22906*k^2 - 873952*k - 1306169)/(881*k^2 + 4083),
+ -2/1669*(436976*k^2 + 1412327*k - 2025168)/(881*k^2 + 4083), 
+ 1867734426375*k^4 - 3678037479424*k^3 + 1394746333290*k^2 - 49280748719104*k - 13476292158193, 
+ 1)
+find_quartic_points(q_res[2], 1, 20_000)
+[-291/12334]
+k_to_abcd(QQ(20/-9), (QQ(52/1669), QQ(992/1669)), QQ(-291/12334))
+x -159380/422481, y 85060/140827
+t_sq 47314515361/178490195361
+t 217519/422481
+r 95800/422481, s -414560/422481
+95800 414560 217519 422481
+([95800, 217519, 414560], 422481)
+Same as first
+
+----------------------------
+
+Try other permuations of -20/9 = 20/-9
+find_point_instantly(QQ(20/9))
+Error: no solution found (local obstruction at 7)
+find_point_instantly(QQ(9/20))
+Error: no solution found (local obstruction at -1)
+
+>>> find_point_instantly(QQ(-9/20))
+(-38429/353238, -157/226)
+get_optimized_rational_points(QQ(-9/20))
+[(8/19, 2/19), 
+(-5/38, 25/38), 
+(18/113, 90/113), 
+(59/226, 157/226), 
+(-62/977, 734/977), 
+(-360/1331, 90/1331), 
+(472/1527, 310/509), 
+(-109/1954, 1483/1954), 
+(-481/2082, 267/694), 
+(359/2082, 547/694)]
+
+Try 1st quad point (8/19, 2/19)
+q_res = make_quartic(QQ(-9/20), (QQ(8/19), QQ(2/19)))
+(2/19*(1124*k^2 - 562*k - 3991)/(281*k^2 + 1563),
+ -2/19*(281*k^2 + 10243*k - 1563)/(281*k^2 + 1563), 
+ 27241545*k^4 - 23936704*k^3 - 131079690*k^2 - 55131904*k - 872919167, 
+ 1)
+find_quartic_points(q_res[2], 20_001, 50_000)
+[] and with improper, fails up to 20_000
+
+Try 2nd quad point (-5/38, 25/38)
+q_res = make_quartic(QQ(-9/20), (QQ(-5/38), QQ(25/38)))
+(-1/38*(1405*k^2 + 14050*k - 16859)/(281*k^2 + 1563), 
+ -1/38*(7025*k^2 - 24674*k - 39075)/(281*k^2 + 1563), 
+ 5211426*k^4 + 19845625*k^3 + 2223396*k^2 + 183792025*k - 97076152, 
+ 4)
+find_quartic_points(q_res[2], 1, 50_000)
+[] and with improper, fails up to 20_000
+
+Try 3rd quad point (18/113, 90/113)
+q_res = make_quartic(QQ(-9/20), (QQ(18/113), QQ(90/113)))
+(2/113*(2529*k^2 - 25290*k - 620)/(281*k^2 + 1563),
+ -2/113*(12645*k^2 + 14687*k - 70335)/(281*k^2 + 1563), 
+ 27873233*k^4 - 4981927680*k^3 + 1750550214*k^2 - 22677336000*k - 13768938839, 
+ 1)
+find_quartic_points(q_res[2], 1, 50_000)
+[] and with improper, fails up to 20_000
+
+Try 4th quad point (59/226, 157/226)
+q_res = make_quartic(QQ(-9/20), (QQ(59/226), QQ(157/226)))
+(1/226*(16579*k^2 - 88234*k - 38429)/(281*k^2 + 1563),
+ -1/226*(44117*k^2 + 130646*k - 245391)/(281*k^2 + 1563), 
+ 90963072*k^4 - 1207085237*k^3 + 48859020*k^2 - 4273283933*k - 5320111610, 
+ 4)
+find_quartic_points(q_res[2], 1, 50_000)
+[] and with improper, fails up to 20_000
+
+Try 5th quad point (-62/977, 734/977) 
+q_res = make_quartic(QQ(-9/20), (QQ(-62/977), QQ(734/977)))
+(-2/977*(8711*k^2 + 206254*k - 164716)/(281*k^2 + 1563),
+ -2/977*(103127*k^2 - 213169*k - 573621)/(281*k^2 + 1563), 
+ 43659668847*k^4 + 265826755328*k^3 - 77292024390*k^2 + 2074424904512*k - 485290531945, 
+ 1)
+find_quartic_points(q_res[2], 1, 50_000)
+[] and with improper, fails up to 20_000
+
+Try 6th quad point (-360/1331, 90/1331)
+q_res = make_quartic(QQ(-9/20), (QQ(-360/1331), QQ(90/1331)))
+(-2/1331*(50580*k^2 + 25290*k - 439729)/(281*k^2 + 1563),
+ -2/1331*(12645*k^2 - 721069*k - 70335)/(281*k^2 + 1563), 
+ 138848101879*k^4 + 31137048000*k^3 + 652509521034*k^2 + 420317671680*k - 4165280903233, 
+ 1)
+find_quartic_points(q_res[2], 1, 50_000)
+[] and with improper, fails up to 20_000
+
+Try 7th quad point (472/1527, 310/509)
+q_res = make_quartic(QQ(-9/20), (QQ(472/1527), QQ(310/509)))
+(2/1527*(66316*k^2 - 261330*k - 187155)/(281*k^2 + 1563),
+ -2/509*(43555*k^2 + 185341*k - 242265)/(281*k^2 + 1563), 
+ 97648936753*k^4 - 809487445440*k^3 - 173275811226*k^2 - 2533471776000*k - 4464045616599, 
+ 1)
+find_quartic_points(q_res[2], 1, 50_000)
+[] and with improper, fails up to 20_000
+
+
+Try 8th quad point (-109/1954, 1483/1954) 
+q_res = make_quartic(QQ(-9/20), (QQ(-109/1954), QQ(1483/1954)))
+(-1/1954*(30629*k^2 + 833446*k - 635419)/(281*k^2 + 1563),
+ -1/1954*(416723*k^2 - 805786*k - 2317929)/(281*k^2 + 1563), 
+ 10573509588*k^4 + 67879592747*k^3 - 21543272100*k^2 + 519767832803*k - 106643267170, 
+ 4)
+find_quartic_points(q_res[2], 1, 50_000)
+[] didn't try improper
+
+Try 9th quad point (-481/2082, 267/694) 
+q_res = make_quartic(QQ(-9/20), (QQ(-481/2082), QQ(267/694))) 
+haven't tried
+
+Try 10th quad point (359/2082, 547/694)
+q_res = make_quartic(QQ(-9/20), (QQ(359/2082), QQ(547/694)))
+haven't tried
+
+------------------------
+def eval_quartic(quartic_poly: Polynomial_rational_flint, pt: Rational) -> bool:
+    """ Compare ceofficient and eval method of evaluating quartic at a point.
+    """
+    c0, c1, c2, c3, c4 = quartic_poly.list()
+    nx = pt.numerator()
+    nz = pt.denominator()
+    ve = quartic_poly(pt)
+    vc = (c4 * nx**4 + c3 * nx**3 * nz + c2 * nx**2 * nz**2 + c1 * nx * nz**3 + c0 * nz**4)
+    va = (c4 * pt**4 + c3 * pt**3 + c2 * pt**2 + c1 * pt + c0)
+    print(ve, abs(ve).is_square())
+    print(vc, abs(vc).is_square())
+    print(va, abs(va).is_square())
+    repeat('quartic_poly(pt)', number=10_000, repeat=3, globals=globals())
+    repeat('c4*pt**4+c3*pt**3+c2*pt**2+c1*pt+c0', number=10_000, repeat=3, globals=globals())
+    return(ve == va)
+
+eval_quartic(q_res[2], QQ(-59/81))
+-1493337137920714564/43046721 True
+-1493337137920714564 True
+-1493337137920714564/43046721 True
+True
+So the homegenous quartic calculation only returns the numerator.
+pt = QQ(-59/81)
+repeat('q_res[2](pt)', number=10_000, repeat=3, globals=globals())
+[0.0072071668691933155, 0.005871499888598919, 0.005070083076134324]
+c0, c1, c2, c3, c4 = q_res[2].list()
+repeat('c4*pt**4+c3*pt**3+c2*pt**2+c1*pt+c0', number=10_000, repeat=3, globals=globals())
+[0.03532924992032349, 0.023126665968447924, 0.019675916992127895]
+and simple evaluating is much faster than calculating
+but much slower than calculating homogenous.
+start=time(); find_quartic_points_eval(q_res[2], 1, 1000); elapsed=time()-start; elapsed
+found -59/81 with rhs -1493337137920714564/43046721
+[-59/81]
+31.564852952957153
+>>> start=time(); find_quartic_points_coeffs(q_res[2], 1, 1000); elapsed=time()-start; elapsed
+found -59/81 with rhs -1493337137920714564/43046721
+[-59/81]
+33.429848194122314
+>>> start=time(); find_quartic_points_num(q_res[2], 1, 1000); elapsed=time()-start; elapsed
+found -59/81 with rhs -1493337137920714564
+[-59/81]
+7.463164806365967
+So do homogenous as a first check.
+
+
+
+TODO
+
+Try solve -9/20 and -20/9 with points from other mn.
+use inverses of points for find quartic?
+combine proper and improper in search for quad
+
+
+In the process of finding integer solutions to the Fermat surface using Elkies' method,
+we find that certain m/n pairs work as initial parameters. 
+For example, I can use m/n=20/-9 to generate a pair of conics (quadratics) for y^2 and t^2.
+Then I find rational points on the y^2 quadratic to paramterize it and substitute that
+into the t^2 quadratic to generatic a quartic.
+And if I can find a rational point on the quartic, I can use it to determine a solution.
+$$$$$
+
+from elliptical.solutions_curves import *
