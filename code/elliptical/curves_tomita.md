@@ -1,5 +1,5 @@
 These are notes about how Tomita finds solutions using elliptical curves.
-See companion python code curves_tomita.py
+See companion python code curves_tomita.py and solutions_curves.py
 
 These notes are very messy scribbles as I am learning.
 I am slowly cleaning them up.
@@ -22,7 +22,7 @@ These give tables by Tomita of curves and solutions:
 http://www.maroon.dti.ne.jp/fermat/dioph225e.html
 http://www.maroon.dti.ne.jp/fermat/grouplaw1e.html
 
-This gives Tomita's most explicit explanation of his method;
+This gives Tomita's most explicit explanation of his quartic method;
 He is following Elkies' explanation.
 http://www.maroon.dti.ne.jp/fermat/dioph4e.html
 
@@ -136,7 +136,7 @@ sage: x_k
 
 More explanation from Gemini on how to find k= -59/81:
 
-1. The Mordell-Weil Group and GeneratorsRational points on an elliptic curve $E$ form an abelian group. This means that if you have two points $P$ and $Q$ on the curve, you can "add" them (using the chord-and-tangent method) to get a third point $R$.The group is structured as:$$E(\mathbb{Q}) \cong T \oplus \mathbb{Z}^r$$$T$ (Torsion): A finite set of points that eventually loop back to the identity (e.g., $P + P + P = \mathcal{O}$).$\mathbb{Z}^r$ (Free part): This is where the infinite solutions live. The Rank ($r$) tells you how many "independent directions" you can move in.Generators: These are the base points $\{P_1, P_2, \dots, P_r\}$. Every possible rational solution $k$ can be expressed as a linear combination: $k(P) = n_1P_1 + n_2P_2 + \dots + \text{Torsion}$.
+1. The Mordell-Weil Group and GeneratorsRational points on an elliptic curve $E$ form an abelian group. This means that if you have two points $P$ and $Q$ on the curve, you can "add" them (using the chord-and-tangent method) to get a third point $R$.The group is structured as:$$E(\mathbb{Q}) \cong T \oplus \mathbb{Z}^r$$$T$ (Torsion): A finite set of points that eventually loop back to the identity (e.g., $P + P + P = \mathcal{O}$).$\mathbb{Z}^r$ (Free part): This is where the infinite solutions live. The Rank ($r$) tells you how many "independent directions" you can move in. Generators: These are the base points $\{P_1, P_2, \dots, P_r\}$. Every possible rational solution $k$ can be expressed as a linear combination: $k(P) = n_1P_1 + n_2P_2 + \dots + \text{Torsion}$.
 
 # Define the curve from the author's Equation (7)
 # Note: Equation (7) must be converted to Weierstrass form Y^2 = X^3 + AX + B first
@@ -182,7 +182,7 @@ f = a*k^4 + b*k^3 + c*k^2 + d*k + e
 # We need one rational point to start the map. 
 # The author found k = -59/81. Let's use that.
 P_start = [-59/81, 2444043484/6561]
-E_trans = EllipticCurve_from_quartic(f, P_start)
+E_trans = EllipticCurve_from_quartic(f, P_start) # BULLSHIT. NO SUCH FUNCTION.
 
 print(E_trans)
 # This will output something like: Elliptic Curve defined by y^2 = x^3 + Ax + B
@@ -198,61 +198,13 @@ print(f"Generator Point: {G[0]}")
 for i in range(1, 13):
     print(f"Point {i}: {i * G[0]}")
 
-Gemini said
-To transform a quartic of the form Y 
-2
- =f(k) into a Weierstrass form y 
-2
- =x 
-3
- +Ax+B, SageMath uses a birational transformation. This is essential because the standard algorithms for Descent and Generators only work on the Weierstrass form.
-
-1. SageMath Code for Transformation
-You can use the EllipticCurve_from_quartic function. This handles the messy algebra of mapping the coefficients of your Equation (7) to the A and B coefficients.
-
-Python
-# The coefficients from the author's Equation (7)
-# Y^2 = f(k) = ak^4 + bk^3 + ck^2 + dk + e
-a = 19435071440
-b = -5351620404
-c = 130338882000
-d = -194951575764
-e = -357457601448
-
-# Define the polynomial
-R.<k> = QQ[]
-f = a*k^4 + b*k^3 + c*k^2 + d*k + e
-
-# Transform to Weierstrass form
-# We need one rational point to start the map. 
-# The author found k = -59/81. Let's use that.
-P_start = [-59/81, 2444043484/6561]
-E_trans = EllipticCurve_from_quartic(f, P_start)
-
-print(E_trans)
-# This will output something like: Elliptic Curve defined by y^2 = x^3 + Ax + B
-2. Finding the Generator
-Once you have E_trans, you can ask Sage to find the points. The point k=−59/81 likely corresponds to a generator P or a small multiple of it.
-
-Python
-# Find the generators of the group
-G = E_trans.gens()
-print(f"Generator Point: {G[0]}")
-
-# If you want to see the 12 solutions in your table, 
-# you can iterate through multiples of the generator:
-for i in range(1, 13):
-    print(f"Point {i}: {i * G[0]}")
 3. Understanding the Descent Process
 When Sage executes E.gens(), it often runs a 2-Descent behind the scenes. Here is what is actually happening algebraically:
 
 2-Descent (The "Half-Point" Search)
 The goal is to find the rank. The algorithm looks for points P that are "double" another point (P=2Q).
 
-It checks if the equation y 
-2
- =f(x) can be factored into auxiliary equations called 2-covers.
-
+It checks if the equation y^2 =f(x) can be factored into auxiliary equations called 2-covers.
 If a 2-cover has a rational point, it contributes to the rank.
 
 Sage Notation: E.rank_bounds() or E.two_descent().
@@ -264,46 +216,19 @@ It lifts the 2-covers to 4-covers (intersections of two quadrics in 3D space).
 
 It is much harder to find points on a 4D quadric intersection, but if you find one, it almost certainly leads to a generator of the original curve.
 
-Sage Notation: E.four_descent().
+Sage Notation: E.four_descent(). BULLSHIT
 
 4. What it means for your 12 solutionsThe fact that you have 12 solutions for $u = -9/20$ suggests that:The Frye curve has Rank 1 (one infinite generator $P$).The points $(a, b, c, d)$ in your table correspond to the points $nP$ for $n = 1, 2, \dots, 12$ on that specific elliptic curve.Because the Canonical Height $h(nP) = n^2 h(P)$, the number of digits in your $d$ value grows quadratically. If $P$ has a $d$ around $10^2$, then $12P$ would have a $d$ around $10^{2^2 \times 12^2} \dots$ effectively reaching your $10^{27}$ limit very quickly.
 
 I gave Gemini the 12 solutions on curve C1 from my piezas_in_pairs.py
+Gemini said
+This data is a goldmine for understanding how the group law of elliptic curves works in practice. By looking at the d values and the sets of rationals (the u-values), we can map out exactly how these points relate to each other on the "Frye Curve" (u=−9/20).
 
 1. Are these multiples of a single generator?Almost certainly. When an elliptic curve has Rank 1, every rational point is of the form $nP$.Height Growth: On an elliptic curve, the "size" of the coordinates (the logarithmic height) grows quadratically: $Height(nP) \approx n^2 \times Height(P)$.The Bound: Your largest $d$ is approximately $10^{26}$. If the generator $P$ is the Frye solution ($d \approx 10^5$), then $7P$ or $8P$ would already be pushing the limits of $10^{27}$.Tomita's Solutions: Notice that many of the later solutions (like #80, #84, #87) were found in 2024. These represent the result of massive computational searches (often using 4-descent or high-performance sieving) to find the "next" multiples in the sequence that were previously too large to identify.
 
 2. Why do some share other rationals?Look at your first few entries:Solution 1 (Frye): Shares $u \in \{-1041/320, 1000/47\}$.Solution 17 (Tomita): Also shares $u \in \{-1041/320, 1000/47\}$.This means Solution 1 and Solution 17 are likely related by a very simple operation in the group law. If Solution 1 is the generator $P$, Solution 17 might be $-P$ or $2P$. Because the 12 rationals are computed by permuting $a, b, c$, a point and its "negative" in the group law will often share a large subset of these $u$-values, as the coordinates only differ by signs or specific rational shifts.
 
-Gemini said
-This data is a goldmine for understanding how the group law of elliptic curves works in practice. By looking at the d values and the sets of rationals (the u-values), we can map out exactly how these points relate to each other on the "Frye Curve" (u=−9/20).
-
-1. Are these multiples of a single generator?
-Almost certainly. When an elliptic curve has Rank 1, every rational point is of the form nP.
-
-Height Growth: On an elliptic curve, the "size" of the coordinates (the logarithmic height) grows quadratically: Height(nP)≈n 
-2
- ×Height(P).
-
-The Bound: Your largest d is approximately 10 
-26
- . If the generator P is the Frye solution (d≈10 
-5
- ), then 7P or 8P would already be pushing the limits of 10 
-27
- .
-
-Tomita's Solutions: Notice that many of the later solutions (like #80, #84, #87) were found in 2024. These represent the result of massive computational searches (often using 4-descent or high-performance sieving) to find the "next" multiples in the sequence that were previously too large to identify.
-
-2. Why do some share other rationals?
-Look at your first few entries:
-
-Solution 1 (Frye): Shares u∈{−1041/320,1000/47}.
-
-Solution 17 (Tomita): Also shares u∈{−1041/320,1000/47}.
-
-This means Solution 1 and Solution 17 are likely related by a very simple operation in the group law. If Solution 1 is the generator P, Solution 17 might be −P or 2P. Because the 12 rationals are computed by permuting a,b,c, a point and its "negative" in the group law will often share a large subset of these u-values, as the coordinates only differ by signs or specific rational shifts.
-
-3. Verification via SageMath
+E3. Verification via SageMath
 To prove these are all on the same "line" (the same cyclic group), we use the transformation we discussed. We can take the coordinates from Solution 1 and Solution 2, map them to (X,Y) coordinates on the Weierstrass curve, and check if P2 =nP1
 
 # SageMath logic to check the relationship
@@ -499,67 +424,7 @@ coeffs = [0, -1, 0, 349942184229228, -11167797929528591502588]
 
 -125/92 𝐶9:𝑋3−𝑋2+9243195710310751148𝑋−761969307339454319105751548=𝑌2
 coeffs = [0, -1, 0, 9243195710310751148, -761969307339454319105751548]
-
-
-Would you like me to write the formula to transform a point $(x, y)$ from this curve back into the $A, B, C, D$ solution using the author's $U \to k \to A, B, C, D$ steps?
-
-The author uses a chain of variables. To go backward, we follow this sequence:
-Point $(x, y)$ on (4) $\to$ Coordinate $U$ on (3) $\to$ Parameter $k$ $\to$ Ratios $x, y$ $\to$ Final $r, s, t$.
-
-def point_to_solution(P):
-    # 1. Map Weierstrass x to Quartic U
-    # This mapping depends on the specific birational transformation used.
-    # For the (8, -5) case, U is a rational function of the Weierstrass x.
-    # Note: If you used 'EllipticCurve_from_quartic', Sage stores the map!
-    
-    # Assuming we have the U value (the author's quartic variable):
-    U = P[0] # Simplification: In many mappings, U is linearly related to x
-    
-    # 2. Author's Step: k = U*7 - 2
-    k = U * 7 - 2
-    
-    # 3. Author's formulas for x and y (the internal ratios)
-    den_base = 14 * (17*k^2 + 779)
-    x_ratio = (51*k^2 - 34*k - 5221) / den_base
-    
-    den_base_y = 42 * (17*k^2 + 779)
-    y_ratio = (17*k^2 + 7558*k - 779) / den_base_y
-    
-    # 4. Convert to r, s, t (A/D, B/D, C/D)
-    r = x_ratio + y_ratio
-    s = x_ratio - y_ratio
-    
-    # 5. Solve for t using r^4 + s^4 + t^4 = 1
-    t4 = 1 - r^4 - s^4
-    t = t4^(1/4) # This should be rational if the point is correct
-    
-    # 6. Integerize to (A, B, C, D)
-    lcm_val = r.denominator().lcm(s.denominator()).lcm(t.denominator())
-    A = abs(r * lcm_val)
-    B = abs(s * lcm_val)
-    C = abs(t * lcm_val)
-    D = abs(lcm_val)
-    
-    return sorted([int(A), int(B), int(C)]), int(D)
-
-# Example usage with your P_combined:
-# sol_abc, sol_d = point_to_solution(P_combined)
-# print(f"{sol_abc[0]}^4 + {sol_abc[1]}^4 + {sol_abc[2]}^4 = {sol_d}^4")
-
-When the author says "Find rational solution $U$ for (3)," he is identifying $U$ as the link between the geometry of the surface and the arithmetic of the curve.The quartic (3) is essentially a "double cover" of the $U$-line.The Weierstrass curve (4) is just a mathematically "standard" version of that quartic.
-
-3. Important Caveat on the $x \to U$ MapThe author omitted the explicit map from his Weierstrass $x$ to his quartic $U$. However, when you use Sage's EllipticCurve_from_quartic function, Sage creates an object that knows the map:
-
-# If you created E this way:
-E, f_map, inverse_map = EllipticCurve_from_quartic(quartic_poly, return_maps=True)
-
-# You can get U directly from a point P on E:
-U = inverse_map(P)[0]
-
-
-𝐶5:𝑋3+2639323244332897𝑋−20156152630838819347102=𝑌2
-For a curve as massive as yours, standard gens() will likely hang.
-If your curve has Rank 1, the most powerful way to find a generator is not by searching, but by using Heegner Points. E.heegner_point()
+  return sorted([int(A), int(B), int(C)]), int(D)
 
 E = EllipticCurve([0, 0, 0, 2639323244332897, -20156152630838819347102])
 
@@ -575,15 +440,34 @@ print(f"Generators found: {points}")
 
 3. Sieve Methods (The "Mestre" Style Search)If you are doing a "brute force" search for points, the finite field information can act as a filter (sieve).A rational point $(x, y)$ on your curve $E(\mathbb{Q})$ must, when reduced modulo $p$, land on a valid point in $E(\mathbb{F}_p)$.The Strategy: Instead of testing every $x$ in $\mathbb{Q}$, you can use the Chinese Remainder Theorem to only test $x$ values that are "locally" valid for many small primes $p$ simultaneously. This is similar to how the Elliptic Curve Method (ECM) for factoring uses different curves to find factors.
 
-@parallel(ncpus=4)
-def find_gens(curve_coeffs):
-    E = EllipticCurve(curve_coeffs)
-    return E.simon_two_descent()
+---------------
+Get EllipticCurve from quartic.
+    (I don't know how to verify that they actually correspond.)
+>>> q_res = make_quartic(QQ(20/-9), (QQ(49/318), QQ(23/106)))
+>>> HyperellipticCurve(q_res[2])
+Hyperelliptic Curve over Rational Field defined by y^2 = 4858767860*x^4 - 1337905101*x^3 + 32584720500*x^2 - 48737893941*x - 89364400362
+>>> H = HyperellipticCurve(q_res[2])
+Hyperelliptic Curve over Rational Field defined by y^2 = 4858767860*x^4 - 1337905101*x^3 + 32584720500*x^2 - 48737893941*x - 89364400362
 
-# Give it a list of different curves to process at once
-curves_to_check = [coeffs1, coeffs2, coeffs3, coeffs4]
-for input, gens in find_gens(curves_to_check):
-    print(f"Curve {input} has generators: {gens}")
+# Your coefficients
+a,b,c,d,e = q_res[2].list()
 
+# Calculate semi-invariants I and J (Standard for Quartics)
+I = 12*a*e - 3*b*d + c**2
+J = 72*a*c*e + 9*b*c*d - 27*a*d**2 - 27*e*b**2 - 2*c**3
 
-The "Back Map" (From E to k)To find the new solution, you need to map the coordinates $(x, y)$ from the Elliptic Curve back to $u$, and then back to $k$. The formula for $u$ is:$$u = \frac{2e(x + a_2) - d^2/(2e)}{y}$$And finally:$$k_{new} = u + k_0$$
+# The Elliptic Curve in Weierstrass form is y^2 = x^3 - 27Ix - 27J
+# Or more simply, let Sage handle the curve construction from I and J:
+E = EllipticCurve([-27*I, -27*J])
+
+print("The Elliptic Curve is:")
+print(E)
+Elliptic Curve defined by y^2 = x^3 + 145962824752775525646447*x + 26988010649342623424776470633357993 over Rational Field
+E.j_invariant()
+1092041682543206496663598489756607126499139435982363297833461552867072/1631080663418307395410152926574316555211296843015614462366610273805
+
+ J
+-999555949975652719436165579013259
+
+ E.discriminant()
+-513672971169000711421728640860196364099583292177221431404191840308861040

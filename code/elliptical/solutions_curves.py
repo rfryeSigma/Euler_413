@@ -13,6 +13,7 @@ from sage.all import Expression, Integer, QQ, Rational, RR, \
     parallel, pi, sage_eval, solve, var
 from sage.rings.polynomial.polynomial_rational_flint import Polynomial_rational_flint
 from sage.schemes.generic.point import SchemePoint
+from solutions import known
 from time import time
 from timeit import repeat
 from typing import Union, List, Tuple
@@ -109,9 +110,7 @@ def is_locally_solvable(mn: Rational) -> bool:
     """
     _, a, b, c = y2_coeffs = mn_to_xyt_conics(mn)[0]
     disc = b**2 - 4*a*c
-    
     # If a < 0 and disc < 0, RHS is always negative. 
-    # Since LHS (y**2 * pos) is always positive, no real solutions.
     return a >= 0 or disc >= 0
 """
 is_locally_solvable(QQ(20/-9))
@@ -127,7 +126,58 @@ def check_solvability(D, delta):
     """
     return hilbert_symbol(D, delta, -1) == 1 == hilbert_symbol(D, delta, 2)
 
-# Works fast
+def find_point_instantly(mn: Rational) -> tuple:
+    """ Find base point by Gauss-Legendre. Check both t^2 and y^2,
+    but return point for y^2.
+    """
+    y2_coeffs, t2_coeffs = mn_to_xyt_conics(mn)
+    for a0, a, b, c in (t2_coeffs, y2_coeffs):
+        D = 4 * a * a0
+        delta = b**2 - 4 * a * c
+        
+        # We want to solve X^2 - D*V^2 - delta*Z^2 = 0
+        # Create the quadratic form matrix:
+        # [ 1  0      0   ]
+        # [ 0 -D      0   ]
+        # [ 0  0 -delta   ]
+        Q = DiagonalQuadraticForm(QQ, [1, -D, -delta])
+        
+        # This finds a rational point (X, V, Z) instantly
+        try:
+            point = Q.solve()
+        except Exception as e:
+            print(f"Error: {e}")
+            return None
+        assert point is not None
+            
+        X, V, Z = point
+        # Convert back to original x, y
+        x_val = (X / Z - b) / (2 * a)
+        y_val = V / Z
+        assert a0 * y_val**2 == a * x_val**2 + b * x_val + c
+        # print(x_val, y_val)
+    return (x_val, y_val)
+"""
+python -m elliptical.solutions_curves find_point_instantly -20/9
+(-1687/5406, -1231/1802)
+
+find_point_instantly(QQ(20/9))
+103780/166089 281/231
+Error: no solution found (local obstruction at 7)
+find_point_instantly(QQ(9/20))
+Error: no solution found (local obstruction at 101)
+find_point_instantly(QQ(20/9))
+103780/166089 281/231
+Error: no solution found (local obstruction at 7)
+find_point_instantly(QQ(-9/20))
+Error: no solution found (local obstruction at 101)
+find_point_instantly(QQ(20/-9))
+260/231 281/231
+-1687/5406 -1231/1802
+(-1687/5406, -1231/1802)
+so only 20/-9 has no local obstruction to both t^2 and y^2.
+"""
+
 def find_points_by_substitution(mn: Rational, limit: int=1000) -> list:
     a0, a, b, c = mn_to_xyt_conics(mn)[0]
     
@@ -150,47 +200,14 @@ def find_points_by_substitution(mn: Rational, limit: int=1000) -> list:
                 for sign in (1, -1):
                 #for sign in (1,): # only positive branch
                     x_val = (sign * Y - b) / (2 * a)
-                    assert a0 * v *v == a * x_val**2 + b * x_val + c
+                    assert a0 * v * v == a * x_val**2 + b * x_val + c
                     points.append((x_val, v))
-    if 0 == len(points):
-        print(f'{mn} no rational points found with limit {limit}')
+    #if 0 == len(points):
+        #print(f'{mn} no quadratic points with limit {limit}')
     return points
 """
 python -m elliptical.solutions_curves find_points_by_substitution -20/9 107
 [(-73039/144266, -23/106), (49/318, -23/106), (-73039/144266, 23/106), (49/318, 23/106)]
-"""
-
-def find_point_instantly(mn: Rational) -> tuple:
-    """ find base point by Gauss-Legendre
-    """
-    a0, a, b, c = mn_to_xyt_conics(mn)[0]
-    D = 4 * a * a0
-    delta = b**2 - 4 * a * c
-    
-    # We want to solve X^2 - D*V^2 - delta*Z^2 = 0
-    # Create the quadratic form matrix:
-    # [ 1  0      0   ]
-    # [ 0 -D      0   ]
-    # [ 0  0 -delta   ]
-    Q = DiagonalQuadraticForm(QQ, [1, -D, -delta])
-    
-    # This finds a rational point (X, V, Z) instantly
-    try:
-        point = Q.solve()
-    except Exception as e:
-        print(f"Error: {e}")
-        return None
-    assert point is not None
-        
-    X, V, Z = point
-    # Convert back to original x, y
-    x_val = (X / Z - b) / (2 * a)
-    y_val = V / Z
-    assert a0 * y_val**2 == a * x_val**2 + b * x_val + c
-    return (x_val, y_val)
-"""
-python -m elliptical.solutions_curves find_point_instantly -20/9
-(-1687/5406, -1231/1802)
 """
 
 def get_optimized_rational_points(mn: Rational, search_limit: int=1000, 
@@ -239,7 +256,7 @@ def get_optimized_rational_points(mn: Rational, search_limit: int=1000,
 
     # Sort by height
     final_points.sort(key=lambda x: x[0])
-    print(f'found {len(final_points)}, height {final_points[0][0]} to {final_points[-1][0]}')
+    #print(f'found {len(final_points)}, height {final_points[0][0]} to {final_points[-1][0]}')
     return [(p[1], p[2]) for p in final_points[:result_limit]]
 """
 time python -m elliptical.solutions_curves get_optimized_rational_points -20/9
@@ -280,12 +297,12 @@ def make_quartic(mn: Rational, quad_xy: tuple):
     #print(f'y_k {y_k}')
 
     # Use parameterized x_k to calculate affine t^2 symbolically
-    a0_t, a_t, b_t, c_t = t2_coeffs
-    t_sq = (a_t*x_k**2 + b_t*x_k + c_t) / a0_t
+    t_a0, t_a, t_b, t_c = t2_coeffs
+    t_sq = (t_a*x_k**2 + t_b*x_k + t_c) / t_a0
     
-    # 4. Extract the Numerator Polynomial
-    # We simplify first to ensure we aren't carrying redundant terms
+    # Extract the Numerator Polynomial and simplify
     poly_expr = t_sq.simplify_full().numerator()
+    #print(poly_expr)
     
     # Convert symbolic expression to a formal polynomial to get clean coefficients
     R = PolynomialRing(QQ, 'k')
@@ -294,19 +311,16 @@ def make_quartic(mn: Rational, quad_xy: tuple):
     # Handle the GCD and Square Factor Caveat
     coeffs = poly.coefficients()
     common_gcd = gcd([Integer(c) for c in coeffs])
-    
-    # We divide by common_gcd to get the "Primitive" polynomial
-    # Note: If common_gcd is not a square, then Y in Y^2 = clean_poly
-    # will be a multiple of the original t by sqrt(common_gcd)
+    assert common_gcd.is_square()
     clean_poly = poly / common_gcd
     
-    # 6. Ensure the leading coefficient is positive (Standard Form)
+    # Ensure the leading coefficient is positive (Standard Form)
     if clean_poly.leading_coefficient() < 0:
         clean_poly = -clean_poly
 
-    # Return parameterized conic x and y
-    # and rhs of y^2 = quartic polynomial, and gcd used to reduce terms
-    return x_k, y_k, clean_poly, common_gcd
+    # Return parameterized conics x and y
+    # and rhs of y^2 = quartic polynomial
+    return x_k, y_k, clean_poly, t2_coeffs
 """
 make_quartic(QQ(20/-9), (QQ(49/318), QQ(23/106)))
 (1/318*(43169*k^2 - 121578*k - 657351)/(881*k^2 + 4083), 
@@ -316,7 +330,8 @@ make_quartic(QQ(20/-9), (QQ(49/318), QQ(23/106)))
 """
 
 def find_quartic_points(quartic_poly: Polynomial_rational_flint, 
-            range_s: int=1, range_e: int=1000) -> list:
+            range_s: int=1, range_e: int=1000,
+            gcd=gcd, abs=abs) -> list:
     """ Search for rational k = nx/nz that make poly(k) or -poly(k) a square.
     primes were selected for those actually used to reject candidates.
     """
@@ -332,27 +347,25 @@ def find_quartic_points(quartic_poly: Polynomial_rational_flint,
         c0nz4 = c0*nz*nz3
         for nx in range(-range_e, range_e + 1):
             if gcd(nx, nz) != 1: continue
-            rhs = c4*nx**4 + c3nz*nx**3 + c2nz2*nx**2 + c1nz3*nx + c0nz4
+            rhs = (((c4*nx + c3nz)*nx + c2nz2)*nx + c1nz3)*nx + c0nz4
             y2 = abs(rhs)
             if y2.is_square():
                 p = QQ(nx/nz)
                 print(f'found {p} with rhs {rhs}')
                 rhs = quartic_poly(p)
                 y2 = abs(rhs)
-                if y2.is_square():
-                    print(f'\tConfirmed rhs {rhs}')
-                    found.add(p)
+                assert y2.is_square()
+                found.add(p)
     return sorted(found)
 """
 q_res = make_quartic(QQ(20/-9), (QQ(49/318), QQ(23/106)))
 >>> start=time(); find_quartic_points(q_res[2], 1, 1000); elapsed=time()-start; elapsed
 found -59/81 with rhs -1493337137920714564
-	Confirmed rhs -1493337137920714564/43046721
 [-59/81]
-5.323254108428955
+5.154595851898193
 """
 
-# slower that find_quartic_points
+# slower that find_quartic_points and find less points
 def find_quartic_point_adaptive(quartic_poly: Polynomial_rational_flint,
             max_denom: int=10_000, n_nodes: int=100, pts_per_node: int=100,
             abs=abs, cos=cos, pi=RR(pi))->list:
@@ -426,28 +439,32 @@ def k_to_abcd(mn: Rational, quad_xy: tuple, quartic_x: Rational) -> List[Integer
     """ Produce solution (A,B,C,D) from (m,n); parameterized x, y; x on quartic.
     """
     q_res = make_quartic(mn, quad_xy)
-    x_k, y_k, clean_poly, _ = q_res
+    x_k, y_k, quartic_poly, t2_coeffs = q_res
 
-    # Evaluate paramterized quartic at specific rational x
+    # Check that quartic_poly is square at x
+    rhs = quartic_poly.subs(k=quartic_x)
+    y2 = abs(rhs)
+    assert y2.is_square()
+
+    # Evaluate paramterized conic at x
     xv = x_k.subs(k=quartic_x)
     yv = y_k.subs(k=quartic_x)
-    print(f'x {xv}, y {yv}')
+    #print(f'x {xv}, y {yv}')
      
     # Calculate t from second conic
-    t2_coeffs = mn_to_xyt_conics(mn)[1]
+    #t2_coeffs = mn_to_xyt_conics(mn)[1]
     t_a0, t_a, t_b, t_c = t2_coeffs
     
     # Ensure we stay in QQ
-    t_sq = QQ((t_a*xv**2 + t_b*xv + t_c) / t_a0)
-    print(f't_sq {t_sq}')
+    t_sq = abs(QQ((t_a*xv**2 + t_b*xv + t_c) / t_a0))
+    #print(f't_sq {t_sq}')
     assert t_sq.is_square()
     tv = t_sq.sqrt()
-    print(f't {tv}')
 
     # Convert to the Elkies/Tomita variables r, s, t
     rv = xv + yv
     sv = xv - yv
-    print(f'r {rv}, s {sv}')
+    print(f'r {rv}, s {sv}, t {tv}')
     
     # Clear Denominators
     all_fracs = [rv, sv, tv, QQ(1)]
@@ -459,7 +476,7 @@ def k_to_abcd(mn: Rational, quad_xy: tuple, quartic_x: Rational) -> List[Integer
     C = abs(tv * common_den)
     D = abs(common_den)
     assert A**4 + B**4 + C**4 == D**4
-    print(A, B, C, D)
+    #print(A, B, C, D)
 
     # Return sorted A,B,C and the D
     lhs_list = sorted([Integer(A), Integer(B), Integer(C)])
@@ -472,6 +489,67 @@ t 217519/422481
 r 95800/422481, s -414560/422481
 95800 414560 217519 422481
 ([95800, 217519, 414560], 422481)
+"""
+
+def search_mn(m: int, n_s: int, n_e: int, quad_n: int=5, 
+              quart_s: int=1, quart_e: int=50_000) -> set:
+    """ Given m, search n over range (n_s, n_e)
+    for quartics with rational point.
+    For each n, try quad_n pts, and for quart, try up to quart_e.
+    """
+    assert m%4 == 0
+    assert n_s%4 == 1
+    assert 1 <= n_s <= n_e
+    from solutions import known
+    d_dict = dict()
+    kd = {v['abcd'][-1] for v in known.values()}
+    for n in range(n_s, n_e + 1, 4):
+        if gcd(m , n) != 1: continue
+        print(f'Trying n {n}')
+        for mn_pair in ((m,n), (n,m), (m,-n), (-n,m)):
+            mn = QQ(mn_pair[0]) / QQ(mn_pair[1])
+            if find_point_instantly(mn) == None: continue
+            print(f'Trying mn {mn}')
+            quad_pairs = get_optimized_rational_points(mn, result_limit=quad_n)
+            for quad_pair in quad_pairs:
+                quad_xy = (QQ(quad_pair[0]), QQ(quad_pair[1]))
+                q_res = make_quartic(mn, quad_xy)
+                print(f'Trying mn {mn}, quad_xy {quad_xy}')
+                assert 2 == len(q_res[2].real_roots())
+                pts = find_quartic_points(q_res[2], quart_s, quart_e)
+                if 0 == len(pts):
+                    print(f'No quartic point for mn {mn}')
+                for pt in pts:
+                    _, d = k_to_abcd(mn, quad_xy, pt)
+                    if d > 1e27: continue
+                    d_dict[d] = d_dict.get(d, 0) + 1
+                    assert d in kd
+    return d_dict
+
+# doesn't find anything
+def collect_mn(m: int, n_s: int, n_e: int, quad_n: int=10) -> list:
+    """ Given m, search n over range (n_s, n_e)
+    for quadratics with rational points.
+    keep each n with no local obstruction.
+    """
+    assert m%4 == 0
+    assert n_s%4 == 1
+    assert 1 <= n_s <= n_e
+    found_mn = []
+    for n in range(n_s, n_e + 1, 4):
+        if gcd(m , n) != 1: continue
+        #print(f'Trying n {n}')
+        for mn_pair in ((m,n), (n,m), (m,-n), (-n,m)):
+            mn = QQ(mn_pair[0]) / QQ(mn_pair[1])
+            if find_point_instantly(mn) == None: continue
+            found_mn.append(mn)
+    return found_mn
+"""
+mn_list = collect_mn(20, 1, 10_000, 10)
+len(mn_list)
+135
+collected_mn_to_brute(mn_list)
+Counts: mn 135, D 0, big 0, known 0
 """
 
 def DEBUG(*args):

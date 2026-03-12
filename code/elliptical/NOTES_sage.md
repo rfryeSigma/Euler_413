@@ -40,9 +40,29 @@ EllipticCurve(j=j0) # j-invariant
 EllipticCurve(polynomial) # see EllipticCurve_from_Weierstrass_polynomial
 EllipticCurve(cubic, point) # (homogeneous polynomial in three variables, rational point
 
-Try
-E.tor Tab
-[method for method in dir(E) if 'torsion' in method]
+Np(p) The number of points on E modulo p
+E1 = EllipticCurve([2265722465761,-3154189403034549278])
+E1.conductor()
+112191513909404296376
+E.Np(97)
+116
+
+E1.rank(algorithm="pari")
+3
+E1.gens(algorithm="pari", pari_effort=15)
+[(47971729/49 : 16603172706/343 : 1),
+ (1237921 : 1244044242 : 1),
+ (98822808873914209/20881117009 : 32155995292015599252526194/3017384051151527 : 1)]
+
+p1 = E1(978559, 0)
+p2 = E1(47971729/49, 16603172706/343)
+p3 = E1(1237921, 1244044242)
+p1+p3
+(1684027681/81 : -69276074469938/729 : 1)
+2*(p1+p3)
+(998224478479/194481 : -1028117289506708080/85766121 : 1)
+
+E.tor Tab. pops up [method for method in dir(E) if 'torsion' in method]
 E.torsion_subgroup? for documentation
 E.torsion_subgroup?? for code
 help(E) for documentation page
@@ -50,4 +70,8 @@ search_doc("torsion")	Searches all of Sage's offline documentation for the word 
 
 See this doc for compile code:
 https://doc.sagemath.org/html/en/tutorial/programming.html#section-loadattach
+
+import sage.schemes.elliptic_curves as EC
+EC.__path__
+_NamespacePath(['/Users/rogerfrye/miniforge/envs/sage/lib/python3.12/site-packages/sage/schemes/elliptic_curves'])
 

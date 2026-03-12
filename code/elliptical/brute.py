@@ -879,6 +879,45 @@ cpu 9:59.07 total
 cpu 32:04.23 total
 """
 
+# doesn't find anything
+def collected_mn_to_brute(mn_list: list, lim_d_known: int=int(1e27), lim_d: int=int(1e40)) -> None:
+    """ Use collected list of mn associated with m. 
+    Try combinations for solutions.
+    """
+    known_denoms = set(val['abcd'][-1] for val in known.values())
+    denoms = set()
+    D_count = 0
+    big_count = 0
+    known_count = 0
+    for u_inx, u in enumerate(mn_list):
+        u_num = u.numerator()
+        u_den = u.denominator()
+        coeffs = u_to_D_coeffs_int(u_num, u_den)
+        for v in mn_list[u_inx+1:]:
+            v_num = v.numerator()
+            v_den = v.denominator()
+            D = v_to_D_int(v_num, v_den, coeffs, u_den)
+            if D is None: continue
+            D_count += 1
+            pair = uvD_to_xyz(u, v, D)
+            assert pair is not None
+            for xyz in pair:
+                d = lcm([denominator(x) for x in xyz])
+                if d >= lim_d: continue
+                if d in denoms: continue
+                denoms.add(d)
+                if d >= lim_d_known: 
+                    big_count += 1
+                    continue
+                assert d < lim_d_known
+                known_count +=1
+                assert d in known_denoms, (f'New solution: {u}, {v} -> '
+                        '{sorted(abs(x) * d for x in xyz) + [d]}')
+    print(f'Counts: mn {len(mn_list)}, D {D_count}, big {big_count}, known {known_count}')
+"""
+collected_mn_to_brute(mn_list)
+Counts: mn 135, D 0, big 0, known 0
+"""
 
 if __name__ == "__main__":
     import sys
