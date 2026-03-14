@@ -6,6 +6,7 @@ See my earlier notes in curves_tomita.{md/py}
 and Tomita's notes in http://www.maroon.dti.ne.jp/fermat/dioph4e.html
 """
 import csv
+from importlib import reload
 from multiprocessing import Process, Queue
 from sage.all import Expression, Integer, QQ, Rational, RR, \
     DiagonalQuadraticForm, PolynomialRing, \

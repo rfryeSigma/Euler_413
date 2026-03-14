@@ -6,6 +6,39 @@ and Tomita's notes in http://www.maroon.dti.ne.jp/fermat/dioph4e.html
 from sage.all import EllipticCurve
 from elliptical.solutions_curves import *
 
+def abcd_to_xyz(abcd: tuple) -> tuple:
+    """Convert (a, b, c, d) representing a^4 + b^4 + c^4 = d^4 
+    to rational form (x, y, z) representing x^4 + y^4 + z^4 = 1
+    """
+    A, B, C, D = map(QQ, abcd)
+    x, y, z = A/D, B/D, C/D
+    return x, y, z
+
+def xyz_to_u(x :Rational, y :Rational, z :Rational) -> Rational:
+    """Convert (x, y, z) representing x^4 + y^4 + z^4 = 1
+    to single parameter u.
+    """
+    x_y = x - y
+    u = (x_y*x_y - z*z - 1) / (x*x - x*y + y*y + x_y)
+    return u
+
+def abcd_to_u_trace(abcd: tuple) -> set:
+    """Convert (a, b, c, d) to (x, y, z) and then consider
+    3 permutations and 8 combinations of signs on (x, y, z).
+    Since the u, v, w formulas rotate (x, y, z), only swap y, z.
+    Trace which u come from permutations. Return sorted set.
+    """
+    u_set = set()
+    xx, yy, zz = abcd_to_xyz(abcd)
+    for x, y, z in ((xx, yy, zz), (zz, xx, yy), (zz, yy, xx),):
+        for sx in (x, -x):
+            for sy in (y, -y):
+                for sz in (z,):
+                    u = xyz_to_u(sx, sy, sz)
+                    u_set.add(u)
+                    print(f'u {u} from {sx, sy, sz}')
+    return set(sorted(u_set))
+
 
 #def model_quartic_as_elliptic_curve(m, n, x0_num, x0_den, y0_num, y0_den, pt_num, pt_den):
 def model_quartic_as_elliptic_curve(quartic_poly, quartic_x: Rational):
@@ -44,14 +77,14 @@ def model_quartic_as_elliptic_curve(quartic_poly, quartic_x: Rational):
     E_short = E.short_weierstrass_model()
     E_min = E_short.minimal_model()
     E_jmin = EllipticCurve(j=E.j_invariant()) # often shorter, but quadratic twist
-    return E_min, E_jmin
+    return E_min, E_jmin, shifted_poly
 """
 q_res = make_quartic(QQ(20/-9), (QQ(49/318), QQ(23/106)))
->>> model_quartic_as_elliptic_curve(q_res[2], QQ(-59/81))
+model_quartic_as_elliptic_curve(q_res[2], QQ(-59/81))
 (Elliptic Curve defined by y^2 = x^3 + 2265722465761*x - 3154189403034549278 over Rational Field, 
  Elliptic Curve defined by y^2 = x^3 + 2265722465761*x - 3154189403034549278 over Rational Field)
 
-which matches C1:X^3+2265722465761X-3154189403034549278=Y^
+which matches C1:X^3+2265722465761X-3154189403034549278=Y^2
 Check points used in http://www.maroon.dti.ne.jp/fermat/grouplaw1e.html
 E_min, E_jmin = model_quartic_as_elliptic_curve(20, -9, 49, 318, 23, 106, -59, 81)
 E_min.hyperelliptic_polynomials()[0].roots()
@@ -79,6 +112,7 @@ p0-g3==p2
 True
 """
 
+# broken
 def get_t_from_k_generalized(k, x_val, m, n):
     M = m*m + m*n + n*n
     N = m*m - n*n
@@ -107,6 +141,7 @@ def get_parametrized_xy(k, m, n):
     
     return x_val, y_val
 
+# broken
 def generate_euler_solution(E_min, P, m, n, k0, y0_quartic):
     a1, a2, a3, _, _ = E_min.ainvs()
     
@@ -196,6 +231,7 @@ k -205218408718842700/54466708062033
 
 """
 
+# broken
 def search_small_solutions_4(E_min, m, n, k0, y0):
     p0 = E_min(E_min.hyperelliptic_polynomials()[0].roots()[0][0], 0)
     gs = E_min.gens(algorithm='pari', pari_effort=10)

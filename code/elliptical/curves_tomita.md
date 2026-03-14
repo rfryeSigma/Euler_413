@@ -441,12 +441,10 @@ print(f"Generators found: {points}")
 3. Sieve Methods (The "Mestre" Style Search)If you are doing a "brute force" search for points, the finite field information can act as a filter (sieve).A rational point $(x, y)$ on your curve $E(\mathbb{Q})$ must, when reduced modulo $p$, land on a valid point in $E(\mathbb{F}_p)$.The Strategy: Instead of testing every $x$ in $\mathbb{Q}$, you can use the Chinese Remainder Theorem to only test $x$ values that are "locally" valid for many small primes $p$ simultaneously. This is similar to how the Elliptic Curve Method (ECM) for factoring uses different curves to find factors.
 
 ---------------
-Get EllipticCurve from quartic.
-    (I don't know how to verify that they actually correspond.)
+Grmini code for Get EllipticCurve from quartic.
+There is no reason to belive this. And it differs from solution in curves_tomita.py
 >>> q_res = make_quartic(QQ(20/-9), (QQ(49/318), QQ(23/106)))
 >>> HyperellipticCurve(q_res[2])
-Hyperelliptic Curve over Rational Field defined by y^2 = 4858767860*x^4 - 1337905101*x^3 + 32584720500*x^2 - 48737893941*x - 89364400362
->>> H = HyperellipticCurve(q_res[2])
 Hyperelliptic Curve over Rational Field defined by y^2 = 4858767860*x^4 - 1337905101*x^3 + 32584720500*x^2 - 48737893941*x - 89364400362
 
 # Your coefficients

@@ -1,5 +1,6 @@
 This is a log of outputs from routines in solutions_curves.py
 The idea is to keep track of what works for specific (m, n) and points.
+And to search for new mn solutions.
 
 find_point_instantly(QQ(20/-9))
 (-1687/5406, -1231/1802)
@@ -438,7 +439,9 @@ new code
 search_mn(4, 205, 400)
 all local obstructions
 search_mn(4, 401, 1000)
-??
+Give up on 4 for now. 
+
+Was  mn -4/525, quad_xy (11978878/34363527, 51008/87439)
 
 ============================
 search_mn(8, 1, 1001)
@@ -509,7 +512,8 @@ New code with solutions
 search_mn(8,45,100)
 new code
 search_mn(8,101,200)
-??
+{}
+Give up on 8 for now.
 
 ============================
 search_mn(12, 1, 1001)
@@ -563,7 +567,17 @@ found -33111/6163 with rhs 6968857909870011845982802500
 {8707481}
 new code
 search_mn(12, 101, 200)
-??
+Trying mn 12/197, quad_xy (3209/41382, 595/4598)
+Try it this way:
+% python -m elliptical.solutions_curves search_mn 12 197 197
+Trying mn 12/197, quad_xy (3209/41382, 595/4598)
+No quartic point for mn 12/197
+Trying mn 12/197, quad_xy (18761/41382, 2323/4598)
+No quartic point for mn 12/197
+Trying mn 12/197, quad_xy (22505/163458, 17459/54486)
+No quartic point for mn 12/197
+Trying mn 12/197, quad_xy (500430/706211, 77076/706211)
+killed it before finish
 
 ============================
 search_mn(16, 1, 1001)
@@ -632,10 +646,9 @@ search_mn(16, 9, 1001)
 
 New code to find solutions
 search_mn(16,165,200)
-??
+{}
+Give up on 16 for now.
 
-then
-search_mn(16, 201, 400)
 
 ============================
 search_mn(20, 1, 1001)
@@ -653,8 +666,8 @@ search_mn(20, 13, 1001)
 
 New code to find solutions
 search_mn(20,161,200)
-search_mn(20, 201, 400)
-??
+{}
+Give up on 20 for now. Was trying mn 20/201, quad_xy (13657/25782, 3847/8594)
 
 ============================
 search_mn(24, 1, 1001)
@@ -679,11 +692,9 @@ New code to reports solutions
 search_mn(24, 65, 100)
 New code checks quartic point
 search_mn(24, 101, 200)
-??
+{}
+Give up on 24 for now. Was trying mn 197/24, quad_xy (-35462393/50260738, 595/4598)
 
-
-then
-search_mn(24, 201, 400)
 ============================
 search_mn(28, 1, 1001)
 Restarted with new code
@@ -707,14 +718,73 @@ q_res = make_quartic(QQ(28/-165), (QQ(109214332)/QQ(282734101), QQ(4184/6877)))
 q_res[2].real_roots()
 [-1.09761805001794, 35.9523010403949]
 find_quartic_points(q_res[2], 1, 50_000)
-
 new code to report solutions
 search_mn(28, 165, 200)
-search_mn(28, 201, 400)
-??
+{}
+Give up on 28 for now. Was trying  mn 28/201, quad_xy (1649/6182, 167/562)
+
 
 ============================
 Give up on 32 for now. Was on Trying mn -32/105
+
+============================
+curves_tomita needs u=-41/36) for C5
+search_mn(36, 1, 41)
+No quartic point for
+Trying mn -36/41, quad_xy (-98/303, 48/101)
+Trying mn -36/41, quad_xy (185/606, 31/202)
+Trying mn -36/41, quad_xy (260/853, 136/853)
+Trying mn -36/41, quad_xy (-707/1934, 535/1934)
+Trying mn -36/41, quad_xy (-108/2441, 2040/2441)
+
+% python -m elliptical.solutions_curves search_mn 36 41 41 5 50_001 100_000
+Trying mn -36/41, quad_xy (-98/303, 48/101)
+No quartic point for mn -36/41
+Trying mn -36/41, quad_xy (185/606, 31/202)
+killed it before finish
+
+
+============================
+curves_tomita needs u=-5/44) for C7
+search_mn(44, 1, 5)
+No quartic point for
+Trying mn -44/5, quad_xy (4/199, 160/597)
+Trying mn -44/5, quad_xy (-133/398, 743/1194)
+Trying mn -44/5, quad_xy (-509/846, 575/2538)
+Trying mn -44/5, quad_xy (-629/1074, 941/3222)
+Trying mn -44/5, quad_xy (11/1074, 979/3222)
+
+% python -m elliptical.solutions_curves search_mn 44 5 5 5 50_001 100_000
+Trying mn -44/5, quad_xy (-133/398, 743/1194)
+killed it before finish
+
+============================
+
+curves_tomita needs (u=-125/92) for C9
+search_mn(92, 1, 125)
+got side tracked
+No quartic point for 
+Trying mn -92/73, quad_xy (-757/1838, 1865/5514)
+Trying mn -92/73, quad_xy (48579819/221477162, 1865/5514)
+Trying mn -92/73, quad_xy (-460487805/1138233554, 10567/28338)
+Trying mn -92/73, quad_xy (-5475344485/14318414174, 163507/356478)
+
+Still working on this but too large so kill it.
+Trying mn -92/73, quad_xy (-8257455701/19711467418, 147239/490746)
+Kill it for now.
+
+search_mn(92, 77, 124)
+Trying mn -92/105
+Kill it for now.
+No others till 125.
+
+python -m elliptical.solutions_curves search_mn 92 125 125 2 1 50_000
+{}
+python -m elliptical.solutions_curves search_mn 92 125 125 2 50_001 100_000
+Trying mn -92/125, quad_xy (6594/20737, 212/699)
+No quartic point for mn -92/125
+Trying mn -92/125, quad_xy (-6125/41474, 1075/1398)
+killed it before finish
 
 ------------------------
 When does a higher multiple of 2 duplicate effort?
@@ -737,11 +807,12 @@ collect_mn(72, 1, 400, 10)
 [72, -72, 72/25, -41/72, -137/72, -205/72, 245/72, 305/72, -305/72, 325/72, -325/72, -341/72]
 I think there is enough difference, so they might find different solutions,
 but the differences may be blind alleys.
+
+Will any of the high mn fin quartic points within quart_e 50_000 ?
 ----------------------
+
 
 TODO
 
-Return to curves_tomita.{md/py}
-Study http://www.maroon.dti.ne.jp/fermat/dioph225e.html
 
 from elliptical.solutions_curves import *
