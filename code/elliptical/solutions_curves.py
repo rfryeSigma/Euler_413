@@ -106,6 +106,7 @@ mn_to_xyt_conics(QQ(-1041/320))
 ((2269762, -9474246, -4129924, 666240), (2269762, 8259848, -2664960, -2064962))
 """
 
+# unused
 def is_locally_solvable(mn: Rational) -> bool:
     """ Check real solvability: can ax^2 + bx + c be positive?
     """
@@ -465,7 +466,7 @@ def k_to_abcd(mn: Rational, quad_xy: tuple, quartic_x: Rational) -> List[Integer
     # Convert to the Elkies/Tomita variables r, s, t
     rv = xv + yv
     sv = xv - yv
-    print(f'r {rv}, s {sv}, t {tv}')
+    #print(f'r {rv}, s {sv}, t {tv}')
     
     # Clear Denominators
     all_fracs = [rv, sv, tv, QQ(1)]

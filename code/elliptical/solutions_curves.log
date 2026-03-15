@@ -786,6 +786,13 @@ No quartic point for mn -92/125
 Trying mn -92/125, quad_xy (-6125/41474, 1075/1398)
 killed it before finish
 
+======================
+1865/132 is secondary u for -29/12
+search_mn(132,1,1864,5,1,10_000)
+{}
+search_mn(132,1865,1865,5,1,50_000)
+??
+
 ------------------------
 When does a higher multiple of 2 duplicate effort?
 4/5 didn't find anything but 8/5 did, yet 16/5 found same as 8/5, but 32/5 not
@@ -808,7 +815,7 @@ collect_mn(72, 1, 400, 10)
 I think there is enough difference, so they might find different solutions,
 but the differences may be blind alleys.
 
-Will any of the high mn fin quartic points within quart_e 50_000 ?
+Will any of the high mn find quartic points within quart_e 50_000 ?
 ----------------------
 
 

@@ -1,0 +1,356 @@
+This is a log of outputs from routines in curves_tomita.py
+The idea is to keep track of what Elliptic Curves I can build
+
+q_res = make_quartic(QQ(20/-9), (QQ(49/318), QQ(23/106)))
+model_quartic_as_elliptic_curve(q_res[2], QQ(-59/81))
+Elliptic Curve defined by y^2 = x^3 + 2265722465761*x - 3154189403034549278 over Rational Field, 
+which matches C1:X^3+2265722465761X-3154189403034549278=Y^2
+
+Just five elliptic curves are responsible for 35, namely (10+12+5+4+4=35),
+or more than third of known solutions, namely,
+C0:X3-X2+2815805388X-94443526967868=Y2
+C1:X3+2265722465761X-3154189403034549278=Y2
+C5:X3+2639323244332897X-20156152630838819347102=Y2
+C7:X3-X2+349942184229228X-11167797929528591502588=Y2
+C9:X3-X2+9243195710310751148X-761969307339454319105751548=Y2
+all with rank 3 and also discussed by Tomita.
+
+C0 (u=-5/8) is the one studied by Elkies.
+C1 (u=-9/20) yields the smallest d=422481, as well as the most d < bound.
+C5 (u=-41/36) was found by the GDRZ team.
+C7 (u=-5/44) is by Bremner.
+C9 (u=-125/92) is also by Bremner, found in 2015.
+--------------------
+
+For C0 (u=-5/8), E20615_8=dict(info='Elkies (1998)', inx=7, m=(-5, 8)
+([2682440, 15365639, 18796760], 20615673)
+I could try
+    k_to_abcd(QQ(8/-5), (QQ(8/43), QQ(40/129)), QQ(11415/7924))
+    k_to_abcd(QQ(8/-5), (QQ(8/43), QQ(40/129)), QQ(-11795/32268))
+    k_to_abcd(QQ(8/-5), (QQ(32/247), QQ(20/39)), QQ(-95/6086))
+    k_to_abcd(QQ(-5/16), (QQ(-3/14), QQ(1/42)), QQ(1151/1401))
+    k_to_abcd(QQ(-5/16), (QQ(2/77), QQ(172/231)), QQ(-19282/5559))
+
+q_res = make_quartic(QQ(8/-5), (QQ(8/43), QQ(40/129)))
+model_quartic_as_elliptic_curve(q_res[2], QQ(11415/7924))
+Elliptic Curve defined by y^2 = x^3 - x^2 + 2815805388*x - 94443526967868 over Rational Field,
+Yes, C0
+
+same q_res, different point
+model_quartic_as_elliptic_curve(q_res[2], QQ(-11795/32268))
+Elliptic Curve defined by y^2 = x^3 - x^2 + 2815805388*x - 94443526967868 over Rational Field,
+Yes, C0
+
+q_res = make_quartic(QQ(8/-5), (QQ(32/247), QQ(20/39)))
+model_quartic_as_elliptic_curve(q_res[2], QQ(-95/6086))
+Elliptic Curve defined by y^2 = x^3 - x^2 + 2815805388*x - 94443526967868 over Rational Field,
+Yes, C0
+
+q_res = make_quartic(QQ(-5/16), (QQ(-3/14), QQ(1/42)))
+model_quartic_as_elliptic_curve(q_res[2], QQ(1151/1401))
+Elliptic Curve defined by y^2 = x^3 - x^2 + 2815805388*x - 94443526967868 over Rational Field,
+Yes, C0 with -5/16
+
+q_res = make_quartic(QQ(-5/16), (QQ(2/77), QQ(172/231)))
+model_quartic_as_elliptic_curve(q_res[2], QQ(-19282/5559))
+Elliptic Curve defined by y^2 = x^3 - x^2 + 2815805388*x - 94443526967868 over Rational Field,
+Yes, all C0
+
+C0 = EllipticCurve([2815805388, -94443526967868])
+C0.conductor()
+55022005757948934974438208456
+C0.regulator()
+1267.61149551002
+
+C0.rank(algorithm="pari", pari_effort=15)
+RuntimeError: rank not provably correct (lower bound: 1, upper bound:4). Hint: increase pari_effort.
+
+C0.gens(algorithm="pari", pari_effort=15)
+So far we found [(26746 : 26746 : 1)]
+
+mn = QQ(8/-5)
+quad_xy = (QQ(8/43), QQ(40/129))
+q_res = make_quartic(mn, quad_xy)
+q_res
+(6/43*(204*k^2 - 680*k - 2515)/(153*k^2 + 779),
+ -2/129*(3060*k^2 + 31983*k - 15580)/(153*k^2 + 779), 
+ 377516943*k^4 - 263208960*k^3 + 2065302234*k^2 - 5556768000*k - 8235000169, 
+ (153, 412, -320, -103))
+k0 = QQ(11415/7924)
+k_to_abcd(mn, quad_xy, k0)
+([2682440, 15365639, 18796760], 20615673)
+e_res = model_quartic_as_elliptic_curve(q_res[2], k0)
+search_small_EC_points(e_res, q_res[2], k0, mn, quad_xy)
+p0 = (26746 : 0 : 1), k = -11795/32268
+	d 20615673
+Found 3 gens
+g = (1634446202/20449 : 74048233778384/2924207 : 1), k = 187139320115633/103118872460904
+	d 19874054816411213708481009
+g = (557067568771372/7275578209 : 14816501172861536573406/620584994493073 : 1), k = 1442412042373337259750145811/817705571857562781764655693
+	d 5196008642592516875040620356115903270979245430874473
+g = (42396 : 10056690 : 1), k = 43645235/49119987
+	d 3393603777
+Using 4146 points on EC from 2073 generators
+4146 d, 10 ok, 1288 big
+[20615673, 589845921, 638523249, 3393603777, 5062297699257, 20249506709579721, 62940516903410601, 108593344076382641697, 19874054816411213708481009, 133140691304639620846181457]
+kd = {v['abcd'][-1] for v in known.values()}
+set(d) - kd
+set()
+
+# same q_res, different k0
+k0 = QQ(-11795/32268)
+k_to_abcd(mn, quad_xy, k0)
+([2682440, 15365639, 18796760], 20615673)
+e_res = model_quartic_as_elliptic_curve(q_res[2], k0)
+search_small_EC_points(e_res, q_res[2], k0, mn, quad_xy)
+4146 d, 10 ok, 1288 big
+[20615673, 589845921, 638523249, 3393603777, 5062297699257, 20249506709579721, 62940516903410601, 108593344076382641697, 19874054816411213708481009, 133140691304639620846181457]
+
+quad_xy = (QQ(32/247), QQ(20/39))
+q_res = make_quartic(mn, quad_xy)
+k0 = QQ(-95/6086)
+k_to_abcd(mn, quad_xy, k0)
+([2682440, 15365639, 18796760], 20615673)
+e_res = model_quartic_as_elliptic_curve(q_res[2], k0)
+search_small_EC_points(e_res, q_res[2], k0, mn, quad_xy)
+4146 d, 10 ok, 1288 big
+[20615673, 589845921, 638523249, 3393603777, 5062297699257, 20249506709579721, 62940516903410601, 108593344076382641697, 19874054816411213708481009, 133140691304639620846181457]
+
+--------------------
+
+C1:X3+2265722465761X-3154189403034549278=Y2
+For C1 (u=-9/20) 42248_6=dict(info='Frye (1988)', inx=1, m=(-9, 20)
+q_res = make_quartic(QQ(20/-9), (QQ(49/318), QQ(23/106)))
+model_quartic_as_elliptic_curve(q_res[2], QQ(-59/81))
+Elliptic Curve defined by y^2 = x^3 + 2265722465761*x - 3154189403034549278 over Rational Field, 
+Yes, C1
+
+And these solutions
+k_to_abcd(QQ(20/-9), (QQ(-63/598), QQ(435/598)), QQ(1335/2941))
+k_to_abcd(QQ(20/-9), (QQ(-367/1358), QQ(971/1358)), QQ(2043/1969))
+k_to_abcd(QQ(20/-9), (QQ(142/1407), QQ(208/469)), QQ(-1486/4427))
+k_to_abcd(QQ(20/-9), (QQ(126/1447), QQ(696/1447)), QQ(2526/1081))
+k_to_abcd(QQ(20/-9), (QQ(52/1669), QQ(992/1669)), QQ(-291/12334))
+Yes, all 
+
+C1 = EllipticCurve([2265722465761, -3154189403034549278])
+C1.conductor()
+112191513909404296376
+C1.rank(algorithm="pari", pari_effort=15)
+3
+C1.gens(algorithm="pari", pari_effort=15)
+[(47971729/49 : 16603172706/343 : 1),
+ (37313463163849/15896169 : 246260871807590439226/63378025803 : 1), 
+ (1684027681/81 : 69276074469938/729 : 1)]
+
+mn = QQ(20/-9)
+quad_xy = (QQ(-63/598), QQ(435/598))
+q_res = make_quartic(mn, quad_xy)
+k0 = QQ(1335/2941)
+k_to_abcd(mn, quad_xy, k0)
+e_res = model_quartic_as_elliptic_curve(q_res[2], k0)
+search_small_EC_points(e_res, q_res[2], k0, mn, quad_xy)
+4146 d, 12 ok, 1235 big
+[422481, 2813001, 1679142729, 15434547801, 29999857938609, 573646321871961, 101783028910511968041, 120175486227071990769561, 1171867103503245199920081, 6714012701109174954871521, 21291952935426564624339201, 227529118288906398066378489]
+set(d) - kd
+set()
+
+--------------------
+
+For the rest, I will have to find points. I am searching.
+I wonder how Piezas knows what curves they are on?
+
+C5:X3+2639323244332897X-20156152630838819347102=Y2
+C5 (u=-41/36), G12597_10=dict(info='Gerbicz (2009)', inx=16, m=(-41, 36)
+    other smalish u for these solutions -4061/16308, , 9360/2371
+abcd=(588_903_336, 859_396_455, 1_166_705_840, 1_259_768_473)
+abcd=(18_125_123_544, 34_169_217_200, 41_714_673_255, 46_055_390_617)
+abcd=(4_141_571_237_269_338_150_920, 7_799_922_278_924_748_599_160, 10_539_980_352_556_633_840_239, 11_305_555_143_522_867_817_873)
+abcd=(4_780_632_380_106_855_105_975, 13_226_266_181_198_583_365_544, 16_841_033_682_021_117_865_520, 18_276_027_741_543_869_996_617)
+abcd=(26_409_847_035_187_091_768_472_744, 47_172_089_378_698_523_207_965_335, 94_680_315_476_024_517_009_462_320, 96_242_977_191_578_497_031_965_033)
+
+C5:X3+2639323244332897X-20156152630838819347102=Y2
+Piezas discusses this in https://math.stackexchange.com/questions/4853727/on-counterexamples-to-eulers-conjecture-using-bremners-and-durmans-elliptic-c
+He pairs it with two large v.
+
+C5 = EllipticCurve([2639323244332897, -20156152630838819347102])
+C5.conductor()
+740179662446473242920
+C5.rank(algorithm="pari", pari_effort=15)
+3
+C5.gens(algorithm="pari", pari_effort=15)
+[(692289872015705012161/91114336616689 : 15945857110396198598969382871250/869721239797220696887 : 1),
+ (406882921075439/32706961 : 22603757491909733280000/187051109959 : 1),
+ (150485239969/1681 : 66591661732011250/68921 : 1)]
+
+--------------------
+
+C7:X3-X2+349942184229228X-11167797929528591502588=Y2
+C7 (u=-5/44), B27789_19=dict(info='Bremner (<=2015)', inx=55, m=(-5, 44)
+abcd=(585_715_960_903_147_640, 2_024_155_336_530_384_440, 2_556_827_383_749_699_103, 2_778_996_090_487_120_353)
+abcd=(2_329_747_842_666_412_840, 12_696_186_158_476_139_705, 19_399_184_483_902_029_008, 20_234_461_127_553_384_633),
+abcd=(444_897_078_221_606_141_840, 2_016_612_085_130_087_009_647, 2_877_363_855_098_380_947_880, 3_037_467_718_844_497_770_129),
+abcd=(1_519_814_187_310_380_835_480, 13_623_248_018_235_893_097_232, 23_896_480_714_429_616_100_215, 24_504_057_146_788_194_291_849),
+
+C7:X3-X2+349942184229228X-11167797929528591502588=Y2
+Piezas discusses this in https://math.stackexchange.com/questions/4853727/on-counterexamples-to-eulers-conjecture-using-bremners-and-durmans-elliptic-c
+He pairs it with two large v.
+
+C7 = EllipticCurve([349942184229228, -11167797929528591502588])
+C7.conductor()
+589807868485753627677069168471025359272713416
+>>> C7.rank(algorithm="pari", pari_effort=15)
+cypari2.handle_error.PariError: the PARI stack overflows (current size: 1073741824; maximum size: 1073741824)
+You can use pari.allocatemem() to change the stack size and try again
+
+
+--------------------
+
+C9:X3-X2+9243195710310751148X-761969307339454319105751548=Y2
+C9 (u=-125/92), P64244_11=dict(info='Piezas (2024)', inx=27, m=(-125, 92)
+    other smalish u for these solutions -936/5281
+abcd=(17_111_129_720, 52_289_667_920, 55_479_193_841, 64_244_765_937)
+abcd=(12_035_933_588_696, 18_776_929_334_105, 23_449_050_222_680, 25_866_132_798_297)
+abcd=(38_320_435_200_564_613_600, 56_375_727_168_307_546_985, 69_320_669_852_667_799_672, 77_107_030_404_994_920_297),
+abcd=(8_089_277_164_034_877_786_318_544, 25_024_939_958_628_554_701_755_145, 27_386_104_940_472_276_169_105_720, 31_293_260_543_726_494_476_580_617),
+
+C9:X3-X2+9243195710310751148X-761969307339454319105751548=Y2
+Tomita worked on this in 
+https://math.stackexchange.com/questions/4857229/on-why-solutions-to-x4y4z4-1-come-in-pairs/4857799
+He paired it with v=-936/5281
+
+C9 = EllipticCurve([9243195710310751148, -761969307339454319105751548])
+C9.conductor()
+1587253729251525178109993433943482359730962195462743257688
+
+--------------------
+Could also find curve for
+B87074_7=dict(info='Bernstein (2001)', inx=3, m=(-29, 12), #3
+	abcd=(1_705_575, 5_507_880, 8_332_208, 8_707_481)
+T20517_13=dict(info='Tomita (2024)', inx=35, m=(-29, 12)
+    abcd=(125_777_308_440, 894_416_022_327, 2_032_977_944_240, 2_051_764_828_361)
+T45556_14=dict(info='Tomita (2024)', inx=44, m=(-29, 12)
+    abcd=(7_908_038_161_032, 27_546_142_170_735, 43_940_127_884_360, 45_556_888_578_449)
+
+B87074
+s1 = abcd_to_u_trace((1_705_575, 5_507_880, 8_332_208, 8_707_481))
+
+T20517_13
+s2 = abcd_to_u_trace((125_777_308_440, 894_416_022_327, 2_032_977_944_240, 2_051_764_828_361))
+
+T45556_14
+s3 = abcd_to_u_trace((7_908_038_161_032, 27_546_142_170_735, 43_940_127_884_360, 45_556_888_578_449))
+
+sorted(s1&s2&s3)
+[-29/12]
+sorted(s1&s2)
+[-29/12, -30768/57253, 1865/132]
+sorted(s1&s3)
+[-29/12, -3333/107368, 6280/1359]
+sorted(s2&s3)
+[-29/12]
+
+All of these points find the first solution
+k_to_abcd(QQ(12/-29), (QQ(-76/933), QQ(220/311)), QQ(909/2536))
+Cx = Elliptic Curve defined by y^2 = x^3 + 10660885666177*x + 13598881200848998978 over Rational Field
+
+k_to_abcd(QQ(12/-29), (QQ(-127/1158), QQ(257/386)), QQ(-33111/6163))
+Trying mn -12/29, quad_xy (284/673, 160/673)
+    found -29417/13722 with rhs -79503752785890463338601265625
+Trying mn -12/29, quad_xy (-76/933, 220/311)
+    found 909/2536 with rhs 55107184998032091815765625
+Trying mn -12/29, quad_xy (-127/1158, 257/386)
+    found -33111/6163 with rhs 6968857909870011845982802500
+and this on -29/24
+k_to_abcd(QQ(-29/24), (QQ(-284/673), QQ(160/673)), QQ(29417/13722))
+
+Cx.conductor()
+131352944128813690840
+Cx.rank(algorithm="pari", pari_effort=15)
+3
+Cx.gens(algorithm="pari", pari_effort=15)
+[(-41088742436998885031/47887008961936 : 647656210382785417321421971875/331380209044991445184 : 1),
+ (3102801 : 8749246466 : 1),
+ (1835752148848569/125865961 : 80768926747795922326250/1412090216459 : 1)]
+
+mn = QQ(12/-29)
+quad_xy = (QQ(-76/933), QQ(220/311))
+q_res = make_quartic(mn, quad_xy)
+k0 = QQ(909/2536)
+k_to_abcd(mn, quad_xy, k0)
+([1705575, 5507880, 8332208], 8707481)
+e_res = model_quartic_as_elliptic_curve(q_res[2], k0)
+search_small_EC_points(e_res, q_res[2], k0, mn, quad_xy)
+4146 d, 3 ok, 1178 big
+[8707481, 2051764828361, 45556888578449]
+set([8707481, 2051764828361, 45556888578449])-kd
+set()
+
+mn = QQ(-29/24)
+quad_xy = (QQ(-284/673), QQ(160/673))
+q_res = make_quartic(mn, quad_xy)
+k0 = QQ(29417/13722)
+k_to_abcd(mn, quad_xy, k0)
+([1705575, 5507880, 8332208], 8707481)
+e_res = model_quartic_as_elliptic_curve(q_res[2], k0)
+e_res[0]
+Elliptic Curve defined by y^2 = x^3 + 10660885666177*x + 13598881200848998978 over Rational Field
+search_small_EC_points(e_res, q_res[2], k0, mn, quad_xy)
+4146 d, 3 ok, 1178 big
+[8707481, 2051764828361, 45556888578449]
+
+--------------------
+
+
+TODO
+Need faster way to check quartic polys and find rational points.
+test find_quartic point on primes for feasibility
+why point always between roots?
+find min value between roots and search positive range up to that value.
+
+----------
+
+sudo taskpolicy -c utility python your_script.py
+defaults write dev.warp.Warp NSAppSleepDisabled -bool YES
+then restart Warp
+
+--------
+Check Piezas investigations on uv pairs.
+The pairs are different than the pairs I used,
+and the formulas look different too.
+See
+ 
+https://mathoverflow.net/questions/143751/other-elliptic-curves-for-x4y4z4-1
+https://math.stackexchange.com/questions/4852495/still-more-elliptic-curves-for-a4b4c4-d4/4853683#4853683
+https://math.stackexchange.com/questions/4853727/on-counterexamples-to-eulers-conjecture-using-bremners-and-durmans-elliptic-c
+https://math.stackexchange.com/questions/4857229/on-why-solutions-to-x4y4z4-1-come-in-pairs/4857799#4857799
+
+--------
+
+Examine other functions in curves_tomita:
+search_small_solutions_4
+    generate_euler_solution
+        get_parametrized_xy
+        get_t_from_k_generalized
+They are broken attempt to make abcd from points on EC.
+
+-------
+
+Can I go from EC a4, a6 to coefficients of quartic
+and do the points on the quartic match the ones used on quartic
+which determined EC?
+
+-------
+
+How to go from a (new) point on E to a solution.
+Or from a (new) point on E to the shifted quartic poly.
+
+Is the value of q_res at quart_x
+the same as the value of shifted_poly at 0 ?
+q_res = make_quartic(QQ(20/-9), (QQ(49/318), QQ(23/106)))
+>>> res = model_quartic_as_elliptic_curve(q_res[2], QQ(-59/81))
+>>> res[2] (should have negated this)
+-4858767860*u^4 + 1255039528141/81*u^3 - 111483374052499/2187*u^2 + 56251607253382924/531441*u + 1493337137920714564/43046721
+>>> res[2](QQ(-59/81))
+-3306362772684012908/43046721
+same denom, but different numer.
