@@ -11,7 +11,8 @@ https://math.stackexchange.com/questions/1853223/distribution-of-primitive-pytha
 from solutions import known
 from itertools import combinations
 from math import isqrt
-from sage.all import Integer, QQ, Rational, gcd, lcm, numerator, denominator
+from sage.all import Integer, QQ, Rational, gcd, lcm, numerator, denominator, \
+    Curve, Jacobian
 
 def abcd_to_xyz(abcd: tuple) -> tuple:
     """Convert (a, b, c, d) representing a^4 + b^4 + c^4 = d^4 
@@ -39,14 +40,15 @@ def xyz_to_uvw(xyz: tuple) -> tuple:
     w = (z_x*z_x - y*y -1) / (z*z - z*x + x*x + z_x)
     assert verify_uvw(u, v, w), f'{u}, {v}, {w}'
     return u, v, w
-    
-# Seems to work best when a, b, c in increasing size
+"""
+Seems to work best when a, b, c in increasing size
 xyz_to_uvw(abcd_to_xyz((95_800, 217_519, 414_560, 422_481)))
 (1000/47, -1041/320, -9/20)
 xyz_to_uvw(abcd_to_xyz((414560, 217519, 95800, 422_481)))
 (-71490240/101943281, -167767337/43538900, -6899820729/369596780)
 xyz_to_uvw(abcd_to_xyz((-414560, -217519, -95800, 422_481)))
 (-1041/320, 1000/47, -9/20)
+"""
 
 def abcd_to_small_u(abcd: tuple, thresh: int=10_000) -> list:
     """Convert (a, b, c, d) to (x, y, z) and then consider
@@ -156,7 +158,7 @@ def uv_to_D(u, v, verbose=False):
         if verbose:
             print(f'u {u}, v {v} to D2 {D2} is not a perfect square ')
     return None
-
+"""
 u = QQ(-9) / QQ(20)
 v = QQ(-1041) / QQ(320)
 uv_to_Pk(u, v)
@@ -166,6 +168,7 @@ uv_to_Pk(u, v)
  -2059498434165383679/1677721600000000)
 uv_to_D(u, v)
 2126704839/40960000
+"""
 
 def uv_to_xyz(u, v):
     """Calculate (x, y, z) from u, v
@@ -186,12 +189,59 @@ def uv_to_xyz(u, v):
         z = (P3 + z1 * sD) / denom
         pair[inx] = (x, y, z)
     return pair
-
+"""
 u = QQ(-9) / QQ(20)
 v = QQ(-1041) / QQ(320)
 uv_to_xyz(u,v)
 [(1670617271/1679142729, 632671960/1679142729, -50237800/1679142729),
  (-95800/422481, -414560/422481, -217519/422481)]
+"""
+
+def u_to_D_to_EC(u):
+    """Build EllipticCurve from Curve of equation for D in terms of v, given u
+    """
+    u2 = u * u
+    u3 = u2 * u
+    u4 = u2 * u2
+    d0 = 4 * (-6 - 2 * u + u2) * (2 - 2 * u + u2) 
+    d1 = - 8 * (-2 - 4 * u + u2) * (2 - 2 * u + u2)
+    d2 = - 16 * u * (4 - 3 * u + u2)
+    d3 = - 4 * (4 - 12 * u + 4 * u2 - 2 * u3 + u4) 
+    d4 = (4 - 8 * u - 4 * u3 + u4)
+    R = PolynomialRing(QQ, 'v, D')
+    v, D = R.gens()
+    D2 = d0 + d1 * v + d2 * v**2 + d3 * v**3 + d4 * v**4
+    f = -D**2 + D2
+    C = Curve(f)
+    return Jacobian(C)
+"""
+For C7
+u = QQ(-5/44)
+E = u_to_D_to_EC(u)
+Elliptic Curve defined by y^2 = x^3 + 1049826552687683/2634041929728*x - 150765270473896156253413/11106722273226522624 over Rational Field
+but I expected
+C7:X3-X2+349942184229228X-11167797929528591502588=Y2
+p0 = E(E.hyperelliptic_polynomials()[0].roots()[0][0], 0)
+(51745997/2811072 : 0 : 1)
+gs = E.gens(algorithm='pari', pari_effort=15)
+[(188793292719338094810978423587/10196068674281548738969046208 : 1229378858624399497333418545894893841535223/99068879306868900832285185876844027083008 : 1),
+ (717355297752699197837627/16166747959445968186368 : 119647619398111295767388820360879051/395596207505172908089610759471104 : 1), 
+ (391441730123/70276800 : 23566309562239893/56689952000 : 1)]
+
+Try C0 (u=-5/8)
+u_to_D_to_EC(QQ(-5/8))
+Elliptic Curve defined by y^2 = x^3 + 8447416163/3145728*x - 1274974942941973/14495514624 over Rational Field
+but C0 is
+Elliptic Curve defined by y^2 = x^3 - x^2 + 2815805388*x - 94443526967868 over Rational Field,
+
+Try C1 (u=-9/20)
+u_to_D_to_EC(QQ(-9/20))
+Elliptic Curve defined by y^2 = x^3 + 2265722465761/1600000000*x - 1577094701517274639/32000000000000 over Rational Field
+but C1 is
+Elliptic Curve defined by y^2 = x^3 + 2265722465761*x - 3154189403034549278 over Rational Field, 
+At least, I can see a relationship this time.
+
+"""
 
 def abcd_to_small_xyz(abcd: tuple, thresh: int=10_000) -> list:
     """Convert (a, b, c, d) to small u.
@@ -205,7 +255,7 @@ def abcd_to_small_xyz(abcd: tuple, thresh: int=10_000) -> list:
         for x, y, z in pair:
             xyz_list.append((x, y, z))
     return xyz_list
-
+"""
 abcd_to_small_xyz((414560, 217519, 95800, 422_481))
 # u -1041/320, v -4209/3500 to D2 14290666362400669957976538801/1573519360000000000000000 is not a perfect square 
 # u -1041/320, v 30080/6007 to D2 198909725101194840504881377761/3413268476026948157440000 is not a perfect square 
@@ -233,6 +283,7 @@ abcd_to_small_xyz((414560, 217519, 95800, 422_481))
 # 422481 (1 in table)
 # 1679142729 (7 in table)
 # 29999857938609 (12 in table)
+"""
 
 def known_to_unknown(max_d: int=int(1e27)) -> None:
     """For all abcd in known, make new xyz from combinations of u.
@@ -259,7 +310,7 @@ def known_to_unknown(max_d: int=int(1e27)) -> None:
                 print(f'Found new {xyz} from {abcd} with u {u}, v {v}')
     print(f'Found {len(new_xyz)} new xyz')
     return sorted(new_xyz)
-
+"""
 # known_to_unknown()
 # Found new (535607712470322407570378200/918310142223097801006397529, 250530677254015598463660440/918310142223097801006397529, -889106559932545369165762471/918310142223097801006397529) from (95800, 217519, 414560, 422481) with u -1041/320, v 52463/660460
 # Found new (118194421251475239056505903/123188180833923372056627153, 66491673395168374249746120/123188180833923372056627153, -62831773759131557571594880/123188180833923372056627153) from (2164632, 31669120, 41084175, 44310257) with u -12065/12396, v -84558637/193874100
@@ -278,7 +329,7 @@ def known_to_unknown(max_d: int=int(1e27)) -> None:
  (118194421251475239056505903/123188180833923372056627153,
   66491673395168374249746120/123188180833923372056627153,
   -62831773759131557571594880/123188180833923372056627153)]
-"""
+
 123_188_180_833_923_372_056_627_153;
 118194421251475239056505903,
 66491673395168374249746120,
@@ -383,8 +434,8 @@ because #5 has several small m:
     (-136, 133, 2350494728938),
     (-1005, 568, 272168104170)
     (201, 4, 1949327532528)
-
 """
+
 def known_to_unknown_inv(max_d: int=int(1e27)) -> None:
     """For all abcd in known, make new xyz from combinations of 
     inverses of u.
@@ -455,9 +506,10 @@ def known_to_unknown_all_u(max_d: int=int(1e27)) -> None:
     print(f'Found {found_big} too big and {found_raw} ok'
           f', but only {len(new_xyz)} new xyz')
     return sorted(new_xyz)
-
+"""
 #known_to_unknown_all_u()
 #Found 1962 too big and 2328 ok, but only 0 new xyz
+"""
 
 def check_new_d_size() -> None:
     """For all abcd in known, make new xyz from combinations of u.
@@ -475,11 +527,12 @@ def check_new_d_size() -> None:
                 if new_d >= d: continue
                 count += 1
     return count
-
+"""
 #check_new_d_size()
 #183
 # This means that solutions larger than known can find solutions less than 1e27.
 # But it's not clear that any will be new, since they were derived from known.
+"""
 
 def large_known_to_unknown(min_d: int=int(1e27), max_d: int=int(1e40)) -> None:
     """For all abcd in known, make new xyz from combinations of u.
@@ -538,11 +591,12 @@ def large_known_to_unknown(min_d: int=int(1e27), max_d: int=int(1e40)) -> None:
                 print(f'Found new {xyz} from {abcd} with u {u}, v {v}')
     print(f'Found {len(new_xyz)} new xyz')
     return sorted(new_xyz)
-
+"""
 #large_known_to_unknown()
 #Found 77 big xyz
 #Found 78 big xyz
 #Found 0 new xyz
+"""
 
 def known_to_unknown_all_uu(max_d: int=int(1e27)) -> None:
     """For all abcd in known, collect u. For all (u, u),
@@ -582,6 +636,7 @@ def known_to_unknown_all_uu(max_d: int=int(1e27)) -> None:
           f' and {found_known} in known'
           f', but only {len(new_xyz)} new xyz')
     return sorted(new_xyz)
-
+"""
 #known_to_unknown_all_uu()
 #Found 0 too big and 0 ok and 0 in known, but only 0 new xyz
+"""

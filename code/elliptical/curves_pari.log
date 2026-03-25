@@ -1,0 +1,7 @@
+This is a log of applying pari(poly).hyperellratpoints to Pieza's pairs.
+
+The idea is to choose u and build a formula in v for t^2 like Fulea does in 
+https://mathoverflow.net/questions/463780/a-parametric-elliptic-curve-for-x4y4z4-1
+Then apply pari(poly).hyperellratpoints to find candidate v for
+Pieza's pairs method of finding new solutions to the Fermat quartic.
+

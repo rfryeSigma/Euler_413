@@ -62,11 +62,28 @@ p1+p3
 2*(p1+p3)
 (998224478479/194481 : -1028117289506708080/85766121 : 1)
 
+E1.lift_x(978559)
+(978559 : 0 : 1)
+
 E.tor Tab. pops up [method for method in dir(E) if 'torsion' in method]
 E.torsion_subgroup? for documentation
 E.torsion_subgroup?? for code
 help(E) for documentation page
 search_doc("torsion")	Searches all of Sage's offline documentation for the word "torsion".
+
+When 𝐷2=𝑓(𝑢,𝑉) is Piezas formula for pairs:
+sage: R.<V> = PolynomialRing(QQ)
+sage: F = 1280881/160000*V^4 - 1669321/40000*V^3 + 19989/500*V^2 - 1241/20000*V - 2431119/40000
+print(pari(q_res[2]).hyperellratpoints.__doc__)
+    If :math:`flag = 1`, stop as soon as a point is found
+    The parameter :math:`h` can be.
+    - an integer :math:`H`: find the points :math:`[n/d,y]` whose abscissas :math:`x = n/d` have
+        naive height ( = :math:`\max (\|n\|, d)`) less than :math:`H`;
+    - a vector :math:`[N,D]` with :math:`D <= N`: find the points :math:`[n/d,y]` with
+        :math:`\|n\| <= N`, :math:`d <= D`.
+    - a vector :math:`[N,[D_{1},D_{2}]]` with :math:`D_{1} < D_{2} <= N` find the points
+        :math:`[n/d,y]` with :math:`\|n\| <= N` and :math:`D_{1} <= d <= D_{2}`.
+[[1000/47, 495260031/441800]]
 
 See this doc for compile code:
 https://doc.sagemath.org/html/en/tutorial/programming.html#section-loadattach

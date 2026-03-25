@@ -1,5 +1,5 @@
 """
-Tito Piezas II identified 5 rank 3 Elliptical Curves
+Tito Piezas III identified 5 rank 3 Elliptical Curves
 responsible for more than a third of the known solutions.
 See
 https://math.stackexchange.com/questions/1853223/distribution-of-primitive-pythagorean-triples-ppt-and-of-solutions-of-a4b4
@@ -24,7 +24,8 @@ C9.conductor()
 3174507458503050356219986867886964719461924390925486515376
 
 """
-But LMFDB https://www.lmfdb.org/EllipticCurve/Q/
+But in order to look up in LMFDB 
+https://www.lmfdb.org/EllipticCurve/Q/
 conductor must be < 300_000 .
 """
 

@@ -32,6 +32,10 @@ I could try
     k_to_abcd(QQ(-5/16), (QQ(2/77), QQ(172/231)), QQ(-19282/5559))
 
 q_res = make_quartic(QQ(8/-5), (QQ(8/43), QQ(40/129)))
+Pari finds two solutions quickly:
+pari(-q_res[2]).hyperellratpoints(20_000, 0)
+[[243/109, 746672000/11881], [243/109, -746672000/11881], 
+[11415/7924, 6619778497063/62789776], [11415/7924, -6619778497063/62789776]]
 model_quartic_as_elliptic_curve(q_res[2], QQ(11415/7924))
 Elliptic Curve defined by y^2 = x^3 - x^2 + 2815805388*x - 94443526967868 over Rational Field,
 Yes, C0
@@ -148,17 +152,61 @@ quad_xy = (QQ(-63/598), QQ(435/598))
 q_res = make_quartic(mn, quad_xy)
 k0 = QQ(1335/2941)
 k_to_abcd(mn, quad_xy, k0)
+([95800, 217519, 414560], 422481)
 e_res = model_quartic_as_elliptic_curve(q_res[2], k0)
 search_small_EC_points(e_res, q_res[2], k0, mn, quad_xy)
+p0 = (978559 : 0 : 1), k = 114375/23357
+	d 422481
+Found 3 gens
+g = (37313463163849/15896169 : 246260871807590439226/63378025803 : 1), k = 455451/90743
+	d 2813001
+g = (101452934809/9 : 32314461714969994/27 : 1), k = 25702979922171/54104547348503
+	d 101783028910511968041
+g = (1684027681/81 : 69276074469938/729 : 1), k = 191252328/158147429
+	d 29999857938609
 4146 d, 12 ok, 1235 big
 [422481, 2813001, 1679142729, 15434547801, 29999857938609, 573646321871961, 101783028910511968041, 120175486227071990769561, 1171867103503245199920081, 6714012701109174954871521, 21291952935426564624339201, 227529118288906398066378489]
 set(d) - kd
 set()
 
---------------------
+See answer by dan_fulea to piezas question in 
+https://mathoverflow.net/questions/463780/a-parametric-elliptic-curve-for-x4y4z4-1
+for more discussion of this curve.
 
-For the rest, I will have to find points. I am searching.
-I wonder how Piezas knows what curves they are on?
+>>> from elliptical.solutions_curves import *
+>>> from sage.all import HyperellipticCurve, pari
+>>> q_res = make_quartic(QQ(20/-9), (QQ(49/318), QQ(23/106)))
+>>> find_quartic_points(q_res[2], 1, 100)
+found -59/81 with rhs -1493337137920714564
+[-59/81]
+>>> H = HyperellipticCurve(-q_res[2])
+Hyperelliptic Curve over Rational Field defined by y^2 = -4858767860*x^4 + 1337905101*x^3 - 32584720500*x^2 + 48737893941*x + 89364400362
+>>> find_quartic_points(-q_res[2], 1, 100)
+found -59/81 with rhs 1493337137920714564
+[-59/81]
+>>> H.rational_points(bound=100)
+[(0 : 1 : 0)]
+>>> pari(-q_res[2]).hyperellratpoints(100, 1)
+[[-59/81, 1222021742/6561]]
+>>> repeat('find_quartic_points(-q_res[2], 1, 100)',number=1,repeat=3,globals=globals())
+[0.05724987498251721, 0.0525724160252139, 0.052789832989219576]
+>>> repeat('pari(-q_res[2]).hyperellratpoints(100, 1)',number=1,repeat=3,globals=globals())
+[0.000594290962908417, 0.0004503750242292881, 0.000248999975156039]
+>>> repeat('pari(-q_res[2]).hyperellratpoints(100, 0)',number=1,repeat=3,globals=globals())
+[0.0006292079924605787, 0.00046141602797433734, 0.00039004196878522635]
+>>> repeat('pari(-q_res[2]).hyperellratpoints(100_000, 0)',number=1,repeat=3,globals=globals())
+[0.1860459999879822, 0.1811534159933217, 0.1777361249551177]
+>>> repeat('pari(-q_res[2]).hyperellratpoints(1_000_000, 0)',number=1,repeat=3,globals=globals())
+[17.66361287498148, 17.657951542001683, 17.638079750002362]
+
+[[-59/81, 1222021742/6561], [-59/81, -1222021742/6561], 
+[4162/2643, 1952816800/7929], [4162/2643, -1952816800/7929], 
+[151301/97921, 2427962899897022/9588522241], [151301/97921, -2427962899897022/9588522241], 
+[832289/426669, 982879773025838/182046435561], [832289/426669, -982879773025838/182046435561], 
+[-599551/591709, 1268002027892318/350119540681], [-599551/591709, -1268002027892318/350119540681]]
+
+--------------------
+For the rest, I will have to find points.
 
 C5:X3+2639323244332897X-20156152630838819347102=Y2
 C5 (u=-41/36), G12597_10=dict(info='Gerbicz (2009)', inx=16, m=(-41, 36)
@@ -183,6 +231,35 @@ C5.gens(algorithm="pari", pari_effort=15)
  (406882921075439/32706961 : 22603757491909733280000/187051109959 : 1),
  (150485239969/1681 : 66591661732011250/68921 : 1)]
 
+search_mn(36, 1, 41)
+No quartic point for
+Trying mn -36/41, quad_xy (-98/303, 48/101) Pari fails < 3_000_000 too
+Trying mn -36/41, quad_xy (185/606, 31/202) Pari found 215223/135323
+Trying mn -36/41, quad_xy (260/853, 136/853) Pari found 98767/68471
+Trying mn -36/41, quad_xy (-707/1934, 535/1934) Pari fails < 1_000_000 too
+Trying mn -36/41, quad_xy (-108/2441, 2040/2441) Pari found 57613/6958
+
+Pari found a point
+>>> q_res = make_quartic(QQ(36/-41), (QQ(185/606), QQ(31/202)))
+>>> q_res[2].real_roots()
+[-1.77929919293637, 2.58557446908516]
+>>> q_res[2]
+409575322528*k^4 - 288473020269*k^3 + 979374518316*k^2 - 2528125355637*k - 13329050547438
+>>> pari(-q_res[2]).hyperellratpoints(1_000_000, 0)
+[[215223/135323, 67065279766530750/18312314329], [215223/135323, -67065279766530750/18312314329]]
+>>> pari(-q_res[2]).hyperellratpoints([220_000, [135_000, 136_000]], 0)
+[[215223/135323, 67065279766530750/18312314329], [215223/135323, -67065279766530750/18312314329]]
+k_to_abcd(QQ(36/-41), (QQ(185/606), QQ(31/202)), QQ(215223/135323))
+([588903336, 859396455, 1166705840], 1259768473)
+G12597_10=dict(info='Gerbicz (2009)', inx=16, m=(-41, 36), #5
+(Elliptic Curve defined by y^2 = x^3 + 2639323244332897*x - 20156152630838819347102 over Rational Field
+
+>>> k_to_abcd(QQ(36/-41), (QQ(260/853), QQ(136/853)), QQ(98767/68471))
+([18125123544, 34169217200, 41714673255], 46055390617)
+T46055_11=dict(info='Tomita (2024)', inx=26, m=(-41, 36)
+k_to_abcd(QQ(36/-41), (QQ(-108/2441), QQ(2040/2441)), QQ(57613/6958))
+([588903336, 859396455, 1166705840], 1259768473)
+
 --------------------
 
 C7:X3-X2+349942184229228X-11167797929528591502588=Y2
@@ -191,6 +268,10 @@ abcd=(585_715_960_903_147_640, 2_024_155_336_530_384_440, 2_556_827_383_749_699_
 abcd=(2_329_747_842_666_412_840, 12_696_186_158_476_139_705, 19_399_184_483_902_029_008, 20_234_461_127_553_384_633),
 abcd=(444_897_078_221_606_141_840, 2_016_612_085_130_087_009_647, 2_877_363_855_098_380_947_880, 3_037_467_718_844_497_770_129),
 abcd=(1_519_814_187_310_380_835_480, 13_623_248_018_235_893_097_232, 23_896_480_714_429_616_100_215, 24_504_057_146_788_194_291_849),
+
+Compare abcd_to_u_set for solutions 1-4 All have -5/44.
+s1&s2: {-5/44, -2741924904/1401894085, 57878913/12642040}
+s3&s4: {-5/44, 4669000304/944254963, -117620301817/53219719132}
 
 C7:X3-X2+349942184229228X-11167797929528591502588=Y2
 Piezas discusses this in https://math.stackexchange.com/questions/4853727/on-counterexamples-to-eulers-conjecture-using-bremners-and-durmans-elliptic-c
@@ -203,6 +284,29 @@ C7.conductor()
 cypari2.handle_error.PariError: the PARI stack overflows (current size: 1073741824; maximum size: 1073741824)
 You can use pari.allocatemem() to change the stack size and try again
 
+Same with C7.gens(algorithm='pari', pari_effort=15)
+
+C7.hyperelliptic_polynomials()[0].roots()
+[]
+
+dan_fulea discusses this curve in
+https://mathoverflow.net/questions/463780/a-parametric-elliptic-curve-for-x4y4z4-1
+
+search_mn(44, 1, 5)
+No quartic point for
+Trying mn -44/5, quad_xy (4/199, 160/597) pari fails <=5_000_000 and [10_000_000, [0, 1_000_000]]
+Trying mn -44/5, quad_xy (-133/398, 743/1194) pari fails <=5_000_000 and [10_000_000, [0, 1_000_000]]
+Trying mn -44/5, quad_xy (-509/846, 575/2538) pari fails <=5_000_000 and [10_000_000, [0, 1_000_000]]
+Trying mn -44/5, quad_xy (-629/1074, 941/3222) pari fails <=5_000_000
+Trying mn -44/5, quad_xy (11/1074, 979/3222) pari fails <=5_000_000
+Those pari tests were on +/-q_res[2].
+more mn -44/5, quad_xy:
+(-997/1818, 2165/5454) 
+(-1933/3206, 2119/9618) 
+(-110/3549, 4400/10647) 
+(-28/4391, 4664/13173) 
+(-3790/6081, 940/18243) 
+pari fails +/-qref on all with h <=5_000_000
 
 --------------------
 
@@ -222,6 +326,37 @@ He paired it with v=-936/5281
 C9 = EllipticCurve([9243195710310751148, -761969307339454319105751548])
 C9.conductor()
 1587253729251525178109993433943482359730962195462743257688
+
+Trying mn -92/125, quad_xy (6594/20737, 212/699)
+[(6594/20737, 212/699), pari found -57316/143211
+k_to_abcd(QQ(92/-125), (QQ(6594/20737), QQ(212/699)), QQ(-57316/143211))
+([17111129720, 52289667920, 55479193841], 64244765937)
+P64244_11=dict(info='Piezas (2024)', inx=27, m=(-125, 92), #4
+
+mn = QQ(-92/125)
+quad_xy = (QQ(6594/20737), QQ(212/699))
+q_res = make_quartic(mn, quad_xy)
+3783433974430771575*k^4 - 6777444312495075456*k^3 + 1550447272042267050*k^2 - 42501893628724525056*k - 127393293526718433313
+k0 = QQ(-57316/143211)
+k_to_abcd(mn, quad_xy, k0)
+([17111129720, 52289667920, 55479193841], 64244765937)
+e_res = model_quartic_as_elliptic_curve(q_res[2], k0)
+Elliptic Curve defined by y^2 = x^3 - x^2 + 9243195710310751148*x - 761969307339454319105751548 over Rational Field
+search_small_EC_points(e_res, q_res[2], k0, mn, quad_xy)
+p0 = (82375226 : 0 : 1), k = 3923018896/2752507349
+	d 64244765937 # P64244_11=dict(info='Piezas (2024)', inx=27, m=(-125, 92), #4
+Found 3 gens
+g = (721192326218576568171657/100493567523904 : 664569747185263487915665207696789499/1007412640691369185792 : 1), k = 127752573630892/66218672119725
+	d 77107030404994920297 # T77107_20=dict(info='Tomita (2024)', inx=58, m=(-125, 92)
+g = (2537156476 : 197538741245250 : 1), k = 208295462191424293/64953108224170167
+	d 31293260543726494476580617 # B31293_26=dict(info='Bremner (<=2015)', inx=91, m=(-125, 92)
+g = (2175767661425258611862857/10933418391184 : 3209736881258888797110780217219602051/36152135116574061248 : 1), k = -192088783263804059047667163090603616/23290586734705739436950995210947850275
+	d 600812607846064907399104720203513434875230824783511780778916510285049
+Using 4146 points on EC from 2073 generators
+4146 d 4 ok 1243 big
+4146 d, 4 ok, 1243 big
+[64244765937, 25866132798297, 77107030404994920297, 31293260543726494476580617]
+25866132798297 is P25866_14=dict(info='Piezas (2024)', inx=40, m=(-125, 92)
 
 --------------------
 Could also find curve for
@@ -281,6 +416,15 @@ k_to_abcd(mn, quad_xy, k0)
 ([1705575, 5507880, 8332208], 8707481)
 e_res = model_quartic_as_elliptic_curve(q_res[2], k0)
 search_small_EC_points(e_res, q_res[2], k0, mn, quad_xy)
+p0 = (-1137521 : 0 : 1), k = -2406021/390244
+	d 8707481
+Found 3 gens
+g = (3102801 : 8749246466 : 1), k = 9003044829/1682016941
+	d 2051764828361
+g = (5922280554894594871/116359443225 : 14442673638887368362864193456/39691951475695875 : 1), k = 909/2536
+	d 8707481
+g = (1835752148848569/125865961 : 80768926747795922326250/1412090216459 : 1), k = 97966936925088681/73221096826167191
+	d 12789647316029180654491744889
 4146 d, 3 ok, 1178 big
 [8707481, 2051764828361, 45556888578449]
 set([8707481, 2051764828361, 45556888578449])-kd
@@ -301,56 +445,51 @@ search_small_EC_points(e_res, q_res[2], k0, mn, quad_xy)
 
 --------------------
 
-
 TODO
-Need faster way to check quartic polys and find rational points.
-test find_quartic point on primes for feasibility
-why point always between roots?
-find min value between roots and search positive range up to that value.
 
 ----------
+dan_fulea has an interesting suggestion at the end of 
+https://mathoverflow.net/questions/463780/a-parametric-elliptic-curve-for-x4y4z4-1
+He asks whether Bremners (3/40) (I don't know where that comes from) works:
+"have no idea if a rational u can be found on the curve Cu with equation D2=f(u,V).
+What can be done? First of all, we try a brute force search. No results.
 
-sudo taskpolicy -c utility python your_script.py
-defaults write dev.warp.Warp NSAppSleepDisabled -bool YES
-then restart Warp
+Start with Piezas formula for D2
+sage: R.<D,u,v> = PolynomialRing(QQ)
+sage: u = -3/40
+sage: f(D, u, v) = -D**2 + 4*(-6-2*u+u**2)*(2-2*u+u**2)-8*(-2-4*u+u**2)*(2-2*u+u**2)*v-16*u*(4-3*u+u**2)*v**2-4*(4-12*u+4*u**2-2*u**3+u**4)*v**3+(4-8*u-4*u**3+u**4)*v**4
+sage: Cu = Curve(f(D, u, v))
+TypeError: F (=11780401/2560000*v^4 - 12603841/640000*v^3 - D^2 + 20307/4000*v^2 + 9350239/320000*v - 32251599/640000) must be a multivariate polynomial
+
+But he doesn't get the error. It must be how I am defining f.
+He goes on:
+sage: J = Jacobian(Cu)
+sage: J
+Elliptic Curve defined by y^2 = x^3 + 140719990850401/409600000000*x - 1506338457231274914479/131072000000000000 over Rational Field
+sage: J.minimal_model()
+Elliptic Curve defined by y^2 = x^3 + 140719990850401*x - 3012676914462549828958 over Rational Field
+
+This must be how he knows the Elliptic Curves for C5, C7
+Then he searches for torsion points, generators, etc. But he had to stop.
+And I don't know how to map such points back to a solution.
+Maybe it's in the Curve Cu.
+
+I implemented u_to_D_to_EC(u) in piezes_in_pairs:
+u = QQ(-5/44)
+E = u_to_D_to_EC(u)
+Elliptic Curve defined by y^2 = x^3 + 1049826552687683/2634041929728*x - 150765270473896156253413/11106722273226522624 over Rational Field
+but I expected
+C7:X3-X2+349942184229228X-11167797929528591502588=Y2
+
 
 --------
 Check Piezas investigations on uv pairs.
 The pairs are different than the pairs I used,
 and the formulas look different too.
 See
- 
 https://mathoverflow.net/questions/143751/other-elliptic-curves-for-x4y4z4-1
 https://math.stackexchange.com/questions/4852495/still-more-elliptic-curves-for-a4b4c4-d4/4853683#4853683
 https://math.stackexchange.com/questions/4853727/on-counterexamples-to-eulers-conjecture-using-bremners-and-durmans-elliptic-c
 https://math.stackexchange.com/questions/4857229/on-why-solutions-to-x4y4z4-1-come-in-pairs/4857799#4857799
 
---------
-
-Examine other functions in curves_tomita:
-search_small_solutions_4
-    generate_euler_solution
-        get_parametrized_xy
-        get_t_from_k_generalized
-They are broken attempt to make abcd from points on EC.
-
 -------
-
-Can I go from EC a4, a6 to coefficients of quartic
-and do the points on the quartic match the ones used on quartic
-which determined EC?
-
--------
-
-How to go from a (new) point on E to a solution.
-Or from a (new) point on E to the shifted quartic poly.
-
-Is the value of q_res at quart_x
-the same as the value of shifted_poly at 0 ?
-q_res = make_quartic(QQ(20/-9), (QQ(49/318), QQ(23/106)))
->>> res = model_quartic_as_elliptic_curve(q_res[2], QQ(-59/81))
->>> res[2] (should have negated this)
--4858767860*u^4 + 1255039528141/81*u^3 - 111483374052499/2187*u^2 + 56251607253382924/531441*u + 1493337137920714564/43046721
->>> res[2](QQ(-59/81))
--3306362772684012908/43046721
-same denom, but different numer.

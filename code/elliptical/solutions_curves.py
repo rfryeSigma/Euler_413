@@ -8,10 +8,10 @@ and Tomita's notes in http://www.maroon.dti.ne.jp/fermat/dioph4e.html
 import csv
 from importlib import reload
 from multiprocessing import Process, Queue
-from sage.all import Expression, Integer, QQ, Rational, RR, \
+from sage.all import GF, Integer, QQ, Rational, RR, \
     DiagonalQuadraticForm, PolynomialRing, \
     continued_fraction, cos, gcd, hilbert_symbol, lcm, \
-    parallel, pi, sage_eval, solve, var
+    oo, pari, pi, sage_eval, solve, var
 from sage.rings.polynomial.polynomial_rational_flint import Polynomial_rational_flint
 from sage.schemes.generic.point import SchemePoint
 from solutions import known
@@ -331,6 +331,64 @@ make_quartic(QQ(20/-9), (QQ(49/318), QQ(23/106)))
  4)
 """
 
+# never finds obstruction
+def is_locally_blocked(poly, p):
+    """
+    Returns True if NEITHER y^2 = f(k) nor y^2 = -f(k) has a solution mod p.
+    This is a fast necessary condition for the existence of rational points.
+    """
+    # Get coefficients mod p
+    R = GF(p)
+    f_mod = [R(c) for c in poly.list()]
+    
+    # We track if we've found a square for f or -f
+    found_f = False
+    found_neg_f = False
+    
+    # Check all possible k in the finite field
+    for k_val in R:
+        # Evaluate poly at k_val: Ak^4 + Bk^3 + Ck^2 + Dk + E
+        val = R(0)
+        k_pow = R(1)
+        for coeff in f_mod:
+            val += coeff * k_pow
+            k_pow *= k_val
+            
+        if val.is_square():
+            found_f = True
+        if (-val).is_square():
+            found_neg_f = True
+            
+        # If both are possible mod p, this prime doesn't obstruct us
+        if found_f and found_neg_f:
+            return False
+
+    # If we finish the loop and one (or both) never became a square:
+    # We return True if BOTH are blocked. 
+    # (In your case, you accept either, so we only reject if BOTH fail)
+    return not (found_f or found_neg_f)
+
+# Never finds obstruction
+def filter_pairs(poly, primes=[3, 5, 7, 11, 13, 17, 19, 23]):
+    for p in primes:
+        if is_locally_blocked(poly, p):
+            return True # This pair is obstructed
+    return False
+
+# faster than directr search over nz and nx in find_quartic_points
+def find_quartic_points_hyper(quartic_poly: Polynomial_rational_flint,
+            max_num: int, min_den: int, max_den: int) -> list:
+    """ Use hyperellratpoints on quartic_poly to find quartic points.
+    """
+    poly = quartic_poly
+    roots = poly.real_roots()
+    print(f'quartic roots {roots}')
+    assert 2 == len(roots)
+    if 0 < poly.list()[-1]:
+        poly = -poly
+    pts = pari(poly).hyperellratpoints((max_num, (min_den, max_den)), 0)
+    return pts
+
 def find_quartic_points(quartic_poly: Polynomial_rational_flint, 
             range_s: int=1, range_e: int=1000,
             gcd=gcd, abs=abs) -> list:
@@ -361,14 +419,17 @@ def find_quartic_points(quartic_poly: Polynomial_rational_flint,
     return sorted(found)
 """
 q_res = make_quartic(QQ(20/-9), (QQ(49/318), QQ(23/106)))
->>> start=time(); find_quartic_points(q_res[2], 1, 1000); elapsed=time()-start; elapsed
+q_res[2]
+4858767860*k^4 - 1337905101*k^3 + 32584720500*k^2 - 48737893941*k - 89364400362
+start=time(); find_quartic_points(q_res[2], 1, 1000); elapsed=time()-start; elapsed
 found -59/81 with rhs -1493337137920714564
 [-59/81]
 5.154595851898193
 """
 
-# slower that find_quartic_points and find less points
-def find_quartic_point_adaptive(quartic_poly: Polynomial_rational_flint,
+# slower that find_quartic_points and finds less points
+# but keep for Chebyshev nodes and continued fraction convergents code.
+def find_quartic_points_adaptive(quartic_poly: Polynomial_rational_flint,
             max_denom: int=10_000, n_nodes: int=100, pts_per_node: int=100,
             abs=abs, cos=cos, pi=RR(pi))->list:
     """
@@ -528,11 +589,10 @@ def search_mn(m: int, n_s: int, n_e: int, quad_n: int=5,
                     assert d in kd
     return d_dict
 
-# doesn't find anything
-def collect_mn(m: int, n_s: int, n_e: int, quad_n: int=10) -> list:
+def collect_mn(m: int, n_s: int, n_e: int) -> list:
     """ Given m, search n over range (n_s, n_e)
     for quadratics with rational points.
-    keep each n with no local obstruction.
+    keep each mn with no local obstruction.
     """
     assert m%4 == 0
     assert n_s%4 == 1
@@ -552,6 +612,7 @@ len(mn_list)
 135
 collected_mn_to_brute(mn_list)
 Counts: mn 135, D 0, big 0, known 0
+doesn't find anything
 """
 
 def DEBUG(*args):

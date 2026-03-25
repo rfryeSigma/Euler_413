@@ -5,6 +5,8 @@ brute.log -- log of progress using brute.py
 
 brute.py -- do a brute force search on quartic surfaces.
 
+curves_pari.log -- apply pari(poly).hyperellratpoints to Pieza's pairs.
+
 curves_piezas.py -- attempt to understand Pieza's explanation of elliptic curves.
 
 curves_tomita.log -- log of outputs of curves_tomita.py

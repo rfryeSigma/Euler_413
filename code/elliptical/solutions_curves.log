@@ -203,7 +203,6 @@ r 673865/2813001, s -2767624/2813001
 ([673865, 1390400, 2767624], 2813001)
 M28130_7=dict(info='MacLeod (1997)', inx=2, m=(-9, 20)
 
-
 Try 6th quad point (-367/1358, 971/1358)
 q_res = make_quartic(QQ(20/-9), (QQ(-367/1358), QQ(971/1358)))
 (-1/1358*(323327*k^2 + 1710902*k + 454343)/(881*k^2 + 4083),
@@ -363,7 +362,7 @@ find_point_instantly(QQ(4/201))
 (191689585/318641058, 1013/2774)
 so, this time I have 2 possibilities that require search.
 
-1.
+1. QQ(4/201)
 get_optimized_rational_points(QQ(4/201))
 [(281/2774, 1013/2774), (67185476/159320529, 756/1387), (191689585/318641058, 1013/2774), (829263617/1351525122, 12017/35298), (1162964873/3169435790, 138361/248330), (295689209/5076432198, 11431/44194), (5955554204/10233615897, 106960/267273), (1731502837/16150070466, 158755/421794), (1547213997/21998842846, 507285/1723642), (3141674273/24029027730, 260833/627570)]
 q_res = make_quartic(QQ(4/201), (QQ(281/2774), QQ(1013/2774)))
@@ -373,7 +372,13 @@ q_res[2].real_roots()
 find_quartic_points(q_res[2], 1, 50_000)
 find_quartic_points(q_res[2], 50_001, 100_000)
 []
-# Why can't I find any of these?
+Pari knows immediately that there is no rational point:
+>>> pari(-q_res[2]).hyperellratpoints(1_000_000, 0)
+[]
+>>> pari(q_res[2]).hyperellratpoints(1_000_000, 0)
+[]
+
+# Why can't I find any of these that were found with Pieza's pairs?
 u_num	u_den	v_num	v_den	d
 201	4	136	-133	156646737
 201	4	136	-133	16003017
@@ -386,7 +391,20 @@ u_num	u_den	v_num	v_den	d
 201	4	7919435	17426416	8.99732E+24
 201	4	7919435	17426416	16003017
 
-2.
+Try again with better tools
+mn = QQ(4/201)
+quad_xy = (QQ(281/2774), QQ(1013/2774))
+q_res = make_quartic(mn, quad_xy)
+find_quartic_points_hyper(q_res[2], 20_000_000, 1, 20_000_000)
+Pari returns immediately
+
+quad_xy = (QQ(67185476/159320529), QQ(756/1387))
+q_res = make_quartic(mn, quad_xy)
+find_quartic_points_hyper(q_res[2], 20_000_000, 1, 20_000_000)
+Pari returns immediately
+I don't understand how u = 201, 4 has solutions but pari can't see them ?????
+
+2. QQ(4/-201)
 get_optimized_rational_points(QQ(4/-201))
 [(52030/95163, 13724/31721), (115269596/1350585017, 13724/31721), (1739170033/2701170034, 7985/63442), (25864280553585/113559889399394, 1533775137/2667165122), (-2745103949911/331992705368838, 394545897/2599155298), (139011396461393/331992705368838, 1474926625/2599155298), (18458481028606/390944390775871, 3272315320/9182055823), (207467148243678/390944390775871, 4205574768/9182055823), (-9431447307972/705233627741873, 1851866700/16563722849), (11412409587086/716257102650627, 1491899972/5607543217)]
 q_res = make_quartic(QQ(4/-201), (QQ(52030/95163), QQ(13724/31721)))
@@ -396,10 +414,23 @@ q_res[2].real_roots()
 find_quartic_points(q_res[2], 1, 50_000)
 find_quartic_points(q_res[2], 50_001, 100_000)
 []
+Pari returns immediately
+>>> pari(q_res[2]).hyperellratpoints(1_000_000, 0)
+>>> pari(-q_res[2]).hyperellratpoints(1_000_000, 0)
+[]
 
--------------------
-quad_n: int=5, quart_e: int=50_000
+mn = QQ(4/-201)
+quad_xy = (QQ(52030/95163), QQ(13724/31721))
+q_res = make_quartic(mn, quad_xy)
+find_quartic_points_hyper(q_res[2], 20_000_000, 1, 20_000_000)
+Pari returns immediately ???
+
+---------------------------------------------------------
+At this point, I begin systematic search with small m
+Return to this search with better tools after failing with larger mn pairs
+
 ============================
+OLD SEARCH ON m=4
 search_mn(4, 1, 1001)
 No quartic point for mn 4/25
 No quartic point for mn -4/45
@@ -424,24 +455,115 @@ No quartic point for mn -4/801
 No quartic point for mn 4/957
 -4/957 no rational points found with limit 1000
 No quartic point for mn -4/957
-None
 
-# Redo with new code: quad_n: int=5, quart_e: int=50_000
-search_mn(4, 1, 200) # because have searched 201 above
 
-New code with solutions
-search_mn(4,45,100)
-new code checks quartic point on poly
-search_mn(4,101,200)
-??
-skip 201 because of failures above
-new code
-search_mn(4, 205, 400)
-all local obstructions
-search_mn(4, 401, 1000)
-Give up on 4 for now. 
+Start over
+collect_mn(4, 1, 200)
+[4/25, -4/45, 4/105]
 
-Was  mn -4/525, quad_xy (11978878/34363527, 51008/87439)
+mn = QQ(4/25)
+get_optimized_rational_points(mn)
+[(4/7, 8/21), (3/14, 1/42), (50/209, 100/627), (91/214, 241/642), (171/214, 1/642), (82/253, 232/759), (300/379, 100/1137), (291/418, 373/1254), (171/506, 485/1518), (371/758, 887/2274)]
+quad_xy = (QQ(4/7), QQ(8/21))
+q_res = make_quartic(mn, quad_xy)
+find_quartic_points_hyper(q_res[2], 10_000_000, 1, 10_000_000)
+quad_xy = (QQ(3/14), QQ(1/42))
+q_res = make_quartic(mn, quad_xy)
+find_quartic_points_hyper(q_res[2], 10_000_000, 1, 10_000_000)
+quad_xy = (QQ(50/209), QQ(100/627))
+q_res = make_quartic(mn, quad_xy)
+find_quartic_points_hyper(q_res[2], 10_000_000, 1, 10_000_000)
+quad_xy = (QQ(91/214), QQ(241/642))
+q_res = make_quartic(mn, quad_xy)
+find_quartic_points_hyper(q_res[2], 10_000_000, 1, 10_000_000)
+quad_xy = (QQ(171/214), QQ(1/642))
+q_res = make_quartic(mn, quad_xy)
+find_quartic_points_hyper(q_res[2], 10_000_000, 1, 10_000_000)
+quad_xy = (QQ(82/253), QQ(232/759))
+q_res = make_quartic(mn, quad_xy)
+find_quartic_points_hyper(q_res[2], 10_000_000, 1, 10_000_000)
+quad_xy = (QQ(300/379), QQ(100/1137))
+q_res = make_quartic(mn, quad_xy)
+find_quartic_points_hyper(q_res[2], 10_000_000, 1, 10_000_000)
+quad_xy = (QQ(291/418), QQ(373/1254))
+q_res = make_quartic(mn, quad_xy)
+find_quartic_points_hyper(q_res[2], 10_000_000, 1, 10_000_000)
+quad_xy = (QQ(171/506), QQ(485/1518))
+q_res = make_quartic(mn, quad_xy)
+find_quartic_points_hyper(q_res[2], 10_000_000, 1, 10_000_000)
+quad_xy = (QQ(371/758), QQ(887/2274))
+q_res = make_quartic(mn, quad_xy)
+find_quartic_points_hyper(q_res[2], 10_000_000, 1, 10_000_000)
+Give up.
+
+mn = QQ(4/-45)
+get_optimized_rational_points(mn)
+[(-45/602, 15/154), (299/602, 73/154), (36/83, 516/913), (58/453, 1000/1661), (67/166, 1087/1826), (131/218, 139/2398), (67/2478, 73/154), (1483/2478, 15/154), (115/786, 1775/2882), (28/367, 2216/4037)]
+quad_xy = (QQ(371/758), QQ(887/2274))
+q_res = make_quartic(mn, quad_xy)
+find_quartic_points_hyper(q_res[2], 10_000_000, 1, 10_000_000)
+quad_xy = (QQ(299/602), QQ(73/154))
+q_res = make_quartic(mn, quad_xy)
+find_quartic_points_hyper(q_res[2], 10_000_000, 1, 10_000_000)
+quad_xy = (QQ(36/83), QQ(516/913))
+q_res = make_quartic(mn, quad_xy)
+find_quartic_points_hyper(q_res[2], 10_000_000, 1, 10_000_000)
+quad_xy = (QQ(58/453), QQ(1000/1661))
+q_res = make_quartic(mn, quad_xy)
+find_quartic_points_hyper(q_res[2], 10_000_000, 1, 10_000_000)
+quad_xy = (QQ(67/166), QQ(1087/1826))
+q_res = make_quartic(mn, quad_xy)
+find_quartic_points_hyper(q_res[2], 10_000_000, 1, 10_000_000)
+quad_xy = (QQ(131/218), QQ(139/2398))
+q_res = make_quartic(mn, quad_xy)
+find_quartic_points_hyper(q_res[2], 10_000_000, 1, 10_000_000)
+quad_xy = (QQ(67/2478), QQ(73/154))
+q_res = make_quartic(mn, quad_xy)
+find_quartic_points_hyper(q_res[2], 10_000_000, 1, 10_000_000)
+quad_xy = (QQ(1483/2478), QQ(15/154))
+q_res = make_quartic(mn, quad_xy)
+find_quartic_points_hyper(q_res[2], 10_000_000, 1, 10_000_000)
+quad_xy = (QQ(115/786), QQ(1775/2882))
+q_res = make_quartic(mn, quad_xy)
+find_quartic_points_hyper(q_res[2], 10_000_000, 1, 10_000_000)
+quad_xy = (QQ(28/367), QQ(2216/4037))
+q_res = make_quartic(mn, quad_xy)
+find_quartic_points_hyper(q_res[2], 10_000_000, 1, 10_000_000)
+Give up.
+
+mn = QQ(4/105)
+get_optimized_rational_points(mn)
+quad_xy = (QQ(166/2299), QQ(28/121))
+q_res = make_quartic(mn, quad_xy)
+find_quartic_points_hyper(q_res[2], 20_000_000, 1, 20_000_000)
+quad_xy = (QQ(2897/4598), QQ(79/242))
+q_res = make_quartic(mn, quad_xy)
+find_quartic_points_hyper(q_res[2], 20_000_000, 1, 20_000_000)
+quad_xy = (QQ(4422/6923), QQ(2124/6923))
+q_res = make_quartic(mn, quad_xy)
+find_quartic_points_hyper(q_res[2], 20_000_000, 1, 20_000_000)
+quad_xy = (QQ(5689/13846), QQ(7403/13846))
+q_res = make_quartic(mn, quad_xy)
+find_quartic_points_hyper(q_res[2], 20_000_000, 1, 20_000_000)
+quad_xy = (QQ(15510/22439), QQ(120/1181))
+q_res = make_quartic(mn, quad_xy)
+find_quartic_points_hyper(q_res[2], 20_000_000, 1, 20_000_000)
+quad_xy = (QQ(13953/25454), QQ(11493/25454))
+q_res = make_quartic(mn, quad_xy)
+find_quartic_points_hyper(q_res[2], 20_000_000, 1, 20_000_000)
+quad_xy = (QQ(7441/44878), QQ(1001/2362))
+q_res = make_quartic(mn, quad_xy)
+find_quartic_points_hyper(q_res[2], 20_000_000, 1, 20_000_000)
+quad_xy = (QQ(52748/84293), QQ(28280/84293))
+q_res = make_quartic(mn, quad_xy)
+find_quartic_points_hyper(q_res[2], 20_000_000, 1, 20_000_000)
+quad_xy = (QQ(72889/168586), QQ(89167/168586))
+q_res = make_quartic(mn, quad_xy)
+find_quartic_points_hyper(q_res[2], 20_000_000, 1, 20_000_000)
+quad_xy = (QQ(126308/189849,), QQ(28/121))
+q_res = make_quartic(mn, quad_xy)
+find_quartic_points_hyper(q_res[2], 20_000_000, 1, 20_000_000)
+Give up.
 
 ============================
 search_mn(8, 1, 1001)
@@ -505,15 +627,138 @@ M63852_9=dict(info='MacLeod (1997)', inx=14, m=(-5, 8)
 k_to_abcd(QQ(8/-5), (QQ(32/247), QQ(20/39)), QQ(-95/6086))
 ([2682440, 15365639, 18796760], 20615673)
 E20615_8=dict(info='Elkies (1998)', inx=7, m=(-5, 8)
-then continue search
-search_mn(8, 9, 1001)
 
-New code with solutions
-search_mn(8,45,100)
-new code
-search_mn(8,101,200)
-{}
-Give up on 8 for now.
+What is there after 8/-5 ?
+collect_mn(8, 9, 200)
+[25/8, -8/45, -45/8, 105/8]
+
+mn = QQ(25/8)
+get_optimized_rational_points(mn)
+[(-4/7, 8/21), (-3/14, 1/42), (-50/209, 100/627), (-171/214, 1/642), (-91/214, 241/642), (-82/253, 232/759), (-300/379, 100/1137), (-291/418, 373/1254), (-171/506, 485/1518), (-371/758, 887/2274)]
+
+quad_xy = (QQ(-4/7), QQ(8/21))
+q_res = make_quartic(mn, quad_xy)
+find_quartic_points_hyper(q_res[2], 20_000_000, 1, 20_000_000)
+quad_xy = (QQ(-3/14), QQ(1/42))
+q_res = make_quartic(mn, quad_xy)
+find_quartic_points_hyper(q_res[2], 20_000_000, 1, 20_000_000)
+quad_xy = (QQ(-50/209), QQ(100/627))
+q_res = make_quartic(mn, quad_xy)
+find_quartic_points_hyper(q_res[2], 20_000_000, 1, 20_000_000)
+quad_xy = (QQ(-171/214), QQ(1/642))
+q_res = make_quartic(mn, quad_xy)
+find_quartic_points_hyper(q_res[2], 20_000_000, 1, 20_000_000)
+quad_xy = (QQ(-91/214), QQ(241/642))
+q_res = make_quartic(mn, quad_xy)
+find_quartic_points_hyper(q_res[2], 20_000_000, 1, 20_000_000)
+quad_xy = (QQ(-82/253), QQ(232/759))
+q_res = make_quartic(mn, quad_xy)
+find_quartic_points_hyper(q_res[2], 20_000_000, 1, 20_000_000)
+quad_xy = (QQ(-300/379), QQ(100/1137))
+q_res = make_quartic(mn, quad_xy)
+find_quartic_points_hyper(q_res[2], 20_000_000, 1, 20_000_000)
+quad_xy = (QQ(-291/418), QQ(373/1254))
+q_res = make_quartic(mn, quad_xy)
+find_quartic_points_hyper(q_res[2], 20_000_000, 1, 20_000_000)
+quad_xy = (QQ(-171/506), QQ(485/1518))
+q_res = make_quartic(mn, quad_xy)
+find_quartic_points_hyper(q_res[2], 20_000_000, 1, 20_000_000)
+quad_xy = (QQ(-371/758), QQ(887/2274))
+q_res = make_quartic(mn, quad_xy)
+find_quartic_points_hyper(q_res[2], 20_000_000, 1, 20_000_000)
+Give up.
+
+mn = QQ(8/-45)
+get_optimized_rational_points(mn)
+quad_xy = (QQ(9/122), QQ(81/122))
+q_res = make_quartic(mn, quad_xy)
+find_quartic_points_hyper(q_res[2], 20_000_000, 1, 20_000_000)
+quad_xy = (QQ(65/122), QQ(25/122))
+q_res = make_quartic(mn, quad_xy)
+find_quartic_points_hyper(q_res[2], 20_000_000, 1, 20_000_000)
+quad_xy = (QQ(58/547), QQ(376/547))
+q_res = make_quartic(mn, quad_xy)
+find_quartic_points_hyper(q_res[2], 20_000_000, 1, 20_000_000)
+quad_xy = (QQ(-40/753), QQ(120/251))
+q_res = make_quartic(mn, quad_xy)
+find_quartic_points_hyper(q_res[2], 20_000_000, 1, 20_000_000)
+quad_xy = (QQ(-59/1114), QQ(533/1114))
+q_res = make_quartic(mn, quad_xy)
+find_quartic_points_hyper(q_res[2], 20_000_000, 1, 20_000_000)
+quad_xy = (QQ(817/1506), QQ(59/502))
+q_res = make_quartic(mn, quad_xy)
+find_quartic_points_hyper(q_res[2], 20_000_000, 1, 20_000_000)
+quad_xy = (QQ(738/2147), QQ(1404/2147))
+q_res = make_quartic(mn, quad_xy)
+find_quartic_points_hyper(q_res[2], 20_000_000, 1, 20_000_000)
+quad_xy = (QQ(1242/2563), QQ(96/233))
+q_res = make_quarti(mn, quad_xy)
+find_quartic_points_hyper(q_res[2], 20_000_000, 1, 20_000_000)
+quad_xy = (QQ(-559/4118), QQ(509/4118))
+q_res = make_quartic(mn, quad_xy)
+find_quartic_points_hyper(q_res[2], 20_000_000, 1, 20_000_000)
+quad_xy = (QQ(890/5127), QQ(1220/1709))
+q_res = make_quartic(mn, quad_xy)
+find_quartic_points_hyper(q_res[2], 20_000_000, 1, 20_000_000)
+Give up
+
+mn = QQ(-45/8)
+get_optimized_rational_points(mn)
+
+quad_xy = (QQ(-299/602), QQ(73/154))
+q_res = make_quartic(mn, quad_xy)
+find_quartic_points_hyper(q_res[2], 20_000_000, 1, 20_000_000)
+?
+
+quad_xy = (QQ(45/602), QQ(15/154))
+q_res = make_quartic(mn, quad_xy)
+find_quartic_points_hyper(q_res[2], 20_000_000, 1, 20_000_000)
+?
+
+quad_xy = (QQ(-36/83), QQ(516/913))
+q_res = make_quartic(mn, quad_xy)
+find_quartic_points_hyper(q_res[2], 20_000_000, 1, 20_000_000)
+quad_xy = (QQ(-58/453), QQ(1000/1661))
+q_res = make_quartic(mn, quad_xy)
+find_quartic_points_hyper(q_res[2], 20_000_000, 1, 20_000_000)
+quad_xy = (QQ(-67/166), QQ(1087/1826))
+q_res = make_quartic(mn, quad_xy)
+find_quartic_points_hyper(q_res[2], 20_000_000, 1, 20_000_000)
+quad_xy = (QQ(-131/218), QQ(139/2398))
+q_res = make_quartic(mn, quad_xy)
+find_quartic_points_hyper(q_res[2], 20_000_000, 1, 20_000_000)
+?
+
+quad_xy = (QQ(-1483/2478), QQ(15/154))
+q_res = make_quartic(mn, quad_xy)
+find_quartic_points_hyper(q_res[2], 20_000_000, 1, 20_000_000)
+?
+
+quad_xy = (QQ(-67/2478), QQ(73/154))
+q_res = make_quartic(mn, quad_xy)
+find_quartic_points_hyper(q_res[2], 20_000_000, 1, 20_000_000)
+?
+
+quad_xy = (QQ(-115/786), QQ(1775/2882))
+q_res = make_quartic(mn, quad_xy)
+find_quartic_points_hyper(q_res[2], 20_000_000, 1, 20_000_000)
+?
+
+quad_xy = (QQ(-28/367), QQ(2216/4037))
+q_res = make_quartic(mn, quad_xy)
+find_quartic_points_hyper(q_res[2], 20_000_000, 1, 20_000_000)
+?
+
+Wait for mn = QQ(-45/8) to be done.
+
+mn = QQ(105/8)
+get_optimized_rational_points(mn)
+quad_xy = (QQ
+q_res = make_quartic(mn, quad_xy)
+find_quartic_points_hyper(q_res[2], 20_000_000, 1, 20_000_000)
+
+
+
 
 ============================
 search_mn(12, 1, 1001)
@@ -731,11 +976,11 @@ Give up on 32 for now. Was on Trying mn -32/105
 curves_tomita needs u=-41/36) for C5
 search_mn(36, 1, 41)
 No quartic point for
-Trying mn -36/41, quad_xy (-98/303, 48/101)
-Trying mn -36/41, quad_xy (185/606, 31/202)
-Trying mn -36/41, quad_xy (260/853, 136/853)
-Trying mn -36/41, quad_xy (-707/1934, 535/1934)
-Trying mn -36/41, quad_xy (-108/2441, 2040/2441)
+Trying mn -36/41, quad_xy (-98/303, 48/101) Pari fails < 1_000_000 too
+Trying mn -36/41, quad_xy (185/606, 31/202) Pari found 215223/135323
+Trying mn -36/41, quad_xy (260/853, 136/853) Pari found 98767/68471
+Trying mn -36/41, quad_xy (-707/1934, 535/1934) Pari fails < 1_000_000 too
+Trying mn -36/41, quad_xy (-108/2441, 2040/2441) Pari found 57613/6958
 
 % python -m elliptical.solutions_curves search_mn 36 41 41 5 50_001 100_000
 Trying mn -36/41, quad_xy (-98/303, 48/101)
@@ -743,20 +988,38 @@ No quartic point for mn -36/41
 Trying mn -36/41, quad_xy (185/606, 31/202)
 killed it before finish
 
+Pari found a point
+>>> q_res = make_quartic(QQ(36/-41), (QQ(185/606), QQ(31/202)))
+>>> q_res[2].real_roots()
+[-1.77929919293637, 2.58557446908516]
+>>> q_res[2]
+409575322528*k^4 - 288473020269*k^3 + 979374518316*k^2 - 2528125355637*k - 13329050547438
+>>> pari(-q_res[2]).hyperellratpoints(1_000_000, 0)
+[[215223/135323, 67065279766530750/18312314329], [215223/135323, -67065279766530750/18312314329]]
+k_to_abcd(QQ(36/-41), (QQ(185/606), QQ(31/202)), QQ(215223/135323))
+([588903336, 859396455, 1166705840], 1259768473)
+G12597_10=dict(info='Gerbicz (2009)', inx=16, m=(-41, 36), #5
+
 
 ============================
 curves_tomita needs u=-5/44) for C7
 search_mn(44, 1, 5)
 No quartic point for
-Trying mn -44/5, quad_xy (4/199, 160/597)
-Trying mn -44/5, quad_xy (-133/398, 743/1194)
-Trying mn -44/5, quad_xy (-509/846, 575/2538)
+Trying mn -44/5, quad_xy (4/199, 160/597) 
+Trying mn -44/5, quad_xy (-133/398, 743/1194) 
+Trying mn -44/5, quad_xy (-509/846, 575/2538) 
 Trying mn -44/5, quad_xy (-629/1074, 941/3222)
-Trying mn -44/5, quad_xy (11/1074, 979/3222)
-
-% python -m elliptical.solutions_curves search_mn 44 5 5 5 50_001 100_000
-Trying mn -44/5, quad_xy (-133/398, 743/1194)
-killed it before finish
+Trying mn -44/5, quad_xy (11/1074, 979/3222) 
+pari fails +/-qref on all with h <=5_000_000
+ 
+(-997/1818, 2165/5454) 
+(-1933/3206, 2119/9618) 
+(-110/3549, 4400/10647) 
+(-28/4391, 4664/13173) 
+(-3790/6081, 940/18243) 
+pari fails +/-qref on all with h <=5_000_000
+pari fails +-qref on (4/199, 160/597), (-133/398, 743/1194), (-509/846, 575/2538)
+for [10_000_000, [0, 1_000_000]]
 
 ============================
 
@@ -786,14 +1049,362 @@ No quartic point for mn -92/125
 Trying mn -92/125, quad_xy (-6125/41474, 1075/1398)
 killed it before finish
 
+get_optimized_rational_points(QQ(92/-125), result_limit=10)
+[(6594/20737, 212/699), pari found -57316/143211
+(-6125/41474, 1075/1398), pari fails <= 5_000_000
+(5250/23873, 45700/71619), pari fails <= 5_000_000
+(-164708/496523, 212/699), 
+(133011/993046, 1075/1398),
+(-130061/1105202, 29693/37254), 
+(-462476/1461647, 18992/49269), 
+(-237950/2663681, 73340/89787), 
+(1199988/3526447, 8128/118869), 
+(-2196132/6221723, 19780/209721)]
+
+k_to_abcd(QQ(92/-125), (QQ(6594/20737), QQ(212/699)), QQ(-57316/143211))
+([17111129720, 52289667920, 55479193841], 64244765937)
+P64244_11=dict(info='Piezas (2024)', inx=27, m=(-125, 92), #4
+
+
+----------------------
+Tito requested that I look for v pairs for these u (ordered by m):
+u = 1865/132
+u = 1861/240
+u = -936/5281
+u = -1581/1520
+u = -1245/5012
+Since I already kind of did that with solutions_uv.csv,
+instead I plan to use pari(f).hyperellratpoints on them
+And along the way, I discovered that some of them are linked
+in a more fundamental way; i.e. by loweer height rationals,
+so sudy them too.
+
 ======================
-1865/132 is secondary u for -29/12
+u = 1865/132
+1865,132,30768,-57253,2051764828361,2032977944240,894416022327,125777308440
+    T20517_13=dict(info='Tomita (2024)', inx=35, m=(-29, 12),
+1865,132,30768,-57253,8707481,8332208,5507880,1705575
+    B87074_7=dict(info='Bernstein (2001)', inx=3, m=(-29, 12), #3
+1865,132,103611,244444,10018903766533510889057062601,9667333776938051160393251960,6052043593595878314368914743,168645743122342622620098480
+1865,132,103611,244444,8707481,8332208,5507880,1705575
+
+Note that it did not find:
+T45556_14=dict(info='Tomita (2024)', inx=44, m=(-29, 12),
+	abcd=(7_908_038_161_032, 27_546_142_170_735, 43_940_127_884_360, 45_556_888_578_449)
+s1&s2
+{1865/132, -29/12, -30768/57253} # 1865/132
+>>> s1&s3
+{-29/12, -3333/107368, 6280/1359} # 6280/1359 for later search
+>>> s2&s3
+{-29/12}
+
+So 1865/132 is secondary u for -29/12
 search_mn(132,1,1864,5,1,10_000)
 {}
 search_mn(132,1865,1865,5,1,50_000)
-??
+Trying mn 132/1865, quad_xy (1349398/2158419, 724/1993)
+Trying mn 132/1865, quad_xy (419081/4316838, 657/3986)
+Trying mn 132/1865, quad_xy (22284777/31541218, 657/3986)
+Trying mn 132/1865, quad_xy (891341697/1230651166, 4083/3409006)
+Trying mn 132/1865, quad_xy (203178810721/562099792818, 4927865127/9861399874)
+No quartic point for mn 132/1865
+Trying mn -132/1865, quad_xy (-37655/640062, 23855/213354)
+Trying mn -132/1865, quad_xy (327649/640062, 97913/213354)
+Trying mn -132/1865, quad_xy (-18351004/290915469, 4676096/96971823)
+Trying mn -132/1865, quad_xy (307777057/685428642, 125657515/228476214)
+Trying mn -132/1865, quad_xy (-102307367/1597643042, 6765239/1597643042)
+No quartic point for mn -132/1865
+{}
+search_mn(132,1865,1865,2,50_001,100_000)
+search_mn(132,1865,1865,2,100_001,150_000)
+search_mn(132,1865,1865,2,150_001,200_000)
+{}
+
+Start over:
+collect_mn(132, 1865, 1865)
+[132/1865, -132/1865]
+mn = QQ(132/-1865)
+quad_xy = (QQ(-37655/640062), QQ(23855/213354))
+q_res = make_quartic(mn, quad_xy)
+find_quartic_points_hyper(q_res[2], 1_000_000, 1, 1_000_000)
+quartic roots [-1.37715247955356, 0.923031872937083]
+[]
+I was hoping it would return instantly but it took a while, so not impossible.
+
+mn = QQ(132/1865)
+quad_xy = (QQ(1349398/2158419), QQ(724/1993))
+q_res = make_quartic(mn, quad_xy)
+find_quartic_points_hyper(q_res[2], 1_000_000, 1, 1_000_000)
+quartic roots [-1.23480772992673, 16.1843649409926]
+[]
+find_quartic_points_hyper(q_res[2], 10_000_000, 1, 10_000_000)
+[[6713517/3513073, 155271448630395202752/3513073], [6713517/3513073, -155271448630395202752/3513073]]
+!!
+
+quad_xy = (QQ(419081/4316838), QQ(657/3986))
+q_res = make_quartic(mn, quad_xy)
+find_quartic_points_hyper(q_res[2], 1_000_000, 1, 1_000_000)
+quartic roots [-1.22650909692854, 0.539012392055012]
+[]
+find_quartic_points_hyper(q_res[2], 10_000_000, 1, 10_000_000)
+[]
+
+quad_xy = (QQ(22284777/31541218), QQ(657/3986))
+q_res = make_quartic(mn, quad_xy)
+find_quartic_points_hyper(q_res[2], 10_000_000, 1, 10_000_000)
+[[-4423367/2661241, 444904189096853801933760174/7082203660081], [-4423367/2661241, -444904189096853801933760174/7082203660081]]
+!!
+
+mn = QQ(132/1865)
+quad_xy = (QQ(1349398/2158419), QQ(724/1993))
+q_res = make_quartic(mn, quad_xy)
+k0 = QQ(6713517/3513073)
+e_res = model_quartic_as_elliptic_curve(q_res[2], k0)
+Elliptic Curve defined by y^2 = x^3 + 79369088923263375587868961*x + 1732397558180692595093098192694863661602 over Rational Field
+search_small_EC_points(e_res, q_res[2], k0, mn, quad_xy)
+p0 = (-9836326634561 : 0 : 1), k = -1914725943141/15292747537081
+	d 8707481
+Found 5 gens
+g = (-103126346180951031503658699178191/20853011890491334225 : 3324633977964482580591180728751677506041321902498/95225483470240382910907918375 : 1), k = 1698327245286741490118612966888498698915356/1622547154692154496162999233548525904484869
+	d 1983292217553296135016175939258216493964850083256663003315313278282184417
+g = (-53321496685629432185162879/69425690155264 : 23646492407548943813710609021059224533695/578469290917211942912 : 1), k = 6713517/3513073
+	d 8707481
+g = (38883848085026323329/3478225 : 411127855313751118777117510642/6486889625 : 1), k = 1918157616/229579049
+	d 2051764828361
+g = (7752034592289 : 53042629652230600370 : 1), k = 120245900867383356/21277524443632549
+	d 10018903766533510889057062601
+g = (109584836273053256247255249/1666993436641 : 1161111989193349422783046201246414984030/2152290232909364561 : 1), k = 1918157616/229579049
+	d 2051764828361
+Using 866 points on EC from 806 generators
+d=8707481, abc=[1705575, 5507880, 8332208], EC p (0 : 1 : 0) -> k 6713517/3513073
+d=2051764828361, abc=[125777308440, 894416022327, 2032977944240], EC p (-103126346180951031503658699178191/20853011890491334225 : -3324633977964482580591180728751677506041321902498/95225483470240382910907918375 : 1) -> k -978958356/955875941
+866 d, 2 ok, 233 big
+[8707481, 2051764828361]
+
+Try other quartic point:
+mn = QQ(132/1865)
+quad_xy = (QQ(22284777/31541218), QQ(657/3986))
+q_res = make_quartic(mn, quad_xy)
+k0 = QQ(-4423367/2661241)
+e_res = model_quartic_as_elliptic_curve(q_res[2], k0)
+Elliptic Curve defined by y^2 = x^3 + 79369088923263375587868961*x + 1732397558180692595093098192694863661602 over Rational Field
+search_small_EC_points(e_res, q_res[2], k0, mn, quad_xy)
+same result
+
+======================
+u = 1861/240
+1861,240,-361,540,1059621884297,1041572957760,535914713672,187577183625
+    P10596_13=dict(info='Piezas (2024)', inx=32, m=(-361, 540), #2
+1861,240,-361,540,145087793,122055375,121952168,1841160
+    R14508_9=dict(info='Rathmann (2006)', inx=11, m=(-361, 540), #2
+1861,240,7800,-5509,145087793,122055375,121952168,1841160
+1861,240,7800,-5509,1059621884297,1041572957760,535914713672,187577183625
+1861,240,34960712,4843695,145087793,122055375,121952168,1841160
+1861,240,34960712,4843695,601546336586676758217069747353,507376500694215143603840904000,504285647197281669856795386728,6571990083263349384871692135
+s1&s2
+{1861/240, -7800/5509, -361/540} # -361/540 for inclusion and -7800/5509 later
+
+collect_mn(240, 1861, 1861)
+[240/1861, -240/1861] # ignore the possible negative  solution
+mn = QQ(240/1861)
+get_optimized_rational_points(mn)
+[(13196149/22790106, 3065335/7596702),
+ (23902544/148135689, 699464/49378563), 
+ (1138369560/6391127689, 907820940/6391127689), ...]
+quad_xy = (QQ(13196149/22790106), QQ(3065335/7596702))
+q_res = make_quartic(mn, quad_xy)
+find_quartic_points_hyper(q_res[2], 10_000_000, 1, 10_000_000)
+[]
+find_quartic_points_hyper(q_res[2], 20_000_000, 10_000_000, 20_000_000)
+[]
+
+Try 2nd quad point:
+mn = QQ(240/1861)
+quad_xy = (QQ(23902544/148135689), QQ(699464/49378563))
+q_res = make_quartic(mn, quad_xy)
+find_quartic_points_hyper(q_res[2], 10_000_000, 1, 10_000_000)
+quartic roots [-0.737712820593669, 0.679840100108352]
+[]
+find_quartic_points_hyper(q_res[2], 20_000_000, 10_000_000, 20_000_000)
+[]
+Give up. quad points are too large.
+
+=====================
+Also linked: -361/540 
+-361,540,7800,-5509,1059621884297,1041572957760,535914713672,187577183625
+    P10596_13=dict(info='Piezas (2024)', inx=32, m=(-361, 540), #2
+-361,540,7800,-5509,145087793,122055375,121952168,1841160
+    R14508_9=dict(info='Rathmann (2006)', inx=11, m=(-361, 540), #2
+-361,540,-6393885,10250072,16013927795894026959663168953,13664102621078861306004840840,13258851160243699422011467335,552797283800610952652413328
+-361,540,-6393885,10250072,145087793,122055375,121952168,1841160
+Same as for u = 1861/240
+
+collect_mn(540, 361, 361)
+[-540/361]
+mn = QQ(540/-361)
+get_optimized_rational_points(mn)
+[(-127827/300466, 115557/300466), 
+ (200821026413/1111749138678, 115557/300466), 
+ (-1467681282458/7226369401407, 1500568/1953029), ...]
+
+quad_xy = (QQ(-127827/300466), QQ(115557/300466))
+q_res = make_quartic(mn, quad_xy)
+find_quartic_points_hyper(q_res[2], 10_000_000, 1, 10_000_000)
+quartic roots [-5.79324242459860, 1.87112582497651]
+[]
+find_quartic_points_hyper(q_res[2], 20_000_000, 10_000_000, 20_000_000)
+[]
+
+quad_xy = (QQ(200821026413)/QQ(1111749138678), QQ(115557/300466))
+q_res = make_quartic(mn, quad_xy)
+find_quartic_points_hyper(q_res[2], 10_000_000, 1, 10_000_000)
+quartic roots [-0.895123593329439, 2.77141596086963]
+[]
+find_quartic_points_hyper(q_res[2], 20_000_000, 10_000_000, 20_000_000)
+[]
+Give up.
+
+=====================
+Also linked : -817/660
+-817,660,-1581,1520,10816708329115215113,9585769407872803575,8510180374729994520,985735303963754488
+    P10816_20=dict(info='Piezas (2024)', inx=56, m=(-817, 660), #3
+-817,660,-1581,1520,44310257,41084175,31669120,2164632
+    G44310_8=dict(info='Gerbicz (2006)', inx=8, m=(-817, 660), #3
+-817,660,21792,5035,44310257,41084175,31669120,2164632
+-817,660,21792,5035,1671674986261410994097,1534990269771364822095,1199828498161126807800,655960628418767673472
+    P16716_22=dict(info='Piezas (2024)', inx=64, m=(-817, 660)
+-817,660,8583400,714723,44310257,41084175,31669120,2164632
+-817,660,8583400,714723,10816708329115215113,9585769407872803575,8510180374729994520,985735303963754488
+-817,660,-3622925,12225132,1671674986261410994097,1534990269771364822095,1199828498161126807800,655960628418767673472
+-817,660,-3622925,12225132,44310257,41084175,31669120,2164632
+s1&s2
+{8583400/714723, -1581/1520, -817/660}
+>>> s1&s3
+{21792/5035, -3622925/12225132, -817/660}
+
+collect_mn(660, 817, 817)
+[-660/817]
+mn = QQ(660/-817)
+get_optimized_rational_points(mn)
+[(-719410/73692027, 102460/122209), 
+ (-64903636/1809793081, 102460/122209), 
+ (842862657/3619586162, 139239/244418), 
+ (-2463518088921167/9472923912568898,  392889574649/639673435922), ...]
+
+mn = QQ(660/-817)
+quad_xy = (QQ(-719410/73692027), QQ(102460/122209))
+q_res = make_quartic(mn, quad_xy)
+find_quartic_points_hyper(q_res[2], 20_000_000, 1, 20_000_000)
+[]
+
+mn = QQ(660/-817)
+quad_xy = (QQ(-64903636/1809793081), QQ(102460/122209)) 
+q_res = make_quartic(mn, quad_xy)
+find_quartic_points_hyper(q_res[2], 20_000_000, 1, 20_000_000)
+[]
+
+mn = QQ(660/-817)
+quad_xy = (QQ(842862657)/QQ(3619586162), QQ(139239/244418))
+q_res = make_quartic(mn, quad_xy)
+find_quartic_points_hyper(q_res[2], 20_000_000, 1, 20_000_000)
+>>> quad_xy = (QQ(842862657)/QQ(3619586162), QQ(139239/244418))
+>>> q_res = make_quartic(mn, quad_xy)
+>>> find_quartic_points_hyper(q_res[2], 20_000_000, 1, 20_000_000)
+quartic roots [-0.955833713485208, 5.02972917517838]
+[[1673417/995111, 269130187015091321807644350/24152339081], [1673417/995111, -269130187015091321807644350/24152339081]]
+
+k0 = QQ(1673417)/QQ(995111) / (QQ(269130187015091321807644350)/QQ(24152339081))
+2742623/18173420691139936647150
+k0_num = Integer(1673417) * Integer(24152339081)
+k0_den = Integer(995111) * Integer(269130187015091321807644350)
+k0 = QQ(k0_num / k0 den)
+2742623/18173420691139936647150
+e_res = model_quartic_as_elliptic_curve(q_res[2], k0)
+>>> e_res[0]
+Elliptic Curve defined by y^2 = x^3 + 275270880915888577767107114761521696888265969822885949826994850994811034727654327711191141075984914841588839477760365406005150004476396965628188060298314426624/617487256795200369720514035013851230865915466149787580942375802339619384646137421450259573275357976588739084759485840684083328205492472190492741527800849*x + (-413887138530663933760897216838377600755220290943523807939412213944432195092194971237034654560410210483438575635415928684140477028160148874696224042627583376963797106282694476069732187862324623375010314827471295238068629834738831557484544/15344120453284986630725588181860343286598064309924720537215346291638530717504829893343347229016942243686738754718587597500912298334908107282377935641377305050628593751693261363590206572856833899861943431141623341505859380172228743) over Symbolic Ring
+search_small_EC_points(e_res, q_res[2], k0, mn, quad_xy)
+cypari2.handle_error.PariError: impossible inverse in divrr: 0.E3670
+Give up.
+
+======================
+u = -936/5281
+936,-5281,1717941,427352,25866132798297,23449050222680,18776929334105,12035933588696
+    P25866_14=dict(info='Piezas (2024)', inx=40, m=(-125, 92),
+936,-5281,1717941,427352,64244765937,55479193841,52289667920,17111129720
+    P64244_11=dict(info='Piezas (2024)', inx=27, m=(-125, 92), #4 (Curve C9)
+s1&s2
+{1717941/427352, -125/92, -936/5281} # -817/660 for inclusion in search
+
+collect_mn(936, 5281, 5281)
+[5281/936, -5281/936] # ignore positive
+mn = QQ(-5281/936)
+get_optimized_rational_points(mn)
+[(175533147/3603806446, 5904555/22109242),
+ (-2944554302/9009516115, 35518364/55273105)
+Give up. Too big
+
+====================
+u = -1581/1520
+-1581,1520,-12065,12396,44310257,41084175,31669120,2164632
+    G44310_8=dict(info='Gerbicz (2006)', inx=8, m=(-817, 660), #3
+-1581,1520,-12065,12396,864745895259187110399737,812937165464036006213895,591519768111748983750888,57810716855047169409080
+    P86474_24=dict(info='Piezas (2024)', inx=81, m=(-1581, 1520),
+-1581,1520,8583400,714723,10816708329115215113,9585769407872803575,8510180374729994520,985735303963754488
+    P10816_20=dict(info='Piezas (2024)', inx=56, m=(-817, 660), #3
+-1581,1520,8583400,714723,44310257,41084175,31669120,2164632
+
+Note that it missed:
+P16716_22=dict(info='Piezas (2024)', inx=64, m=(-817, 660),
+	abcd=(655_960_628_418_767_673_472, 1_199_828_498_161_126_807_800, 1_534_990_269_771_364_822_095, 1_671_674_986_261_410_994_097),
+
+s1&s2
+{8583400/714723, -1581/1520, -817/660} # -817/660 seems more fundamental
+>>> s1&s3
+{21792/5035, -3622925/12225132, -817/660}
+>>> s1&s4
+{151241432/18609075, -1581/1520, -12065/12396}
+
+collect_mn(1520, 1581, 1581)
+[-1520/1581]
+mn = QQ(1520/-1581)
+get_optimized_rational_points(mn)
+[(788641/4015726, 2335163/4015726),
+ (-4190300151080/81491214056109, 1668540/2007863), ...]
+quad_xy = (QQ(788641/4015726), QQ(2335163/4015726))
+q_res = make_quartic(mn, quad_xy)
+find_quartic_points_hyper(q_res[2], 20_000_000, 1, 20_000_000)
+quartic roots [-0.794345388257786, 4.64766677651078]
+[]
+Give up.
+
+======================
+u = -1245/5012
+-1245,5012,248521,62784,76973733409,71826977313,49796687200,39110088360
+    T76973_11=dict(info='Tomita (2024)', inx=28, m=(-1245, 5012), #3
+-1245,5012,248521,62784,34497456764264994703368889,30730370351168229154149048,26621272474250391413865480,12209879806944320496330055
+    T34497_26=dict(info='Tomita (2024)', inx=92, m=(-1245, 5012),
+-1245,5012,267904,-221337,504068891841730072306483681,435117527990435060232042280,411177854471028470696556192,106958136069417067994530335
+    F50406_27=dict(info='Frye (2026)', inx=99, m=(-1245, 5012),
+-1245,5012,267904,-221337,76973733409,71826977313,49796687200,39110088360
+
+s1&s2
+{-1245/5012, 248521/62784, -1076148712/938755461}
+s1&s3
+{-267904/221337, -1245/5012, 3836981501/942570804}
+s2&s3
+{-1245/5012}
+
+collect_mn(5012, 1245, 1245)
+5012/1245, -5012/1245] # ignore positive
+mn = QQ(5012/-1245)
+get_optimized_rational_points(mn)
+[(-4946239/13251006, 2760295/4417002), 
+(-172354753448543/302256122661306, 688079/4417002), ...]
+Give up. Too big
 
 ------------------------
+
+TODO
 When does a higher multiple of 2 duplicate effort?
 4/5 didn't find anything but 8/5 did, yet 16/5 found same as 8/5, but 32/5 not
 4/25 is busy and 8/25 busy with same pts, but 16/25 not busy, and 32/25 not
@@ -815,11 +1426,19 @@ collect_mn(72, 1, 400, 10)
 I think there is enough difference, so they might find different solutions,
 but the differences may be blind alleys.
 
-Will any of the high mn find quartic points within quart_e 50_000 ?
+I will revist these with my hyperelliptic ratpoints method
 ----------------------
 
-
 TODO
+why are quartic points always between roots?
+find min/max value between roots and search positive range up to that value.
 
+----------
 
+NOTES
 from elliptical.solutions_curves import *
+from elliptical.curves_tomita import *
+
+sudo taskpolicy -c utility python your_script.py
+defaults write dev.warp.Warp NSAppSleepDisabled -bool YES
+then restart Warp
