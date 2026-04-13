@@ -11,8 +11,8 @@ https://math.stackexchange.com/questions/1853223/distribution-of-primitive-pytha
 from solutions import known
 from itertools import combinations
 from math import isqrt
-from sage.all import Integer, QQ, Rational, gcd, lcm, numerator, denominator, \
-    Curve, Jacobian
+from sage.all import QQ, Rational, gcd, lcm, numerator, denominator, \
+    Curve, Jacobian, pari, PolynomialRing
 
 def abcd_to_xyz(abcd: tuple) -> tuple:
     """Convert (a, b, c, d) representing a^4 + b^4 + c^4 = d^4 
@@ -109,21 +109,6 @@ def abcd_to_small_u(abcd: tuple, thresh: int=10_000) -> list:
 [-9/20]
 """
 
-def is_square(u) -> bool:
-    """Return whether a rational is a perfect square"""
-    n = numerator(u)
-    if 0 >= n or isqrt(n)**2 != n: return False
-    d = denominator(u)
-    return isqrt(d)**2 == d
-
-def un_square(u):
-    """Return isqrt of numerator and denominator of a rational"""
-    n = isqrt(numerator(u))
-    d = isqrt(denominator(u))
-    r = QQ(n) / QQ(d)
-    assert r * r == u, f'{u}, {r}'
-    return r
-
 def uv_to_Pk(u, v):
     """Calculate the EC parameters Pk from u, v
     """
@@ -152,8 +137,8 @@ def uv_to_D(u, v, verbose=False):
     v3 = v2 * v
     v4 = v2 * v2
     D2 = d0 + d1 * v + d2 * v2 + d3 * v3 + d4 * v4
-    if is_square(D2):
-        return un_square(D2)
+    if D2.is_square():
+        return D2.sqrt()
     else:
         if verbose:
             print(f'u {u}, v {v} to D2 {D2} is not a perfect square ')
@@ -211,16 +196,19 @@ def u_to_D_to_EC(u):
     R = PolynomialRing(QQ, 'v, D')
     v, D = R.gens()
     D2 = d0 + d1 * v + d2 * v**2 + d3 * v**3 + d4 * v**4
+    D2 = D2.univariate_polynomial()
     f = -D**2 + D2
     C = Curve(f)
-    return Jacobian(C)
+    E = Jacobian(C).short_weierstrass_model().minimal_model()
+    return E, D2
 """
 For C7
 u = QQ(-5/44)
-E = u_to_D_to_EC(u)
+E, D2 = u_to_D_to_EC(u)
 Elliptic Curve defined by y^2 = x^3 + 1049826552687683/2634041929728*x - 150765270473896156253413/11106722273226522624 over Rational Field
-but I expected
-C7:X3-X2+349942184229228X-11167797929528591502588=Y2
+E.short_weierstrass_model().minimal_model()
+Elliptic Curve defined by y^2 = x^3 - x^2 + 349942184229228*x - 11167797929528591502588 over Rational Field
+which is C7:X3-X2+349942184229228X-11167797929528591502588=Y2
 p0 = E(E.hyperelliptic_polynomials()[0].roots()[0][0], 0)
 (51745997/2811072 : 0 : 1)
 gs = E.gens(algorithm='pari', pari_effort=15)
@@ -230,17 +218,13 @@ gs = E.gens(algorithm='pari', pari_effort=15)
 
 Try C0 (u=-5/8)
 u_to_D_to_EC(QQ(-5/8))
-Elliptic Curve defined by y^2 = x^3 + 8447416163/3145728*x - 1274974942941973/14495514624 over Rational Field
-but C0 is
 Elliptic Curve defined by y^2 = x^3 - x^2 + 2815805388*x - 94443526967868 over Rational Field,
+which is C0.
 
 Try C1 (u=-9/20)
 u_to_D_to_EC(QQ(-9/20))
-Elliptic Curve defined by y^2 = x^3 + 2265722465761/1600000000*x - 1577094701517274639/32000000000000 over Rational Field
-but C1 is
 Elliptic Curve defined by y^2 = x^3 + 2265722465761*x - 3154189403034549278 over Rational Field, 
-At least, I can see a relationship this time.
-
+which is C1
 """
 
 def abcd_to_small_xyz(abcd: tuple, thresh: int=10_000) -> list:

@@ -47,6 +47,7 @@ E1.conductor()
 E.Np(97)
 116
 
+E.selmer_rank_bound() gives an upper bound of the rank.
 E1.rank(algorithm="pari")
 3
 E1.gens(algorithm="pari", pari_effort=15)
@@ -70,6 +71,13 @@ E.torsion_subgroup? for documentation
 E.torsion_subgroup?? for code
 help(E) for documentation page
 search_doc("torsion")	Searches all of Sage's offline documentation for the word "torsion".
+
+C1.torsion_order()
+2
+C1.torsion_subgroup()
+Torsion Subgroup isomorphic to Z/2 associated to the Elliptic Curve defined by y^2 = x^3 + 2265722465761*x - 3154189403034549278 over Rational Field
+C1.torsion_points()
+[(0 : 1 : 0), (978559 : 0 : 1)]
 
 When 𝐷2=𝑓(𝑢,𝑉) is Piezas formula for pairs:
 sage: R.<V> = PolynomialRing(QQ)

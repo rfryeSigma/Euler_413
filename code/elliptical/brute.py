@@ -879,9 +879,8 @@ cpu 9:59.07 total
 cpu 32:04.23 total
 """
 
-# doesn't find anything
 def collected_mn_to_brute(mn_list: list, lim_d_known: int=int(1e27), lim_d: int=int(1e40)) -> None:
-    """ Use collected list of mn associated with m. 
+    """ Use collected list of mn. 
     Try combinations for solutions.
     """
     known_denoms = set(val['abcd'][-1] for val in known.values())
@@ -890,33 +889,72 @@ def collected_mn_to_brute(mn_list: list, lim_d_known: int=int(1e27), lim_d: int=
     big_count = 0
     known_count = 0
     for u_inx, u in enumerate(mn_list):
-        u_num = u.numerator()
-        u_den = u.denominator()
-        coeffs = u_to_D_coeffs_int(u_num, u_den)
-        for v in mn_list[u_inx+1:]:
-            v_num = v.numerator()
-            v_den = v.denominator()
-            D = v_to_D_int(v_num, v_den, coeffs, u_den)
-            if D is None: continue
-            D_count += 1
-            pair = uvD_to_xyz(u, v, D)
-            assert pair is not None
-            for xyz in pair:
-                d = lcm([denominator(x) for x in xyz])
-                if d >= lim_d: continue
-                if d in denoms: continue
-                denoms.add(d)
-                if d >= lim_d_known: 
-                    big_count += 1
-                    continue
-                assert d < lim_d_known
-                known_count +=1
-                assert d in known_denoms, (f'New solution: {u}, {v} -> '
-                        '{sorted(abs(x) * d for x in xyz) + [d]}')
+        un = u.numerator()
+        ud = u.denominator()
+        for u_num, u_den in ((un, ud), (ud, un)):
+            coeffs = u_to_D_coeffs_int(u_num, u_den)
+            for v in mn_list[u_inx+1:]:
+                vn = v.numerator()
+                vd = v.denominator()
+                for v_num, v_den in ((vn, vd), (vd, vn)):
+                    D = v_to_D_int(v_num, v_den, coeffs, u_den)
+                    if D is None: continue
+                    D_count += 1
+                    pair = uvD_to_xyz(QQ(u_num)/u_den, QQ(v_num)/v_den, D)
+                    assert pair is not None
+                    for xyz in pair:
+                        d = int(lcm([denominator(x) for x in xyz]))
+                        print('u, v', u_num, u_den, v_num, v_den, 'd', d, 'D', D)
+                        a, b, c = sorted([abs(int(x * d)) for x in xyz])
+                        assert d**4 == a**4 + b**4 + c**4, f'Not a solution: {u}, {v} -> {abc_d}'
+                        if d >= lim_d: continue
+                        if d in denoms: continue
+                        denoms.add(d)
+                        if d >= lim_d_known: 
+                            big_count += 1
+                            continue
+                        assert d < lim_d_known
+                        known_count +=1
+                        assert d in known_denoms, (f'New solution: {u}, {v} -> '
+                                '{sorted(abs(x) * d for x in xyz) + [d]}')
     print(f'Counts: mn {len(mn_list)}, D {D_count}, big {big_count}, known {known_count}')
 """
-collected_mn_to_brute(mn_list)
-Counts: mn 135, D 0, big 0, known 0
+Doesn't find anything for a simple m list.
+mn4 = collect_mn(4,1,201)
+collected_mn_to_brute(mn4)
+Counts: mn 5, D 0, big 0, known 0
+
+mn136 = collect_mn(136,1,201)
+collected_mn_to_brute(mn136)
+Counts: mn 5, D 0, big 0, known 0
+
+mn4 + mn136
+[4/25, -4/45, 4/105, 4/201, -4/201, 33/136, -136/105, -133/136, -165/136, -169/136]
+collected_mn_to_brute(mn4+mn136)
+u, v 201 4 136 -133 d 156646737 D 1416600375/141512
+u, v 201 4 136 -133 d 16003017 D 1416600375/141512
+Counts: mn 10, D 1, big 0, known 2
+
+m1000_2 = collect_mn(1000, 1, 100, 2)
+m20_2 = collect_mn(20, 1, 100, 2)
+m1000_2+m20_2
+[1000/3, -1000/3, -27/1000, 47/1000, -47/1000, -1000/57, -57/1000, 61/1000, -61/1000, 79/1000, -79/1000, -20, -20/9, 20/87, -20/87, 20/91, -20/91]
+collected_mn_to_brute(m1000_2+m20_2)
+u, v 1000 47 9 -20 d 1679142729 D 495260031/441800
+u, v 1000 47 9 -20 d 422481 D 495260031/441800
+Counts: mn 17, D 1, big 0, known 2
+"""
+
+def dumb_collect(n_end: int) -> list:
+    """Collect m/n for every even/oddpair up to n_end."""
+    n_end |= 0b1 # make odd
+    return [QQ(m)/n for m in range(2, n_end, 2) for n in range(-n_end, n_end, 2) if gcd(m, n) == 1]
+"""
+mn = dumb_collect(202)
+collected_mn_to_brute(mn)
+u, v 201 4 -136 133 d 156646737 D 1416600375/141512
+u, v 201 4 -136 133 d 16003017 D 1416600375/141512
+Counts: mn 16728, D 1, big 0, known 2
 """
 
 if __name__ == "__main__":

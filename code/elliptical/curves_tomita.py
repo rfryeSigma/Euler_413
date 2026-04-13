@@ -135,7 +135,7 @@ def search_small_EC_points(e_res: tuple, quartic_poly: Polynomial_rational_flint
     abc, d = k_to_abcd(mn, quad_xy, k) # Check that p0 works
     print(f'\td {d}')
 
-    # Check that generators maps back to quartic
+    # Check that generators map back to quartic
     E = pari(e_res[0])
     g2 = set() # gens in (x, y) form
     for effort in (2, 2, 2, 2, 3, 3, 3, 4, 4, 5):

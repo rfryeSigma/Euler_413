@@ -125,7 +125,7 @@ cpu 25:36:28.60
 
 2/19/2026R
 python -m elliptical.brute known_v_to_brute_u_p 40_001 55_000; date
-I interrupted it when it was down in ther 35_000 range because I forgot
+I interrupted it when it was down in the 35_000 range because I forgot
 that it had to do that quardrant. 
 Will have to temporarly modify the code to just rerun that quadrant.
 

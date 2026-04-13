@@ -94,7 +94,6 @@ def mn_to_xyt_conics(mn: Rational) -> tuple:
                  4 * (2 * m2 - n2),
                  8 * mn,
                  n2 - 2 * m2)
-
     return y2_coeffs, t2_coeffs
 """"
 python -m elliptical.solutions_curves mn_to_xyt_conics 20/-9
@@ -269,7 +268,7 @@ cpu 47.900 total
 """
 
 def make_quartic(mn: Rational, quad_xy: tuple):
-    """ Parameterize y^2 conic with quad point to make quartic
+    """ Parameterize y^2 and t^2 conic with quad point to make t^2 quartic
     """
     y2_coeffs, t2_coeffs = mn_to_xyt_conics(mn)
     x0, y0 = quad_xy
@@ -589,16 +588,16 @@ def search_mn(m: int, n_s: int, n_e: int, quad_n: int=5,
                     assert d in kd
     return d_dict
 
-def collect_mn(m: int, n_s: int, n_e: int) -> list:
+def collect_mn(m: int, n_s: int, n_e: int, mod: int=4) -> list:
     """ Given m, search n over range (n_s, n_e)
     for quadratics with rational points.
     keep each mn with no local obstruction.
     """
-    assert m%4 == 0
-    assert n_s%4 == 1
+    assert m%mod == 0
+    assert n_s%mod == 1
     assert 1 <= n_s <= n_e
     found_mn = []
-    for n in range(n_s, n_e + 1, 4):
+    for n in range(n_s, n_e + 1, mod):
         if gcd(m , n) != 1: continue
         #print(f'Trying n {n}')
         for mn_pair in ((m,n), (n,m), (m,-n), (-n,m)):
