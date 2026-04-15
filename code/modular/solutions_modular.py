@@ -1,12 +1,15 @@
 """
 Explore whether modular curves can help find new solutions to a^4 + b^4 + c^4 = d^4.
 """
-
+from datetime import datetime
+from math import isqrt, gcd
+from multiprocessing import Process, Queue
 from solutions import known
-from sage.all import help, oo, pari, sage_eval, solve, var, \
-    QQ, Rational, \
-    Curve, DiagonalQuadraticForm, Jacobian,PolynomialRing
+from sage.all import help, oo, pari, sage_eval, \
+    Integer, QQ, Rational, lcm, \
+    Curve, DiagonalQuadraticForm, Jacobian, PolynomialRing
 from sage.rings.polynomial.polynomial_rational_flint import Polynomial_rational_flint
+from timeit import repeat, time
 
 def xyz_to_u(x :Rational, y :Rational, z :Rational) -> Rational:
     """Convert (x, y, z) representing x^4 + y^4 + z^4 = 1
@@ -133,13 +136,12 @@ def u_to_quartic(u: Rational) -> Polynomial_rational_flint:
     D2 = D2.univariate_polynomial()
     return D2
 
-def scan_known(n_known: int=6, max_h: int=100_000_000,
+def scan_known(n_known: int=8, max_h: int=100_000_000,
                max_d: int=int(1e27)) -> None:
     """For all abcd in first n_known known solutions, generate 12 u.
     For each u with height less than max_h:
         Verify no obstructions on u
-    
-    TODO SEE NOTES AT END OF FILE
+    ...
     """
     for val in list(known.values())[:n_known]:
         abcd = val['abcd']
@@ -152,31 +154,184 @@ def scan_known(n_known: int=6, max_h: int=100_000_000,
             #TODO generate JD2 (smarter code) for each u
             # I think I should use u, but maybe 1/u?
             # Decide by running on C0, C1, C5, C7, C9, Cx
-    pass
+    """ More TODO
+    Search for square quartic point.
+    Get conductor factored, torsion points, gens
+    height_pairing_matrix, new points.
+    Check whether known solutions.
+
+    map u to E, conductor, number of solutions.
+    Check whether isogenous with another curve.
+    """
+
+def report_uvw(n_known: int=8):
+    """ Scan known solutions for modular patterns in u,v,w.
+    """
+    for val in list(known.values())[:n_known]:
+        t, u, v, w = val['tuvw']
+        if t%5 != 0:
+            t, u = u, t
+            assert t%5 == 0
+        a = 8 * t
+        b = 8 * u
+        c = w - v
+        d = w + v
+        assert a**4 + b**4 + c**4 == d**4
+        qd = QQ(d)
+        x = a / qd
+        y = b / qd
+        z = c / qd
+        un = (x - y)**2 - z**2 - 1
+        vn = (y - z)**2 - x**2 - 1
+        wn = (z - x)**2 - y**2 - 1
+        ud = x**2 - x*y + y**2 + (x - y)
+        vd = y**2 - y*z + z**2 + (y - z)
+        wd = z**2 - z*x + x**2 + (z - x)
+        u = un / ud
+        v = vn / vd
+        w = wn / wd
+        u_num, u_den = u.numerator(), u.denominator()
+        v_num, v_den = v.numerator(), v.denominator()
+        w_num, w_den = w.numerator(), w.denominator()
+        print(a, b, c, d)
+        print('\tu = ', u_num, '/', u_den, '=', float(u_num)/float(u_den)) 
+        print('\tv = ', v_num, '/', v_den, '=', float(v_num)/float(v_den))
+        print('\tw = ', w_num, '/', w_den, '=', float(w_num)/float(w_den))
+
+def uv_to_Pk(u: Rational, v: Rational) -> tuple:
+    """Calculate the parameters Pk from u, v
+    """
+    u2 = u * u
+    u3 = u2 * u
+    v2 = v * v
+    v3 = v2 * v
+    P0 =(2 + u2) * (2 + v2) * (12 - 8*u + 2*u2 - 8*v + 2*v2 + u2*v2)
+    P1 = (-4 + 4*u + 2*v - u2*v) * (8*u -4*u2 + 4*v -8*u*v + 2*u2*v -4*v2 + 2*v3 + u2*v3)
+    P2 = 2 * (-4 + 4*u + 2*v -u2*v) * (4 -2*u -4*v +u*v2) * (-u + v)
+    P3 = (4 - 2*u - 4*v + u*v2) * (4*u - 4*u2 + 2*u3 + 8*v - 8*u*v - 4*v2 + 2*u*v2 + u3*v2)
+    return (P0, P1, P2, P3)
+
+def uvD_to_xyz(u: Rational, v: Rational, D: Rational) -> tuple:
+    """Calculate (x, y, z) from u, v
+    """
+    P0, P1, P2, P3 = uv_to_Pk(u, v)
+    denom = P0 + D*D
+    u2 = u * u
+    v2 = v * v
+    x1 = (u2 - 2*u + 2) * (v2 - 2*v)
+    y1 = 2*(u + v - 2) * (u + v - u*v)
+    z1 = (v2 - 2*v + 2) * (u2 - 2*u)
+    pair = [0]*2
+    for inx, sD in enumerate((D, -D)):
+        x = (P1 + x1 * sD) / denom
+        y = (-(P1 + P2 + P3) + y1 * sD) / denom
+        z = (P3 + z1 * sD) / denom
+        pair[inx] = (x, y, z)
+    return pair
+
+def find_uvD_pts(first_ud: int, last_ud: int, first_un: int, last_un: int,
+        max_pt: int=int(1e8), max_d: int=int(1e27)) -> None | tuple:
+    """ 
+    Search for solution pairs with:
+        ud in range(4<=first_ud, last_ud+1, 4);
+        un in range(1<=first_un, last_un+1, 2);
+        (u_num, u_den) in ((un, ud), (-un, ud), (ud, un), (ud, -un));
+        v a rational point on the quartic defined by u up to max_pt
+    Check u_den / u_num for quadratic obstruction
+        to the solutions of the quadratics for y^2 and t^2.
+    """
+    # Check input parameters for sanity.
+    assert first_ud % 4 == 0
+    assert first_un % 2 == 1
+    assert 4 <= first_ud <= last_ud
+    assert 1 <= first_un <= last_un
+    assert 1 <= max_pt
+
+    # Look up index of known solution with denominator.
+    d_to_known_inx = {val['abcd'][-1]: inx 
+            for inx, val in enumerate(known.values(), start=1)}
+
+    # Declare search counts
+    u_hits = D_hits = big_hits = known_hits = 0
+    found_knowns = set() # indexes of known solutions found in search
+    found_new = False
+
+    # Search for points in parallel and count results.
+    start = time.time()
+    for ud in range(first_ud, last_ud + 1, 4):
+        for un in range(first_un, last_un + 1, 2):
+            if gcd(un, ud) != 1: continue
+            uQ = QQ(un) / ud
+            for  u in (uQ, -uQ, uQ.inverse(), -uQ.inverse()):
+                if find_point_instantly(u.inverse()) is None:
+                    continue
+                u_hits += 1
+                #print(f'{u_hits}: u {u}')
+                D2 = u_to_quartic(u)
+                pts = pari(D2).hyperellratpoints(max_pt, 0)
+                if 0 == len(pts): continue
+                for v_pari, D_pari in pts:
+                    if D_pari < 0: continue
+                    D = QQ(D_pari)
+                    v = QQ(v_pari)
+                    print(f'{u}, {v} -> D {D}')
+                    D_hits += 1
+                    pair = uvD_to_xyz(u, v, D)
+                    for xyz in pair:
+                        d = lcm([x.denominator() for x in xyz])
+                        if d >= max_d:
+                            big_hits += 1
+                            print(f'\tbig {float(d):.4e}')
+                            continue
+                        if d in d_to_known_inx:
+                            known_hits += 1
+                            inx = d_to_known_inx[d]
+                            found_knowns.add(inx)
+                            print(f'\tknown #{inx}: {xyz}')
+                            continue
+                        print(f'\n\nNEW ({u}, {v}) -> {xyz}')
+                        found_new = True
+                        break
+                    if found_new: break
+                if found_new: break
+            if found_new: break
+        if found_new: break
+
+    # Report results and return if found new solution.
+    elapsed = time.time() - start
+    print(f'hits: u {u_hits}, D {D_hits}, big {big_hits}, known {known_hits}'
+        f'\nknowns {len(found_knowns)}: {sorted(found_knowns)}')
+    print(f'elapsed: {elapsed:.4f}s')
+    if found_new:
+        return u, v, xyz
 """
-Use pieza_in_pairs.py
-    u_to_D_to_EC(u)
+find_uvD_pts(4, 4, 201, 201, 1010)
+1: u 201/4
+201/4, -136/133 -> D 1416600375/141512
+	known #12: (27450160/156646737, 146627384/156646737, 108644015/156646737)
+	known #5: (-12552200/16003017, -4479031/16003017, -14173720/16003017)
+201/4, -1005/568 -> D 87999215295/5161984
+	known #5: (4479031/16003017, 12552200/16003017, 14173720/16003017)
+	known #12: (-146627384/156646737, -27450160/156646737, -108644015/156646737)
+2: u -201/4
+	no points for u -201/4
+hits: u 2, D 2, big 0, known 4
+knowns 2: [5, 12]
+elapsed: 0.1065s
 
-Use solutions_curves.py
-    make_quartic(mn: Rational, quad_xy: tuple)
-
-Use curves_tomita.py
-    model_quartic_as_elliptic_curve(quartic_poly, quartic_x: Rational)
-Use modular.log
-# The Sage-native way to convert a quartic to an elliptic curve
-R.<x,y> = QQ[]
-f = x^4 + x + 1  # your quartic
-C = Curve(y^2 - f)
-E = Jacobian(C)
-print(E.minimal_model())
-
-def model_quartic_to_elliptic(quartic_poly):
-    # pari.ellfromquartic handles the transformation formulas internally
-    # It expects a polynomial in one variable
-    res = pari.ellfromquartic(quartic_poly)
-    # Convert PARI object back to a Sage Elliptic Curve
-    return EllipticCurve(res.ell_to_sage())
-
+find_uvD_pts(200, 200, 1, 2001, 100_000)
+-1617/200, -5/8 -> D 708019737/2560000
+	known #13: (186668000/589845921, 582665296/589845921, 260052385/589845921)
+	known #14: (-219076465/638523249, -275156240/638523249, -630662624/638523249)
+-1617/200, -34272/4885 -> D 2365840162968393/477264500000
+	known #14: (275156240/638523249, 219076465/638523249, 630662624/638523249)
+	known #13: (-582665296/589845921, -186668000/589845921, -260052385/589845921)
+1873/200, -51416/9425 -> D 4964755565640087/1776612500000
+	known #41: (487814048600/26969608212297, 8528631804200/26969608212297, 26901926181047/26969608212297)
+	known #52: (-103028409596553328/103117303193818953, 24975412054750025/103117303193818953, -4092004076331400/103117303193818953)
+hits: u 149, D 3, big 0, known 6
+knowns 4: [13, 14, 41, 52]
+elapsed: 22.7084
 """
 
 def DEBUG(*args):
@@ -200,17 +355,30 @@ if __name__ == "__main__":
 
 """
 TODO
-Scan first 6 known solutions.
-Identify 12 u.
-Verify no obstructions on u
-Generate JD2 (smarter code) for each u
-Search for square quartic point.
-Get conductor factored, torsion points, gens
-height_pairing_matrix, new points.
-Check whether known solutions.
 
-map u to E, conductor, number of solutions.
-Check whether isogenous with another curve.
+Use pieza_in_pairs.py
+    u_to_D_to_EC(u)
+
+Use solutions_curves.py
+    make_quartic(mn: Rational, quad_xy: tuple)
+
+Use curves_tomita.py
+    model_quartic_as_elliptic_curve(quartic_poly, quartic_x: Rational)
+Use modular.log
+# The Sage-native way to convert a quartic to an elliptic curve
+R.<x,y> = QQ[]
+f = x^4 + x + 1  # your quartic
+C = Curve(y^2 - f)
+E = Jacobian(C)
+print(E.minimal_model())
+
+def model_quartic_to_elliptic(quartic_poly):
+    # pari.ellfromquartic does not exist.
+    # It expects a polynomial in one variable
+    res = pari.ellfromquartic(quartic_poly)
+    # Convert PARI object back to a Sage Elliptic Curve
+    return EllipticCurve(res.ell_to_sage())
+-------------
 
 >>> abcd_to_small_u((5_870_000, 8_282_543, 11_289_040, 12_197_457), 9e99)
 [-400/37, -1010819791893/158785763120, -338000022077/104832225800, -2433/920, 

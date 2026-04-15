@@ -262,7 +262,7 @@ def find_solutions_int(first_um: int, last_um: int, first_un: int, last_un: int,
                    max_d: int=int(1e27)) -> None | tuple:
     """Search for solutions with u over smaller range
     and v ranging from current u to larger range.
-    The rationals u, v are constructed from 
+    The rationals u, v are constructed as int pairsfrom 
         a postive multiple of 4 (m) and a signed odd value (n)
         The rational can be m/n, m/(-n), n/m, -n/m
     Breaks out of search if finds a new solution.
