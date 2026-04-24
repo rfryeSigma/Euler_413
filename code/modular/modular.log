@@ -363,26 +363,12 @@ have 4-torsion or 8-torsion points.
 print(P.order())
 
 To see if your curve is "allowed" to have 4-torsion or 8-torsion 
-points globally, you can inspect the entire torsion subgroup:P
-ythonT = E.torsion_subgroup()
+points globally, you can inspect the entire torsion subgroup
+T = E.torsion_subgroup()
 print(T)
 This will return something like Torsion Subgroup isomorphic to 
 Z/4 + Z/1 or Z/8 + Z/1. This tells you the "degree" of the symmetry 
 available to that specific $u$ value.
-
------------
-Youtube courses:
-An Introduction to Riemann Surfaces and Algebraic Curves:
-    Complex 1-Tori and Elliptic Curves 
-    by Dr. T.E. Venkata Balaji, Department of Mathematics, IIT Madras.
-https://www.youtube.com/playlist?list=PLbMVogVj5nJSm4256vuITlsovUT1xVkUL
-https://nptel.ac.in/courses/111106097
-
-previous course:
-https://nptel.ac.in/courses/111106044
-
-intro course
-https://nptel.ac.in/courses/111108899
 
 ------------
 I should use
@@ -439,14 +425,6 @@ f = x^4 + x + 1  # your quartic
 C = Curve(y^2 - f)
 E = Jacobian(C)
 print(E.minimal_model())
-
-
-def model_quartic_to_elliptic(quartic_poly):
-    # pari.ellfromquartic handles the transformation formulas internally
-    # It expects a polynomial in one variable
-    res = pari.ellfromquartic(quartic_poly)
-    # Convert PARI object back to a Sage Elliptic Curve
-    return EllipticCurve(res.ell_to_sage())
 
 -------------
 I have a set of 100 integer solutions with D<1e27 to the Fermat 
@@ -555,10 +533,7 @@ factor(Cx.conductor()) # (12/-29)
 I feel almost ready to begin several new methods of attack.
 
 1) Restrict search over u with Elkies rules on (m,n) and check for quadratic obstruction.
-
-For example, with m=4, 201/4 (4/201 in your formulas) has several solutions,
-but there is no obstruction to the solutions to the quadratics for y^2 and t^2 for 
-u = 4/25, 4/-45, 4/105, or 4/-201
+Done
 
 2} Use direct calculation of elliptic curve from u.
 
@@ -592,37 +567,21 @@ The other idea is that Complex Multiplication (CM) points relate to EC vibration
 Transcendental Lattice of the K3 surface.
 This step is not clear to me yet.
 
-SUMMARY
-I still have some reading and coding to do, but I am hopeful of finding some new solutions.
+------------------
 
-FURTHER NOTES
-Also u maps to 2 / u  changes (r, s, t, x, y)  to (-s,-r,-t,-x, y) 
+Find Pari source code
 
-infinitely many solutions (x,y,t) if and only if the squarefree parts of
-2m^2+n^2, 2m^2-4mn+n^2  and 2m^2 \pm 2mn+2n^2
-have all prime factors 1 \mod 8 .
+^C/Users/rogerfrye/Documents/Git/Euler_413/code/modular/solutions_modular.py:291: RuntimeWarning: cypari2 leaked 1192112 bytes on the PARI stack
+  File "cypari2/auto_gen.pxi", line 14712, in cypari2.gen.Gen_base.hyperellratpoints
 
-----------
-Given A^4 + B^4 = (D - C)(D + C)(D^2 + C^2) .
-Applying modulo 8 restrictions, we can choose A = 40T and B = 8U .
-Define V = (D - C) / 2 and W = (D + C) / 2.
-Then the right side becomes 8VW(V^2 + W^2).
-Either V or W must be odd, and the other must be a multiple of 2^9 .
+https://github.com/sagemath/sage
+https://github.com/sagemath/cypari2
+https://pari.math.u-bordeaux.fr
 
-Start again with A, B, C on the left, and divide by D to get
-x^4+y^4+z^4 = 1
-Define 
-u = ((x-y)^2-z^2-1) / (x^2-xy+y^2+(x-y))
-v = ((y-z)^2-x^2-1) / (y^2-yz+z^2+(y-z))
-w = ((z-x)^2-y^2-1) / (z^2-zx+x^2+(z-x))
-
-I want you to describe the modular restrictions on u, v, w.
-If possible, also include the additional modulat restriction 
-that either B or C must be a multiple of 5.
---------------
-	u_den: positive and 0 mod 4
-	u_num: odd and +/-
-	v_den or v_num: positive and 0 mod 2
-	other half of v_num, v_den: odd and +/-
-and 1/u, and maybe 1/v must have no quadratic obstructions
-to the solutions of the quadratics for y^2 and t^2.
+-------------------
+>>> import cypari2
+ |      >>> pari = cypari2.Pari()
+from cypari2.pari_instance import Pari
+ |      >>> pari = Pari()
+ |      >>> pari2 = Pari(10**7)
+ |      >>> pari2

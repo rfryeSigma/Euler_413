@@ -7,7 +7,6 @@ and Tomita's notes in http://www.maroon.dti.ne.jp/fermat/dioph4e.html
 """
 import csv
 from importlib import reload
-from multiprocessing import Process, Queue
 from sage.all import GF, Integer, QQ, Rational, RR, \
     DiagonalQuadraticForm, PolynomialRing, \
     continued_fraction, cos, gcd, hilbert_symbol, lcm, \
@@ -330,51 +329,7 @@ make_quartic(QQ(20/-9), (QQ(49/318), QQ(23/106)))
  4)
 """
 
-# never finds obstruction
-def is_locally_blocked(poly, p):
-    """
-    Returns True if NEITHER y^2 = f(k) nor y^2 = -f(k) has a solution mod p.
-    This is a fast necessary condition for the existence of rational points.
-    """
-    # Get coefficients mod p
-    R = GF(p)
-    f_mod = [R(c) for c in poly.list()]
-    
-    # We track if we've found a square for f or -f
-    found_f = False
-    found_neg_f = False
-    
-    # Check all possible k in the finite field
-    for k_val in R:
-        # Evaluate poly at k_val: Ak^4 + Bk^3 + Ck^2 + Dk + E
-        val = R(0)
-        k_pow = R(1)
-        for coeff in f_mod:
-            val += coeff * k_pow
-            k_pow *= k_val
-            
-        if val.is_square():
-            found_f = True
-        if (-val).is_square():
-            found_neg_f = True
-            
-        # If both are possible mod p, this prime doesn't obstruct us
-        if found_f and found_neg_f:
-            return False
-
-    # If we finish the loop and one (or both) never became a square:
-    # We return True if BOTH are blocked. 
-    # (In your case, you accept either, so we only reject if BOTH fail)
-    return not (found_f or found_neg_f)
-
-# Never finds obstruction
-def filter_pairs(poly, primes=[3, 5, 7, 11, 13, 17, 19, 23]):
-    for p in primes:
-        if is_locally_blocked(poly, p):
-            return True # This pair is obstructed
-    return False
-
-# faster than directr search over nz and nx in find_quartic_points
+# Faster than direct search over nz and nx in find_quartic_points
 def find_quartic_points_hyper(quartic_poly: Polynomial_rational_flint,
             max_num: int, min_den: int, max_den: int) -> list:
     """ Use hyperellratpoints on quartic_poly to find quartic points.
@@ -383,16 +338,17 @@ def find_quartic_points_hyper(quartic_poly: Polynomial_rational_flint,
     roots = poly.real_roots()
     print(f'quartic roots {roots}')
     assert 2 == len(roots)
-    if 0 < poly.list()[-1]:
-        poly = -poly
+    #if 0 < poly.list()[-1]: poly = -poly
     pts = pari(poly).hyperellratpoints((max_num, (min_den, max_den)), 0)
+    if 0 < len(pts): return pts
+    pts = pari(-poly).hyperellratpoints((max_num, (min_den, max_den)), 0)
     return pts
 
+# Obsolete because slower than find_quartic_points_hyper.
 def find_quartic_points(quartic_poly: Polynomial_rational_flint, 
             range_s: int=1, range_e: int=1000,
             gcd=gcd, abs=abs) -> list:
     """ Search for rational k = nx/nz that make poly(k) or -poly(k) a square.
-    primes were selected for those actually used to reject candidates.
     """
     c0, c1, c2, c3, c4 = quartic_poly.list()
     # Search rationals for square rhs
@@ -426,7 +382,7 @@ found -59/81 with rhs -1493337137920714564
 5.154595851898193
 """
 
-# slower that find_quartic_points and finds less points
+# Slower that find_quartic_points and finds less points
 # but keep for Chebyshev nodes and continued fraction convergents code.
 def find_quartic_points_adaptive(quartic_poly: Polynomial_rational_flint,
             max_denom: int=10_000, n_nodes: int=100, pts_per_node: int=100,
@@ -562,7 +518,6 @@ def search_mn(m: int, n_s: int, n_e: int, quad_n: int=5,
     assert m%4 == 0
     assert n_s%4 == 1
     assert 1 <= n_s <= n_e
-    from solutions import known
     d_dict = dict()
     kd = {v['abcd'][-1] for v in known.values()}
     for n in range(n_s, n_e + 1, 4):

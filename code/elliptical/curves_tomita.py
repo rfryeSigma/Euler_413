@@ -135,15 +135,23 @@ def search_small_EC_points(e_res: tuple, quartic_poly: Polynomial_rational_flint
     abc, d = k_to_abcd(mn, quad_xy, k) # Check that p0 works
     print(f'\td {d}')
 
+    # Check that torsion points map back to quartic
+    tor = E_min.torsion_points()
+    for t in tor:
+        k = elliptic_point_to_k(t, e_res, quartic_poly, k0)
+        print(f't = {t}, k = {k}')
+        abc, d = k_to_abcd(mn, quad_xy, k) # Check that t works
+        print(f'\td {d}')
+
     # Check that generators map back to quartic
     E = pari(e_res[0])
     g2 = set() # gens in (x, y) form
     for effort in (2, 2, 2, 2, 3, 3, 3, 4, 4, 5):
         rank = list(E.ellrank(effort))
         g2.update(rank[-1])
-        if rank[0] != rank[1]: continue
-        print(f' effort {effort}, rank {rank}')
-        break
+        #if rank[0] != rank[1]: continue
+        print(f' effort {effort}, rank {rank[:3]}, {len(g2)} gens')
+        #break
     print(f'Found {len(g2)} gens')
     gs = {E_min((g[0], g[1], 1)) for g in g2} # convert to (x, y, z) form
     for g in gs:
@@ -158,9 +166,10 @@ def search_small_EC_points(e_res: tuple, quartic_poly: Polynomial_rational_flint
     gs |= {g1 + g2 for g1 in gs for g2 in gs}
     gs |= {g1 + g2 + g3 for g1 in gs for g2 in gs for g3 in gs}
 
-    # Use p0 and augmented generators to build list of points
+    # Use p0 and tor and augmented generators to build list of points
     p_set = set((p0,)) | gs
     p_set |= {p0 + g for g in gs}
+    p_set |= {t + g for t in tor for g in gs}
     p_list = sorted(p_set)
     print(f'Using {len(p_list)} points on EC from {len(gs)} generators')
 

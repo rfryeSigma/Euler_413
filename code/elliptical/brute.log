@@ -1,7 +1,21 @@
-This is a log of what ranges have been searched using brute.py 
-in Math,
+This is a log of what ranges have been searched using
+	elliptical/piezas_in_pairs.py,
+	elliptical/brute.py,
+	modular/solutions_modular.py .
+
+2/6/2026F
+Using piezas_in_pairs
+known_to_unknown()
+Found new (535607712470322407570378200/918310142223097801006397529, 250530677254015598463660440/918310142223097801006397529, -889106559932545369165762471/918310142223097801006397529) from (95800, 217519, 414560, 422481) with u -1041/320, v 52463/660460
+Found new (118194421251475239056505903/123188180833923372056627153, 66491673395168374249746120/123188180833923372056627153, -62831773759131557571594880/123188180833923372056627153) from (2164632, 31669120, 41084175, 44310257) with u -12065/12396, v -84558637/193874100
+Found new (46402888024739111034420161/174088703841632292189275073, -92419682545114696981174360/174088703841632292189275073, -170289556324371670328363560/174088703841632292189275073) from (27450160, 108644015, 146627384, 156646737) with u -136/133, v -63528125/85096232
+Found new (411177854471028470696556192/504068891841730072306483681, 106958136069417067994530335/504068891841730072306483681, -435117527990435060232042280/504068891841730072306483681) from (39110088360, 49796687200, 71826977313, 76973733409) with u -267904/221337, v -1245/5012
+
+--------------------------
+SWITCH TO BRUTE
 
 2/10/2026T
+Using brute.py
 These calls were back when outer loop on v, inner loop on u:
 
 brute_search(4, 1000, 1, 47, 20, 9)
@@ -151,8 +165,325 @@ date; python -m elliptical.brute known_v_to_brute_u_p 65_001 75_000; date
 V count 1254, D_count 0, big_count 0, known_count 0
 ~15hr
 
-DOING
+---------------------------
+SWITCH TO MODULAR
+4/16/2026R
+Using solutions_modular.py
+Search un to 1e4, v to 1e8
+find_uvD_pts(first_ud: int, last_ud: int, first_un: int, last_un: int,
+        max_pt: int=int(1e8)
+date; python -m modular.solutions_modular find_uvD_pts 200 200 1 2_000 100_000; date
+Thu Apr 16 07:14:03 MDT 2026
+<function find_uvD_pts at 0x155cbfec0>
+-1617/200, -5/8 -> D 708019737/2560000
+	known #13: (186668000/589845921, 582665296/589845921, 260052385/589845921)
+	known #14: (-219076465/638523249, -275156240/638523249, -630662624/638523249)
+-1617/200, -34272/4885 -> D 2365840162968393/477264500000
+	known #14: (275156240/638523249, 219076465/638523249, 630662624/638523249)
+	known #13: (-582665296/589845921, -186668000/589845921, -260052385/589845921)
+1873/200, -51416/9425 -> D 4964755565640087/1776612500000
+	known #41: (487814048600/26969608212297, 8528631804200/26969608212297, 26901926181047/26969608212297)
+	known #52: (-103028409596553328/103117303193818953, 24975412054750025/103117303193818953, -4092004076331400/103117303193818953)
+hits: u 149, D 3, big 0, known 6
+knowns 4: [13, 14, 41, 52]
+elapsed: 24.4825s
+None
+Thu Apr 16 07:14:30 MDT 2026
 
-Coding in solutions_curves.py and curves_tomita.py
+4/19/2026Su
+% date; python -m modular.solutions_modular find_uvD_pts 4 4 1 1000 1_000_000; date
+Sun Apr 19 08:46:58 MDT 2026
+hits: u 375, D 2, big 0, known 4
+knowns 2: [5, 12]
+elapsed: 5410.0582s
+Sun Apr 19 10:17:11 MDT 2026
+ 
+date; python -m modular.solutions_modular find_uvD_pts 8 8 1 1000 1_000_000; date
+Sun Apr 19 08:47:48 MDT 2026
+hits: u 367, D 8, big 0, known 16
+knowns 7: [7, 13, 14, 20, 36, 49, 50]
+elapsed: 5191.9922s
+Sun Apr 19 10:14:22 MDT 2026
+
+date; python -um modular.solutions_modular find_uvD_pts 12 12 1 1000 1_000_000; date
+Sun Apr 19 08:49:08 MDT 2026
+hits: u 377, D 4, big 0, known 8
+knowns 3: [3, 35, 44]
+elapsed: 6366.3668s
+Sun Apr 19 10:35:17 MDT 2026
+
+Repeat with smarter search but takes longer. Why? Try parallel? Bigger v numerator?
+Sun Apr 19 22:32:24 MDT 2026
+date; python -m modular.solutions_modular find_uvD_pts 4 4 1 1000 1_000_000; date
+hits: u 1992, D 2, big 0, known 4
+knowns 2: [5, 12]
+elapsed: 5:49:26.155442
+date; python -m modular.solutions_modular find_uvD_pts 8 8 1 1000 1_000_000; date
+hits: u 1982, D 8, big 0, known 16
+knowns 7: [7, 13, 14, 20, 36, 49, 50]
+elapsed: 5:35:40.853622
+date; python -um modular.solutions_modular find_uvD_pts 12 12 1 1000 1_000_000; date
+hits: u 1316, D 4, big 0, known 8
+knowns 3: [3, 35, 44]
+elapsed: 6:50:18.048153
+date; python -um modular.solutions_modular find_uvD_pts 16 16 1 1000 1_000_000; date
+hits: u 1966, D 0, big 0, known 0
+knowns 0: []
+elapsed: 5:43:42.216302
+
+4/20/2026M
+date; python -um modular.solutions_modular find_uvD_pts 20 20 1 1_000 1_000_000; date
+hits: u 1566, D 8, big 0, known 16
+knowns 6: [1, 2, 17, 23, 43, 47]
+elapsed: 8:14:33.002989
+
+date; python -um modular.solutions_modular find_uvD_pts 24 24 1 1_000 1_000_000; date
+date; python -um modular.solutions_modular find_uvD_pts 28 28 1 1_000 1_000_000; date
+date; python -um modular.solutions_modular find_uvD_pts 32 32 1 1_000 1_000_000; date
+date; python -um modular.solutions_modular find_uvD_pts 36 36 1 1_000 1_000_000; date
+date; python -um modular.solutions_modular find_uvD_pts 40 40 1 1_000 1_000_000; date
+44, 48, 52 None 1_000 1_000_000
+56 hits: u 1614, D 2, big 0, known 4
+	knowns 3: [33, 62, 69]
+60 hits: u 41, D 2, big 0, known 4
+	knowns 3: [22, 53, 63]
+64, 68 None  1_000 1_000_000
+72 hits: u 51, D 0, big 0, known 0
+	knowns 0: []
+	elapsed: 0:37:35.847498
+date; python -um modular.solutions_modular find_uvD_pts 76 76 1 1_000 1_000_000; date
+elapsed: 0:17:07.871275
+None
+date; python -um modular.solutions_modular find_uvD_pts 80 80 1 1_000 1_000_000; date
+hits: u 80, D 5, big 0, known 10
+knowns 5: [4, 18, 21, 48, 72]
+elapsed: 1:14:22.272912
+84, 88 None 1_000 1_000_000
+
+4/21/2026T
+date; python -um modular.solutions_modular find_uvD_pts 92 92 1 2_000 2_000_000; date
+hits: u 34, D 2, big 0, known 4
+knowns 2: [27, 40]
+elapsed: 1:11:14.235699
+
+date; python -um modular.solutions_modular find_uvD_pts 136 136 1 2_000 2_000_000; date
+hits: u 43, D 3, big 0, known 6
+knowns 3: [5, 12, 79]
+elapsed: 0:58:13.146817
+
+4/22/2026W
+date; python -um modular.solutions_modular find_uvD_pts 96 128 1 2_000 2_000_000; date
+None
+
+TITO SPECIAL
+date; python -um modular.solutions_modular find_uvD_pts 132 132 1 2_000 10_000_000; date
+Searching for pts on 35/132 quartic
+Searching for pts on -35/132 quartic
+Searching for pts on -115/132 quartic
+Searching for pts on -119/132 quartic
+Searching for pts on -217/132 quartic
+Searching for pts on -305/132 quartic
+Searching for pts on -325/132 quartic
+Searching for pts on -505/132 quartic
+Searching for pts on -835/132 quartic
+Searching for pts on 1025/132 quartic
+Searching for pts on -1025/132 quartic
+Searching for pts on 1033/132 quartic
+Searching for pts on -1075/132 quartic
+Searching for pts on 1081/132 quartic
+Searching for pts on -1085/132 quartic
+Searching for pts on -1225/132 quartic
+Searching for pts on -1255/132 quartic
+Searching for pts on 1345/132 quartic
+Searching for pts on -1345/132 quartic
+Searching for pts on -1465/132 quartic
+Searching for pts on 1505/132 quartic
+Searching for pts on 1615/132 quartic
+Searching for pts on 1805/132 quartic
+Searching for pts on 1865/132 quartic
+1865/132, -29/12 -> D 4566509815/2509056, w -30768/57253 -> #3, #35
+1865/132, -30768/57253 -> D 1970587937542585/4079588164344, w -29/12 -> #35, #3
+1865/132, 103611/244444 -> D 129532591043554745/1041133991825664,
+	w 810062992/128701299 -> big 1.0019e+28, #3
+Searching for pts on -1865/132 quartic
+Searching for pts on 1933/132 quartic
+Searching for pts on -1985/132 quartic
+hits: u 36, D 3, big 1, known 5
+knowns 2: [3, 35]
+elapsed: 1 day, 14:31:13.492776
+
+TITO SPECIAL
+date; python -um modular.solutions_modular find_uvD_pts 5012 5012 1 6_000 10_000_000; date
+Searching for pts on 165/5012 quartic
+Searching for pts on -165/5012 quartic
+Searching for pts on 321/5012 quartic
+Searching for pts on 435/5012 quartic
+Searching for pts on -435/5012 quartic
+Searching for pts on -555/5012 quartic
+Searching for pts on 585/5012 quartic
+Searching for pts on -585/5012 quartic
+Searching for pts on 715/5012 quartic
+Searching for pts on -897/5012 quartic
+Searching for pts on -1005/5012 quartic
+Searching for pts on -1245/5012 quartic
+-1245/5012, 248521/62784 -> D 208445266940805505/99019353702334464,
+	w -1076148712/938755461 -> #28, #92
+-1245/5012, -267904/221337 -> D 2252317127132864545/615318775951504968,
+	w 3836981501/942570804 -> #99, #28
+Searching for pts on 1371/5012 quartic
+Searching for pts on -1815/5012 quartic
+Searching for pts on -2097/5012 quartic
+Searching for pts on -2165/5012 quartic
+Searching for pts on -2229/5012 quartic
+Searching for pts on 2253/5012 quartic
+Searching for pts on 2295/5012 quartic
+Searching for pts on -2295/5012 quartic
+Searching for pts on 2335/5012 quartic
+Searching for pts on 2425/5012 quartic
+Searching for pts on -2697/5012 quartic
+Searching for pts on 2803/5012 quartic
+Searching for pts on 2895/5012 quartic
+Searching for pts on -2895/5012 quartic
+Searching for pts on -3515/5012 quartic
+Searching for pts on -3735/5012 quartic
+Searching for pts on -4029/5012 quartic
+Searching for pts on -4425/5012 quartic
+Searching for pts on -5175/5012 quartic
+Searching for pts on -5295/5012 quartic
+Searching for pts on -5297/5012 quartic
+Searching for pts on -5625/5012 quartic
+Searching for pts on -5685/5012 quartic
+Searching for pts on -5805/5012 quartic
+hits: u 54, D 2, big 0, known 4
+elapsed: 1 day, 6:55:26.835680
+
+date; python -um modular.solutions_modular find_uvD_pts 140 180 1 2_000 2_000_000; date
+None
+
+date; python -um modular.solutions_modular find_uvD_pts 184 184 1 3_000 4_000_000; date
+hits: u 82, D 2, big 1, known 3
+knowns 2: [31, 71]
+elapsed: 7:12:52.327956
+
+1/23/2026R
+date; python -um modular.solutions_modular find_uvD_pts 188 196 1 3_000 3314, _000_000; date
+None
+
+date; python -um modular.solutions_modular find_uvD_pts 200 200 1 3_000 3_000_000; date
+u -1617/200, v -5/8 -> D 708019737/2560000, w -34272/4885 -> #13,  #14
+u -1617/200, v -34272/4885 -> D 2365840162968393/477264500000, w -5/8 -> #13
+u 1873/200, v -51416/9425 -> D 4964755565640087/1776612500000, w -3599825/50036084 -> #41, #52
+hits: u 189, D 3, big 0, known 6
+knowns 4: [13, 14, 41, 52]
+elapsed: 11:25:58.879198
+
+
+RERUN EARLY STUFF AFTER FIND POSSIBLY MISSING POINTS ON -D2
+
+date; python -um modular.solutions_modular find_uvD_pts 4 4 1 1_000 1_000_000; date
+hits: u 29, D 2, big 0, known 4
+knowns 2: [5, 12]
+elapsed: 0:30:31.594655
+date; python -um modular.solutions_modular find_uvD_pts 8 8 1 1_000 1_000_000; date
+hits: u 48, D 8, big 0, known 16
+knowns 7: [7, 13, 14, 20, 36, 49, 50]
+elapsed: 0:44:23.511836
+date; python -um modular.solutions_modular find_uvD_pts 12 12 1 1_000 1_000_000; date
+hits: u 24, D 4, big 0, known 8
+knowns 3: [3, 35, 44]
+elapsed: 0:45:47.954940
+date; python -um modular.solutions_modular find_uvD_pts 16 16 1 1_000 1_000_000; date
+hits: u 40, D 0, big 0, known 0
+knowns 0: []
+elapsed: 0:36:34.176441
+date; python -um modular.solutions_modular find_uvD_pts 20 20 1 1_000 1_000_000; date
+hits: u 49, D 8, big 0, known 16
+knowns 6: [1, 2, 17, 23, 43, 47]
+elapsed: 1:15:29.700642
+date; python -um modular.solutions_modular find_uvD_pts 24 32 1 1_000 1_000_000; date
+None
+
+THE RERUN DID NOT TRIGGER ALERT FOR -D2 ON PIEZAS SEARCH
+BUT IT DID ON SOME ELKIES/TOMITA SEARCHES.
+IT SEEMS THAT THE RESULTS ARE ONLY ON D2 OR ONLY ON -D2.
+SO MAKE SEARCH CONDITIONAL ON WHETHER A BRANCH TAKES LONGER OR FINDS ANYTHING.
+SO ASSUME D2 WORKS ON PIEZAS SEARCH
+AND CONTINUE WHAT I WAS DOING EARLIER TODAY.
+
+4/24/2026F
+Since -5/16 has Elkies solutions for -5/8, so try Piezas on 16/-5
+u = QQ(16/-5)
+poly = u_to_quartic(u)
+165956/625*v^4 - 634384/625*v^3 + 152576/125*v^2 - 1960928/625*v + 495824/625
+abcd7=(2_682_440, 15_365_639, 18_796_760, 20_615_673)
+abcd13=(186_668_000, 260_052_385, 582_665_296, 589_845_921)
+abcd14=(219_076_465, 275_156_240, 630_662_624, 638_523_249)
+abcd20=(664_793_200, 2_448_718_655, 3_134_081_336, 3_393_603_777)
+l7 = abcd_to_small_u(abcd7,9e99)
+[abs(poly(z0)).is_square() for z0 in l7]
+[False, False, False, False, False, False, False, False, False, False, False, False]
+Same for l13, l14, l20.
+python -um modular.solutions_modular get_quartic_pts 16/-5 20_000_000
+[]	2431.26s user 4.05s system 99% cpu 40:46.61 total
+python -um modular.solutions_modular get_quartic_pts 16/-5 30_000_000
+[]  5304.27s user 21.89s system 98% cpu 1:30:24.81 total
+
+DOING
+TITO SPECIAL
+date; python -um modular.solutions_modular find_uvD_pts 240 240 1 2_000 10_000_000; date
+Searching for pts on -240/851 quartic
+^C
+date; python -um modular.solutions_modular find_uvD_pts 240 240 851 2_000 10_000_000; date
+
+
+TITO SPECIAL
+date; python -um modular.solutions_modular find_uvD_pts 936 936 1 6_000 10_000_000; date
+Searching for pts on -936/1715 quartic
+^C
+date; python -um modular.solutions_modular find_uvD_pts 936 936 1715 6_000 10_000_000; date
+
+
+TITO SPECIAL
+date; python -um modular.solutions_modular find_uvD_pts 1520 1520 1 6_000 10_000_000; date
+Searching for pts on -1377/1520 quartic
+^C
+date; python -um modular.solutions_modular find_uvD_pts 1520 1520 1377 6_000 10_000_000; date
+Thu Apr 23 17:30:15 MDT 2026
+
+
+date; python -um modular.solutions_modular find_uvD_pts 204 236 1 3_000 3_000_000; date
+Searching for pts on -1479/220 quartic
+^C
+date; python -um modular.solutions_modular find_uvD_pts 204 236 1 3_000 3_000_000; date
+
+
+date; python -um modular.solutions_modular find_uvD_pts 244 316 1 3_000 3_000_000; date
+
+
+date; python -um modular.solutions_modular find_uvD_pts 320 320 1 3_000 3_000_000; date
+Expect 2D
+
+
+mn = QQ(-44/5)
+quad_xy = (QQ(-629/1074), QQ(941/3222))
+q_res = make_quartic(mn, quad_xy)
+get_quartic_pts(mn, 10_000_000, q_res[2])
+Searching for pts on -44/5 quartic
 
 TODO
+
+u = 1865/132 Done Tito specials
+u = 1861/240 Doing Tito specials
+
+Next
+324 to 336
+340 expect 2D
+344 to 396
+
+
+u = -936/5281 Doing Tito specials
+u = -1581/1520 Doing Tito specials
+u = -1245/5012 Doing Tito specials
+
+Find places in solutions_curves where couldn't find quartic points.
+

@@ -1,12 +1,12 @@
 """
 Explore whether modular curves can help find new solutions to a^4 + b^4 + c^4 = d^4.
 """
-from datetime import datetime
+import csv
+from datetime import datetime, timedelta
 from math import isqrt, gcd
-from multiprocessing import Process, Queue
 from solutions import known
 from sage.all import help, oo, pari, sage_eval, \
-    Integer, QQ, Rational, lcm, \
+    Integer, QQ, Rational, hilbert_symbol, lcm, solve, var, \
     Curve, DiagonalQuadraticForm, Jacobian, PolynomialRing
 from sage.rings.polynomial.polynomial_rational_flint import Polynomial_rational_flint
 from timeit import repeat, time
@@ -45,7 +45,7 @@ def abcd_to_h_u(abcd: tuple) -> set:
 
 def check_elkies_rules(u: Rational) -> bool:
     """Check the u satisfies Elkies rules for infinitely many solutions."""
-    m, n = u.numerator(), u.denominator()
+    m, n = u.numer(), u.denom()
     if m%2: m, n = n, m
     assert m%4 == 0 and abs(n)%4 == 1, f'{u} -> {m}, {n} fail mod 4'
 
@@ -64,11 +64,16 @@ pair = uvD_to_xyz(QQ(1000/47), QQ(-9/20), D)
 [(-50237800/1679142729, 1670617271/1679142729, 632671960/1679142729), 
 (-217519/422481, -95800/422481, -414560/422481)]
 
-So give up on Elkies rules. Just restrict to odd and even.
+If I said Elkies rules have to work on the inverse of m/n for u or v:
+56,-165, -383021,380940 and 56,-165, 2644685,570612
+would work but not quickly. And they have unique solutions.
+Same with some of the 136,-133 and 400,-37 pairs.
+
+So give up on Elkies rules. Just restrict to odd and 0 mod 4.
 """
 
 def mn_to_xyt_conics(mn: Rational) -> tuple:
-    """ Apply m/n to conics equations in x, y, t
+    """ Apply m/n to conic equations in x, y, t
         (2m^2+n^2)y^2 = -(6m^2-8mn+3n^2)x^2 -2(2m^2-n^2)x -2mn        (1) 
         (2m^2+n^2)t^2 = 4(2m^2-n^2)x^2      +8mnx         +(n^2-2m^2) (2)
     Return ((4 coeffs for y^2 eq 1),  (4 coeffs for t^2 eq 2))
@@ -87,37 +92,44 @@ def mn_to_xyt_conics(mn: Rational) -> tuple:
                  n2 - 2 * m2)
     return y2_coeffs, t2_coeffs
 
-def find_point_instantly(mn: Rational) -> tuple:
-    """ Find base point by Gauss-Legendre. Check both t^2 and y^2,
-    but return point for y^2.
+def check_quadratic_solvability(D, delta):
+    """ Check the Hilbert symbol on equation X^2 - Dy^2 - delta*z^2 = 0
+    at infinite prime (Real Solvability)
+    and at 2 and odd primes dividing coeffs
+    """
+    return hilbert_symbol(D, delta, -1) == 1 == hilbert_symbol(D, delta, 2)
+
+def check_yt(mn: Rational) -> bool:
+    """ Return whether both y^2 and t^2 are solvable and have a point
     """
     y2_coeffs, t2_coeffs = mn_to_xyt_conics(mn)
     for a0, a, b, c in (t2_coeffs, y2_coeffs):
         D = 4 * a * a0
         delta = b**2 - 4 * a * c
-        
-        # We want to solve X^2 - D*V^2 - delta*Z^2 = 0
-        # Create the quadratic form matrix:
-        # [ 1  0      0   ]
-        # [ 0 -D      0   ]
-        # [ 0  0 -delta   ]
+        if not check_quadratic_solvability(D, delta):
+            return False
         Q = DiagonalQuadraticForm(QQ, [1, -D, -delta])
-        
-        # This finds a rational point (X, V, Z) instantly
-        try:
+        try: # find a rational point (X, V, Z)
             point = Q.solve()
-        except Exception as e:
-            #print(f"Error: {e}")
-            return None
-        assert point is not None
-            
-        X, V, Z = point
-        # Convert back to original x, y
-        x_val = (X / Z - b) / (2 * a)
-        y_val = V / Z
-        assert a0 * y_val**2 == a * x_val**2 + b * x_val + c
-        # print(x_val, y_val)
-    return (x_val, y_val)
+        except Exception as e: return False
+    return True
+
+def check_known_uv_inv(file_name: str='solutions_uv.csv') -> None:
+    """Check hypothesis that inverses of a uv pair
+    are always y^2 and t^2 solvable and have a point.
+    """
+    with open(file_name, mode='r', encoding='utf-8') as file:
+        reader = csv.reader(file)
+        header = next(reader)
+        for row in reader:
+            u_n, u_d, v_n, v_d= [int(row[i]) for i in range(4)]
+            u = QQ(u_n)/u_d
+            assert check_yt(u.inverse()), f'row {row} fails u_d/u_n'
+            v = QQ(v_n)/v_d
+            assert check_yt(v.inverse()), f'row {row} fails v_d/v_n'
+            #print(row, u, v)
+""" Success
+"""
 
 def u_to_quartic(u: Rational) -> Polynomial_rational_flint:
     """ Given u, build rational quartic polynomial in v.
@@ -136,9 +148,10 @@ def u_to_quartic(u: Rational) -> Polynomial_rational_flint:
     D2 = D2.univariate_polynomial()
     return D2
 
+# unfinished
 def scan_known(n_known: int=8, max_h: int=100_000_000,
                max_d: int=int(1e27)) -> None:
-    """For all abcd in first n_known known solutions, generate 12 u.
+    """For all abcd in first n_known solutions, generate 12 u.
     For each u with height less than max_h:
         Verify no obstructions on u
     ...
@@ -149,7 +162,7 @@ def scan_known(n_known: int=8, max_h: int=100_000_000,
         for h, u in abcd_to_h_u(abcd):
             if h > max_h: continue
             #print(u, check_elkies_rules(u))
-            assert find_point_instantly(QQ(1)/u) is not None, f'No point for u {u}'
+            assert check_yt(QQ(1)/u), f'No point for u {u}'
             print('\t', u)
             #TODO generate JD2 (smarter code) for each u
             # I think I should use u, but maybe 1/u?
@@ -190,9 +203,9 @@ def report_uvw(n_known: int=8):
         u = un / ud
         v = vn / vd
         w = wn / wd
-        u_num, u_den = u.numerator(), u.denominator()
-        v_num, v_den = v.numerator(), v.denominator()
-        w_num, w_den = w.numerator(), w.denominator()
+        u_num, u_den = u.numer(), u.denom()
+        v_num, v_den = v.numer(), v.denom()
+        w_num, w_den = w.numer(), w.denom()
         print(a, b, c, d)
         print('\tu = ', u_num, '/', u_den, '=', float(u_num)/float(u_den)) 
         print('\tv = ', v_num, '/', v_den, '=', float(v_num)/float(v_den))
@@ -229,10 +242,104 @@ def uvD_to_xyz(u: Rational, v: Rational, D: Rational) -> tuple:
         pair[inx] = (x, y, z)
     return pair
 
+def uv_to_w(u: Rational, v: Rational) -> Rational:
+    """The u, v, w derived from x^4 + y^4 + z^4 = 1
+    have relationship 2(u+v+w)-uvw-4=0
+    """
+    w = 2 * (u + v - 2) / (u*v - 2)
+    return w
+
+def get_quartic_pts(u: Rational, max_pt: int=100_00_000, D2=None) -> None|list:
+    """Get points on quartic for u or on given quartic.
+    """
+    if D2 is None:
+        D2 = u_to_quartic(u)
+
+    # If both D2 and -D2 return nothing too quickly, return None
+    run_l = run_m = False
+    d = 100_000
+    n = 5 * d
+    time0e = datetime.now()
+    p = pari(D2).hyperellratpoints([n, [4, d]], 0) 
+    time1e = datetime.now()
+    l1 = list(p)
+    #print(f'{u}, l1 {len(l1)}, {time1e-time0e}')
+    if time1e-time0e >= timedelta(milliseconds=1) or 0 < len(l1): 
+        run_l = True
+
+    time0e = datetime.now()
+    p = pari(-D2).hyperellratpoints([n, [4, d]], 0) 
+    time1e = datetime.now()
+    m1 = list(p)
+    #print(f'{u}, l1m {len(l1m)}, {time1e-time0e}')
+    if time1e-time0e >= timedelta(milliseconds=1) or 0 < len(m1): 
+        run_m = True
+    if not run_l and not run_m: return None
+
+    # Search for more pts
+    print(f'Searching for pts on {u} quartic')
+
+    l2 = l3 = l4 = l5 = l6 = m2 = m3 = m4 = m5 = m6 = []
+    if max_pt > d:
+        s = d + 2
+        d = min(1_000_000, max_pt)
+        n = 3 * d
+        if run_l:
+            p = pari(D2).hyperellratpoints([n, [s, d]], 0)
+            l2 = list(p)
+        if run_m:
+            p = pari(-D2).hyperellratpoints([n, [s, d]], 0)
+            m2 = list(p)
+        if max_pt > d:
+            s = d + 2
+            d = min(10_000_000, max_pt)
+            n = 2 * d
+            if run_l:
+                p = pari(D2).hyperellratpoints([n, [s, d]], 0)
+                l3 = list(p)
+            if run_m:
+                p = pari(-D2).hyperellratpoints([n, [s, d]], 0)
+                m3 = list(p)
+            if max_pt > d:
+                s = d + 2
+                d = min(50_000_000, max_pt)
+                n = d
+                if run_l:
+                    p = pari(D2).hyperellratpoints([n, [s, d]], 0)
+                    l4 = list(p)
+                if run_m:
+                    p = pari(-D2).hyperellratpoints([n, [s, d]], 0)
+                    m4 = list(p)
+                if max_pt > d:
+                    s = d + 2
+                    d = min(80_000_000, max_pt)
+                    n = d
+                    if run_l:
+                        p = pari(D2).hyperellratpoints([n, [s, d]], 0)
+                        l5 = list(p)
+                    if run_m:
+                        p = pari(-D2).hyperellratpoints([n, [s, d]], 0)
+                        m5 = list(p)
+                    if max_pt > d:
+                        s = d + 2
+                        d = max(100_000_000, max_pt)
+                        n = d
+                        if run_l:
+                            p = pari(D2).hyperellratpoints([n, [s, d]], 0)
+                            l6 = list(p)
+                        if run_m:
+                            p = pari(-D2).hyperellratpoints([n, [s, d]], 0)
+                            m6 = list(p)
+
+    l_pts = l1 + l2 + l3 + l4 + l5 + l6
+    m_pts = m1 + m2 + m3 + m4 + m5 + m6
+    pts = [(QQ(v), QQ(D)) for (v, D) in l_pts + m_pts]
+    return pts
+
 def find_uvD_pts(first_ud: int, last_ud: int, first_un: int, last_un: int,
         max_pt: int=int(1e8), max_d: int=int(1e27)) -> None | tuple:
     """ 
-    Search for solution pairs with:
+    Search for solution pairs using hyperellratpoints with:
         ud in range(4<=first_ud, last_ud+1, 4);
         un in range(1<=first_un, last_un+1, 2);
         (u_num, u_den) in ((un, ud), (-un, ud), (ud, un), (ud, -un));
@@ -256,29 +363,29 @@ def find_uvD_pts(first_ud: int, last_ud: int, first_un: int, last_un: int,
     found_knowns = set() # indexes of known solutions found in search
     found_new = False
 
-    # Search for points in parallel and count results.
-    start = time.time()
+    # Search for points and count results.
+    start = datetime.now()
     for ud in range(first_ud, last_ud + 1, 4):
         for un in range(first_un, last_un + 1, 2):
             if gcd(un, ud) != 1: continue
             uQ = QQ(un) / ud
-            for  u in (uQ, -uQ, uQ.inverse(), -uQ.inverse()):
-                if find_point_instantly(u.inverse()) is None:
-                    continue
+            for u in (uQ, -uQ, uQ.inverse(), -uQ.inverse()):
+                # Quadratics for y^2 and t^2 on inverse must be solvable
+                if not check_yt(u.inverse()): continue
                 u_hits += 1
-                #print(f'{u_hits}: u {u}')
-                D2 = u_to_quartic(u)
-                pts = pari(D2).hyperellratpoints(max_pt, 0)
+                pts = get_quartic_pts(u, max_pt)
+                if pts is None: continue
                 if 0 == len(pts): continue
-                for v_pari, D_pari in pts:
-                    if D_pari < 0: continue
-                    D = QQ(D_pari)
-                    v = QQ(v_pari)
-                    print(f'{u}, {v} -> D {D}')
+                for v, D in pts:
+                    if D < 0: continue
                     D_hits += 1
+                    w = uv_to_w(u, v)
+                    print(f'u {u}, v {v} -> D {D}, w {w}', flush=True)
                     pair = uvD_to_xyz(u, v, D)
                     for xyz in pair:
-                        d = lcm([x.denominator() for x in xyz])
+                        d = lcm([x.denom() for x in xyz])
+                        a, b, c = abc = sorted(abs(x) * d for x in xyz)
+                        assert a**4 + b**4 + c**4 == d**4
                         if d >= max_d:
                             big_hits += 1
                             print(f'\tbig {float(d):.4e}')
@@ -287,9 +394,10 @@ def find_uvD_pts(first_ud: int, last_ud: int, first_un: int, last_un: int,
                             known_hits += 1
                             inx = d_to_known_inx[d]
                             found_knowns.add(inx)
-                            print(f'\tknown #{inx}: {xyz}')
+                            print(f'\tknown #{inx}: {d}', flush=True)
                             continue
-                        print(f'\n\nNEW ({u}, {v}) -> {xyz}')
+                        print(f'\n\nNEW {u}, {v} -> {d}; {c}, {b}, {a}',
+                              flush=True)
                         found_new = True
                         break
                     if found_new: break
@@ -298,10 +406,10 @@ def find_uvD_pts(first_ud: int, last_ud: int, first_un: int, last_un: int,
         if found_new: break
 
     # Report results and return if found new solution.
-    elapsed = time.time() - start
+    elapsed = datetime.now() - start
     print(f'hits: u {u_hits}, D {D_hits}, big {big_hits}, known {known_hits}'
         f'\nknowns {len(found_knowns)}: {sorted(found_knowns)}')
-    print(f'elapsed: {elapsed:.4f}s')
+    print(f'elapsed: {elapsed}')
     if found_new:
         return u, v, xyz
 """
@@ -334,6 +442,7 @@ knowns 4: [13, 14, 41, 52]
 elapsed: 22.7084
 """
 
+
 def DEBUG(*args):
     import pdb; pdb.set_trace()
     pass; pass; pass # opportumity to debug
@@ -355,7 +464,22 @@ if __name__ == "__main__":
 
 """
 TODO
+How do EC from pairs compare to EC from solutions_curves.log?
+    python -m elliptical.solutions_curves get_optimized_rational_points -20/9
+    q_res = make_quartic(QQ(20/-9) with different quad_xy
+    get_quartic_pts(QQ(20/-9), 1_000_000, q_res[2])
+        with a dozen different quad_xy
+    e_res = model_quartic_as_elliptic_curve(q_res[2], k0)
+    factor(C0.conductor())
+vs  JD2 = u_to_D_to_EC
+The quartics differ, but the EC remain the same.
 
+Find places in solutions_curves with couldn't find quartic points.
+And use get_quartic_pts(QQ(20/-9), 1_000_000, q_res[2])
+
+How go from pnt on EC back to pnt on quartic and solution to abcd?
+
+Methods of building EC
 Use pieza_in_pairs.py
     u_to_D_to_EC(u)
 
@@ -372,12 +496,6 @@ C = Curve(y^2 - f)
 E = Jacobian(C)
 print(E.minimal_model())
 
-def model_quartic_to_elliptic(quartic_poly):
-    # pari.ellfromquartic does not exist.
-    # It expects a polynomial in one variable
-    res = pari.ellfromquartic(quartic_poly)
-    # Convert PARI object back to a Sage Elliptic Curve
-    return EllipticCurve(res.ell_to_sage())
 -------------
 
 >>> abcd_to_small_u((5_870_000, 8_282_543, 11_289_040, 12_197_457), 9e99)
