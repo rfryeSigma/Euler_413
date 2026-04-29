@@ -249,16 +249,32 @@ date; python -um modular.solutions_modular find_uvD_pts 40 40 1 1_000 1_000_000;
 	knowns 3: [22, 53, 63]
 64, 68 None  1_000 1_000_000
 72 hits: u 51, D 0, big 0, known 0
-	knowns 0: []
 	elapsed: 0:37:35.847498
 date; python -um modular.solutions_modular find_uvD_pts 76 76 1 1_000 1_000_000; date
 elapsed: 0:17:07.871275
-None
 date; python -um modular.solutions_modular find_uvD_pts 80 80 1 1_000 1_000_000; date
 hits: u 80, D 5, big 0, known 10
 knowns 5: [4, 18, 21, 48, 72]
 elapsed: 1:14:22.272912
 84, 88 None 1_000 1_000_000
+
+v_list = find_uv_by_EC(QQ(-5/44), QQ(57878913)/12642040, verbose=True)
+t = (0 : 1 : 0), v = 57878913/12642040
+t = (17248666 : 0 : 1), v = -2741924904/1401894085
+Found 3 basis gens
+Found 686 unique points from 686
+solve_v_list(QQ(-5/44), v_list)
+u -5/44, v 57878913/12642040 -> D 5531870046610133823/309413795500057600, w -2741924904/1401894085
+	known #55: 2778996090487120353
+	known #57: 20234461127553384633
+u -5/44, v -2741924904/1401894085 -> D 23991720392148150390351/1902417200740131633800, w 57878913/12642040
+	known #57: 20234461127553384633
+	known #55: 2778996090487120353
+u -5/44, v 4669000304/944254963 -> D 21065022021985851014775/863085677225327165192, w -117620301817/53219719132
+	known #66: 3037467718844497770129
+	known #74: 24504057146788194291849
+big 0, known 6
+knowns 4: [55, 57, 66, 74]
 
 4/21/2026T
 date; python -um modular.solutions_modular find_uvD_pts 92 92 1 2_000 2_000_000; date
@@ -428,62 +444,145 @@ python -um modular.solutions_modular get_quartic_pts 16/-5 20_000_000
 python -um modular.solutions_modular get_quartic_pts 16/-5 30_000_000
 []  5304.27s user 21.89s system 98% cpu 1:30:24.81 total
 
+date; python -um modular.solutions_modular find_uvD_pts 320 320 1 3_000 3_000_000; date
+hits: u 173, D 4, big 0, known 8
+knowns 5: [1, 17, 45, 86, 100]
+elapsed: 19:32:56.580240
+
+4/25/2026Sa
+date; python -um modular.solutions_modular find_uvD_pts 324 336 1 3_000 3_000_000; date
+None
+
+4/26/2026Su
+date; python -um modular.solutions_modular find_uvD_pts 340 340 14337 14337 1_000_000; date
+hits: u 1, D 2, big 0, known 4
+knowns 2: [25, 46]
+date; python -um modular.solutions_modular find_uvD_pts 340 340 1 3_000 3_000_000; date
+None
+
+date; python -um modular.solutions_modular find_uvD_pts 204 236 1 3_000 3_000_000; date
+None
+
+date; python -um modular.solutions_modular find_uvD_pts 400 400 1 3_000 3_000_000; date
+u -400/37, v -93/80 -> D 2960618799/4380800, w -2433/920
+	known #18: 1787882337
+	known #4: 12197457
+u -400/37, v -2433/920 -> D 985189443879/579360800, w -93/80
+	known #4: 12197457
+	known #18: 1787882337
+u -400/37, v 1867333/457280 -> D 95709808648545921/143132371404800, w 8685847/22963880
+	known #4: 12197457
+	known #84: 1779979592349189232414713
+u -97/400, v 78065/484 -> D 2352959771684697/37480960000, w -61583704/7959505
+	known #51: 87486470529871881
+	known #37: 6014017311081
+hits: u 48, D 5, big 0, known 8
+knowns 5: [4, 18, 37, 51, 84]
+elapsed: 5:44:27.294309
+
+4/27/2026M
+date; python -um modular.solutions_modular find_uvD_pts 404 408 1 3_000 3_000_000; date
+None
+
+date; python -um modular.solutions_modular find_uvD_pts 412 412 1 3_000 3_000_000; date
+u -1425/412, v -9/20 -> D 3894577617/67897600, w 5728/215
+	known #2: 2813001
+	known #23: 15434547801
+u -1425/412, v 5728/215 -> D 47763328987689/3923208200, w -9/20
+	known #23: 15434547801
+	known #2: 2813001
+u -1425/412, v 105512/1038385 -> D 2396161589040305199/91512674542872200, w 134815113/29587760
+	known #2: 2813001
+	big 1.2629e+28
+hits: u 30, D 3, big 1, known 5
+knowns 2: [2, 23]
+elapsed: 3:10:17.978092
+
+See more notes on this triple in modular.log
+date; python -um modular.solutions_modular find_uvD_pts 432 432 1 3_000 3_000_000; date
+^C None
+date; python -um modular.solutions_modular find_uvD_pts 432 432 12_001 13_000 3_000_000; date
+u 12185/432, v 22529/2988 -> D 43926422197788185/1666205945856, w 79416/247889
+	known #6: 16430513
+	known #61: 202540855134365138633
+u 12185/432, v 79416/247889 -> D 5048895759796640345/5733925012225152, w 22529/2988
+	known #61: 202540855134365138633
+	known #6: 16430513
+u 12185/432, v -282584/755289 -> D 103397566795105951865/53230901017191552, w -7683273/1866844
+	known #98: 452835938257547709708389177
+	known #6: 16430513
+hits: u 22, D 3, big 0, known 6
+knowns 3: [6, 61, 98]
+elapsed: 2:36:03.243418
+
+4/28/2026W
+date; python -um modular.solutions_modular find_uvD_pts 416 428 1 3_000 3_000_000; date
+ahits: u 310, D 0, big 0, known 0
+elapsed: 1 day, 14:19:59.871841
+
 DOING
 TITO SPECIAL
 date; python -um modular.solutions_modular find_uvD_pts 240 240 1 2_000 10_000_000; date
-Searching for pts on -240/851 quartic
-^C
+Searching for pts on -240/851 quartic ^C
 date; python -um modular.solutions_modular find_uvD_pts 240 240 851 2_000 10_000_000; date
-
+at 1807
 
 TITO SPECIAL
 date; python -um modular.solutions_modular find_uvD_pts 936 936 1 6_000 10_000_000; date
-Searching for pts on -936/1715 quartic
-^C
+Searching for pts on -936/1715 quartic ^C
 date; python -um modular.solutions_modular find_uvD_pts 936 936 1715 6_000 10_000_000; date
-
+u -936/5281, v -125/92 -> D 514986989385/118026082952, w 1717941/427352
+	known #27: 64244765937
+	known #40: 25866132798297
+u -936/5281, v 1717941/427352 -> D 17133630011513684625/2546676735255555872, w -125/92
+	known #40: 25866132798297
+	known #27: 64244765937
+at 5587
 
 TITO SPECIAL
 date; python -um modular.solutions_modular find_uvD_pts 1520 1520 1 6_000 10_000_000; date
-Searching for pts on -1377/1520 quartic
-^C
+Searching for pts on -1377/1520 quartic ^C
 date; python -um modular.solutions_modular find_uvD_pts 1520 1520 1377 6_000 10_000_000; date
-Thu Apr 23 17:30:15 MDT 2026
-
-
-date; python -um modular.solutions_modular find_uvD_pts 204 236 1 3_000 3_000_000; date
-Searching for pts on -1479/220 quartic
-^C
-date; python -um modular.solutions_modular find_uvD_pts 204 236 1 3_000 3_000_000; date
+at -4453
 
 
 date; python -um modular.solutions_modular find_uvD_pts 244 316 1 3_000 3_000_000; date
+at 1735/312
 
+date; python -um modular.solutions_modular find_uvD_pts 344 396 1 3_000 3_000_000; date
+at 737/380
 
-date; python -um modular.solutions_modular find_uvD_pts 320 320 1 3_000 3_000_000; date
-Expect 2D
+I don't have to be very aggressive on v to find the first v.
+Better to find one moderate v and search higher on odd part of u.
+Also even part of u at multiples of 40 more likely to get hits.
+date; python -um modular.solutions_modular find_uvD_pts 40 40 1_001 20_000 1_000_000; date
+at 10971
 
+date; python -um modular.solutions_modular find_uvD_pts 80 80 1_001 20_000 1_000_000; date
+at 10381
 
-mn = QQ(-44/5)
-quad_xy = (QQ(-629/1074), QQ(941/3222))
-q_res = make_quartic(mn, quad_xy)
-get_quartic_pts(mn, 10_000_000, q_res[2])
-Searching for pts on -44/5 quartic
 
 TODO
 
 u = 1865/132 Done Tito specials
 u = 1861/240 Doing Tito specials
 
-Next
-324 to 336
-340 expect 2D
-344 to 396
+Next on mults of 80 with 20_000 1_000_000
+120 120 2_001 20_000 1_000_000
+160 160 2_001 20_000 1_000_000
+200 200 3_001 20_000 1_000_000
+Tito 240 240 2_001 20_000 1_000_000
+280 is already running 1 3_000 3_000_000
+320 320 3_001 20_000 1_000_000
+360 is already running 1 3_000 3_000_000
+400 400 3_001 20_000 1_000_000
 
+
+Old next with 1 3000 3_000_000
+436 to 
+484 already seen by -97/400
 
 u = -936/5281 Doing Tito specials
 u = -1581/1520 Doing Tito specials
-u = -1245/5012 Doing Tito specials
-
-Find places in solutions_curves where couldn't find quartic points.
+u = -1245/5012 Done Tito specials
 

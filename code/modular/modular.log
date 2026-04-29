@@ -1,4 +1,5 @@
-This is a log explorations on modular curves and forms.
+This is a log of explorations on modular curves and forms.
+Is is mostly suggestions from AI chats for followup.
 
 This is a question I asked Gemini AI:
 =============
@@ -31,7 +32,7 @@ the same pair of solutions.
 Here is an extract showing occurences of the rational 400/-37.
 [The (u, v) pair (400/-37, -93/80) was omitted because the reverse had been covered.]
 
-% grep '400,.37,' solutions_uv.csv 
+% grep '400,-37,' solutions_uv.csv 
 -93,80,400,-37,12197457,11289040,8282543,5870000
 -93,80,400,-37,1787882337,1662997663,1237796960,686398000
 400,-37,-2433,920,12197457,11289040,8282543,5870000
@@ -194,7 +195,7 @@ All of the v paired with u=(-5,8) are multiples of 8.
 
 For u=(29,12), gcd((12,132,30768)) == 12
 
-The table soulutions_uv.csv shows rationals u and v which combine
+The table solutions_uv.csv shows rationals u and v which combine
 to form a quartic which produces pairs of integer solutions to
 d^4 = a^4 + b^4 + c^4.
 
@@ -350,8 +351,10 @@ If L(E,s) has a zero of order r at s=1, then RE=r. ​
 Conclusion: Each AI offers clues. 
 Adobe, Duck, and Bing give vague references.
 Gemini and Perplexity give insight.
+Later, I found DeepSeek very helpful.
 
 ----------
+I think this is bullshit because usually on 1 or 2 torsion points.
 Gemini answer to a question about the Gerhard Frey curve for FLT:
 $$E_{a,b,c}: y^2 = x(x - a^p)(x + b^p)$$
 
@@ -370,61 +373,6 @@ This will return something like Torsion Subgroup isomorphic to
 Z/4 + Z/1 or Z/8 + Z/1. This tells you the "degree" of the symmetry 
 available to that specific $u$ value.
 
-------------
-I should use
-E1.torsion_points())
-16
->>> E1.torsion_subgroup()
-Torsion Subgroup isomorphic to Z/8 + Z/2 ...
-instead of the root for P0 when exploring Elliptic curve.
-
------------
-Suggested improvements to model_quartic_as_elliptic_curve
-Sign Handling: Instead of manually flipping the sign and checking is_square, 
-you can use the fact that if $P(x)$ is not a square, the point is simply 
-not on that specific branch. However, usually, we assume the quartic is 
-defined such that the point exists.Coefficient Extraction: Instead of 
-while len(coeffs) < 5, use list slicing or the padded_list method if 
-available.Minimal Model: The logic for E_jmin is risky because a 
-$j$-invariant model is often a quadratic twist of your actual curve, 
-which changes the rank and the set of rational points.
-
-Version 1:
-def model_quartic_refined(quartic_poly, x0):
-    # Ensure y0^2 = poly(x0)
-    y0_sq = quartic_poly.subs(x0)
-    if not y0_sq.is_square():
-        raise ValueError("Point x0 does not yield a rational y on the quartic.")
-    
-    # Use Sage's native transformation logic
-    # This returns (Elliptic Curve, morphism_from_quartic, morphism_to_quartic)
-    E, _, _ = EllipticCurve_from_quartic(quartic_poly, [x0, y0_sq.sqrt()])
-    
-    # Return the globally minimal model
-    return E.minimal_model()
-
-Version 2:
-def model_quartic_refined(quartic_poly, x0):
-    # Shift and get coefficients in one go
-    u = quartic_poly.parent().gen()
-    shifted = quartic_poly.subs({u: u + x0})
-    coeffs = shifted.padded_list(5) # [e2, d, c, b, a]
-    e2, d, c, b, a = coeffs
-    
-    e = e2.sqrt()
-    # The standard Cassels transformation
-    a1, a2, a3, a4 = d/e, c - (d**2)/(4*e2), 2*e*b, -4*e2*a
-    a6 = a2 * a4
-    
-    return EllipticCurve([a1, a2, a3, a4, a6]).minimal_model()
-
-
-# The Sage-native way to convert a quartic to an elliptic curve
-R.<x,y> = QQ[]
-f = x^4 + x + 1  # your quartic
-C = Curve(y^2 - f)
-E = Jacobian(C)
-print(E.minimal_model())
 
 -------------
 I have a set of 100 integer solutions with D<1e27 to the Fermat 
@@ -530,24 +478,7 @@ factor(Cx.conductor()) # (12/-29)
 2^3 * 17 * 23 * 73 * 137 * 1297 * 2528353 * 3513073 * 4005433 * 29328519977
 
 ----------
-I feel almost ready to begin several new methods of attack.
-
-1) Restrict search over u with Elkies rules on (m,n) and check for quadratic obstruction.
-Done
-
-2} Use direct calculation of elliptic curve from u.
-
-I can do this either by taking the Jacobian of the quartic curve or with a PARI method.
-
-3) Use all torsion points to walk elliptic curve
-
-I have been following Tomita’s old notes on how to walk the elliptic curve for more points.
-He combines a P0 that he calculates from the EC root and combines it with the generators.
-I plan to also include points from the torsion subgroup.
-All the curves I have examined so far have only the trivial group (point at infinity) or Z/2Z,
-but I see no reason why more of the possible 15 subgroups should not occur.
-
-4) Search for modular connections between elliptic curves.
+Search for modular connections between elliptic curves.
 
 Group the elliptic curves by J-invariant isogeny and rank them by conductor.
 
@@ -567,8 +498,7 @@ The other idea is that Complex Multiplication (CM) points relate to EC vibration
 Transcendental Lattice of the K3 surface.
 This step is not clear to me yet.
 
-------------------
-
+-----------------
 Find Pari source code
 
 ^C/Users/rogerfrye/Documents/Git/Euler_413/code/modular/solutions_modular.py:291: RuntimeWarning: cypari2 leaked 1192112 bytes on the PARI stack
@@ -585,3 +515,129 @@ from cypari2.pari_instance import Pari
  |      >>> pari = Pari()
  |      >>> pari2 = Pari(10**7)
  |      >>> pari2
+
+ -----------------
+Study this uvw triplet. I don't see any patterns.
+They all 3 find knowns [6, 61, 98]
+B16430_8=dict(info='Bernstein (2001)', inx=6, m=(12185, 432), #2
+	abcd=(3_642_840, 7_028_600, 16_281_009, 16_430_513)
+P20254_21=dict(info='Piezas (2024)', inx=61, m=(22529, 2988), #1
+	abcd=(705_558_147_137_161_920, 80_940_380_256_877_627_544, 201_236_910_265_023_650_505, 202_540_855_134_365_138_633)
+P45283_27=dict(info='Piezas (2024)', inx=98, m=(12185, 432),
+	abcd=(10_453_265_194_894_185_904_695_360, 145_561_707_582_919_191_804_801_464, 451_622_371_501_239_854_889_723_705, 452_835_938_257_547_709_708_389_177)
+
+find_uv_by_EC(QQ(12185)/432, QQ(22529)/2988)
+u 12185/432, v 22529/2988 -> D 43926422197788185/1666205945856, w 79416/247889
+u 12185/432, v 79416/247889 -> D 5048895759796640345/5733925012225152, w 22529/2988
+find_uv_by_EC(QQ(12185)/432, QQ(79416/247889) is same u EC with different v0
+
+find_uv_by_EC(QQ(22529)/2988, QQ(12185)/432)
+u 22529/2988, v 12185/432 -> D 43926422197788185/1666205945856, w 79416/247889
+u 22529/2988, v 79416/247889 -> D 14264074519058428625/274312565341799112, w 12185/432
+find_uv_by_EC(QQ(22529)/2988, QQ(79416)/247889) is same u EC with different v0
+
+find_uv_by_EC(QQ(79416)/247889, QQ(12185)/432)
+u 79416/247889, v 12185/432 -> D 5048895759796640345/5733925012225152, w 22529/2988
+u 79416/247889, v 22529/2988 -> D 14264074519058428625/274312565341799112, w 12185/432
+find_uv_by_EC(QQ(79416)/247889, QQ(22529)/2988) is same u EC with different v0
+
+u_to_quartic(QQ(12185)/432)
+18910650043123489/34828517376*v^4 - 20580668847888769/8707129344*v^3 - 1625831889785/5038848*v^2 - 17572858855416001/4353564672*v + 18925810767742753/8707129344
+real_roots()
+[0.467584364964796, 4.76795677035796]
+E_min, bridge = u_to_E_min_map(QQ(12185)/432, QQ(22529)/2988)
+Elliptic Curve defined by y^2 = x^3 + 362792013717657122720965434323521*x + 15202065446316773546334138582493302789887434875842 over Rational Field
+conductor
+400789539105227720893336904032500551595240010914104
+conductor().factor()
+2^3 * 17 * 31 * 41 * 113 * 1097 * 7417 * 1410401 * 3116873 * 148847473 * 3854032641194233
+torsion = (-19965544989014881 : 0 : 1)]
+
+u_to_quartic(QQ(22529)/2988)
+116455836976467793/79711755284736*v^4 - 200511832310137321/19927938821184*v^3 - 7689563607869/1667330892*v^2 - 86140527238389625/9963969410592*v + 124796653094374225/19927938821184
+real_roots()
+[0.480768893691342, 7.41035604410668]
+E_min, bridge = u_to_E_min_map(QQ(22529)/2988, QQ(12185)/432)\
+Elliptic Curve defined by y^2 = x^3 + 17195540844285866589537331281526177*x + 7772806628455190608486551305989476854441835187058978 over Rational Field
+conductor()
+2832397777231464645035402712066840581888780049848840
+conductor().factor()
+2^3 * 5 * 11 * 23 * 233 * 313 * 1097 * 13873 * 14249 * 1099337 * 660045433 * 24389752764988817
+torsion = (-169387592995127521 : 0 : 1)
+
+u_to_quartic(QQ(79416)/247889)
+4969387736618772602692/3775974232940165855041*v^4 - 7716376425138752259472/3775974232940165855041*v^3 - 245292094838481408/15232520333456369*v^2 + 140379861171490531200800/3775974232940165855041*v - 144363626534382180279600/3775974232940165855041
+real_roots()
+[-3.91012109388303, 3.43701061640249]
+E_min, bridge = u_to_E_min_map(QQ(79416)/247889, QQ(12185)/432)\
+Elliptic Curve defined by y^2 = x^3 + 2163855015142773328174556540837919592173217*x - 16015333815101458234199364282800360610757294292362999623566282018 over Rational Field
+conductor()
+111908894197133738941653350447759419010279172221476684129958083760
+conductor().factor()
+2^4 * 5 * 17 * 593 * 7417 * 14249 * 142139561 * 25229701201 * 64602406849 * 5667382981768090513351
+torsion = (2235862122581577163681 : 0 : 1)
+
+E_min.isogeny_class().isogenies()
+[[0,
+ Isogeny of degree 2 from Elliptic Curve defined by y^2 = x^3 + 2163855015142773328174556540837919592173217*x - 16015333815101458234199364282800360610757294292362999623566282018 over Rational Field 
+ to Elliptic Curve defined by 
+ y^2 = x^3 - 83641611528496027116607965855540228350739283*x - 284604203392609313588891905143815252856688729757691598662471559518 over Rational Field], 
+ [Isogeny of degree 2 from Elliptic Curve defined by y^2 = x^3 - 83641611528496027116607965855540228350739283*x - 284604203392609313588891905143815252856688729757691598662471559518 over Rational Field 
+ to Elliptic Curve defined by y^2 = x^3 + 2163855015142773328174556540837919592173217*x - 16015333815101458234199364282800360610757294292362999623566282018 over Rational Field, 
+ 0]]
+
+----------------
+Elliptic Curve defined by y^2 = x^3 + 2163855015142773328174556540837919592173217*x - 16015333815101458234199364282800360610757294292362999623566282018 over Rational Field
+E_min.modular_symbol_space()
+OverflowError: Python int too large to convert to C long
+That's discouraging. May ot be able to use Modular Forms
+Except by Fourier coefficients
+E_min.anlist(10)
+[0, 1, 0, 0, 0, -1, 0, 0, 0, -3, 0]
+
+L = E_min.lseries()
+>>> L.at1()
+(0.00000000000000000000000000000000000000, 0.000000)
+($L$-function vanishes at the central point)
+
+>>> omega1, omega2 = E_min.period_lattice().basis()
+>>> omega1
+5.00389647579168e-11
+>>> omega2
+2.50194823789584e-11 + 4.04149964762825e-11*I
+Micro periods imply the curve is "stretched" incredibly thin in the complex plane.
+
+Deepseek suggests:
+Investigate quadratic twists of \( E_{ ext{min}} \). Sometimes, a twist has 
+non-vanishing \( L \)-function
+E_twist = E_min.quadratic_twist(5)  # Twist by D=5
+     L_twist = E_twist.lseries()(1)
+
+Check for isogenies to smaller curves:
+isogenies = E_min.isogenies_prime_degree()
+     for iso in isogenies:
+         print(iso.codomain().a_invariants())
+
+phi = E.isogenies_prime_degree(2)[0]  # Degree-2 isogeny
+  E_prime = phi.codomain()
+  # Check if E_prime has further isogenies
+  print(E_prime.isogenies_prime_degree())
+Isogeny Graphs: Construct the isogeny graph (e.g., 2-isogeny chains or cycles) 
+to see if \( E \) belongs to a family.
+
+The isogeny class of \( E \) is related to its modular form. 
+Since \( E \) has a degree-2 isogeny:
+Its modular form \( fE \) is not CM (complex multiplication) 
+but may have a quadratic twist symmetry.
+The \( L \)-function of \( E \) and \( E' \) are identical 
+(since isogenous curves share \( L \)-functions).
+
+E_min.j_invariant()
+4376916100845580074232040020880684129719982559924807260300178174415231501229203304998270226606119232954468307608003843646320823216/435361360348770347471129905727330877266707255772724043279811473135111276031468283209841363305270355908200459148873549921421484375
+
+If Sage's built-in methods fail, compute the periods numerically:
+from sage.libs.mpmath.all import quad
+     f = lambda x: 1 / sqrt(x**3 + E_min.a4()*x + E_min.a6())
+     omega_real = quad(f, [E_min.period_lattice().real_period(), infinity])
+
+----------------

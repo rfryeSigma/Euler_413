@@ -308,6 +308,7 @@ C7.torsion_subgroup()
 Torsion Subgroup isomorphic to Trivial group associated to the Elliptic Curve defined by y^2 = x^3 + 349942184229228*x - 11167797929528591502588 over Rational Field
 C7.torsion_points()
 [(0 : 1 : 0)]
+but later I found t = (17248666 : 0 : 1)  ???
 
 C7.hyperelliptic_polynomials()[0].roots()
 []

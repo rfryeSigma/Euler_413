@@ -3,12 +3,15 @@ Explore whether modular curves can help find new solutions to a^4 + b^4 + c^4 = 
 """
 import csv
 from datetime import datetime, timedelta
-from math import isqrt, gcd
+import itertools
+from math import gcd
+from pdb import set_trace, runcall
 from solutions import known
 from sage.all import help, oo, pari, sage_eval, \
-    Integer, QQ, Rational, hilbert_symbol, lcm, solve, var, \
-    Curve, DiagonalQuadraticForm, Jacobian, PolynomialRing
+    QQ, RR, Rational, hilbert_symbol, lcm, \
+    DiagonalQuadraticForm, EllipticCurve, PolynomialRing
 from sage.rings.polynomial.polynomial_rational_flint import Polynomial_rational_flint
+from sage.modules.free_module_element import vector
 from timeit import repeat, time
 
 def xyz_to_u(x :Rational, y :Rational, z :Rational) -> Rational:
@@ -148,34 +151,246 @@ def u_to_quartic(u: Rational) -> Polynomial_rational_flint:
     D2 = D2.univariate_polynomial()
     return D2
 
-# unfinished
-def scan_known(n_known: int=8, max_h: int=100_000_000,
-               max_d: int=int(1e27)) -> None:
-    """For all abcd in first n_known solutions, generate 12 u.
-    For each u with height less than max_h:
-        Verify no obstructions on u
-    ...
+def u_to_E_min_map(u, v0):
+    """ Generate D2 quartic, minimal elliptic curve and
+    map from elliptical points to quartic points.
     """
-    for val in list(known.values())[:n_known]:
-        abcd = val['abcd']
-        print(abcd[-1])
-        for h, u in abcd_to_h_u(abcd):
-            if h > max_h: continue
-            #print(u, check_elkies_rules(u))
-            assert check_yt(QQ(1)/u), f'No point for u {u}'
-            print('\t', u)
-            #TODO generate JD2 (smarter code) for each u
-            # I think I should use u, but maybe 1/u?
-            # Decide by running on C0, C1, C5, C7, C9, Cx
-    """ More TODO
-    Search for square quartic point.
-    Get conductor factored, torsion points, gens
-    height_pairing_matrix, new points.
-    Check whether known solutions.
+    D2 = u_to_quartic(u) # make quartic polynomial in v
 
-    map u to E, conductor, number of solutions.
-    Check whether isogenous with another curve.
+    # Shift the quartic so v0 is at the origin: u = v - v0
+    R = PolynomialRing(QQ, 'u')
+    u = R.gen()
+    shifted_poly = D2.subs({D2.parent().gen(): u + v0})
+    coeffs = shifted_poly.list()
+    while len(coeffs) < 5: coeffs.append(0)
+    
+    # y^2 = a*u^4 + b*u^3 + c*u^2 + d*u + e^2
+    e2, d, c, b, a = coeffs
+    e = e2.sqrt()
+    
+    # Map to Weierstrass: y^2 + a1*xy + a3*y = x^3 + a2*x^2 + a4*x + a6
+    a1 = d/e
+    a2 = c - (d**2)/(4*e**2)
+    a3 = 2*e*b
+    a4 = -4*e**2 * a
+    a6 = a2 * a4
+    
+    E_orig = EllipticCurve([a1, a2, a3, a4, a6])
+    E_min = E_orig.minimal_model()
+    iso = E_min.isomorphism_to(E_orig)
+    iso_inv = E_orig.isomorphism_to(E_min)
+    
+    # Return everything needed to bridge back
+    bridge = {
+        'v0': v0,
+        'D2': D2,
+        'e': e,
+        'a2': a2,
+        'iso_to_orig': iso,
+        'iso_from_orig': iso_inv,
+        'shifted_poly': shifted_poly
+    }
+    return E_min, bridge
+
+def map_point_to_v(P, bridge):
+    """ Map a (new) Elliptic Curve Point back for parameter k on D2
+    Inverts the transformation: E_min -> E_orig -> u -> v
     """
+    # Map from Minimal Model back to the specific Weierstrass model
+    e = bridge['e']
+    a2 = bridge['a2']
+    v0 = bridge['v0']
+    if P.is_zero(): return v0
+    P_w = bridge['iso_to_orig'](P)
+    if P_w.is_zero(): return v0
+
+    X, Y = P_w[0], P_w[1]
+    if Y == 0: return v0 # Maps to the seed point (or a root)
+
+    # Apply the inverse Mordell transformation     
+    u_val = (2 * e * (X + a2)) / Y
+    return u_val + v0
+
+def map_v_to_point(v, bridge):
+    """
+    Map a rational value v from the quartic D2 back to a point on the EC.
+    Returns a point on E_min.
+    """
+    # Shift v to the origin: u = v - v0
+    v0 = bridge['v0']
+    u = v - v0
+    
+    # The seed point v0 always maps to the Point at Infinity
+    iso_inv = bridge['iso_from_orig']
+    if u == 0:
+        # iso_inv maps the identity of E_orig to the identity of E_min
+        return iso_inv.domain()(0) 
+    
+    # Determine y such that y^2 = D2(v)
+    y_sq = bridge['D2'](v)
+    if not y_sq.is_square():
+        # If D2 was negated during bridge creation, account for that
+        y_sq = -y_sq
+        assert y_sq.is_square()
+    y = y_sq.sqrt()
+    
+    # Extract coefficients from the shifted poly for the map
+    # shifted_poly: y^2 = a*u^4 + b*u^3 + c*u^2 + d*u + e^2
+    coeffs = bridge['shifted_poly'].list()
+    while len(coeffs) < 5: coeffs.append(0)
+    e2, d, c, b, a = coeffs
+    
+    # Apply the forward Mordell transformation to E_orig
+    # These formulas map (u, y) on the quartic to (X, Y) on the Weierstrass form
+    e = bridge['e']
+    X = (2*e*(y + e) + d*u) / (u**2)
+    Y = (4*e**2*(y + e) + 2*e*(d*u + c*u**2) - (d**2 * u**2 / (2*e))) / (u**3)
+    
+    # Create the point on E_orig
+    E_orig = iso_inv.domain()
+    P_orig = E_orig(X, Y)
+    
+    # 6. Map to E_min
+    return iso_inv(P_orig)
+
+def decompose_point(E, P, gens, torsion_points):
+    """
+    Finds n_i such that P = sum(n_i * G_i) + T.
+    Uses .height() which is compatible with both Rational and Number Field points.
+    """
+    from sage.matrix.constructor import matrix
+
+    # Force P onto the exact curve object E
+    P = E(P) 
+
+    for T in torsion_points:
+        P_test = P - T
+        if P_test.is_zero():
+            return [0] * len(gens), T
+            
+        # Build the Gram Matrix using the Bilinear Pairing formula
+        # <P, Q> = (h(P+Q) - h(P) - h(Q)) / 2
+        dim = len(gens)
+        M = matrix(RR, dim, dim)
+        for i in range(dim):
+            for j in range(dim):
+                h_gi = (gens[i]).height()
+                h_gj = (gens[j]).height()
+                h_sum = (gens[i] + gens[j]).height()
+                M[i,j] = (h_sum - h_gi - h_gj) / 2
+
+        # Build the B vector for P_test
+        h_ptest = P_test.height()
+        B_list = []
+        for G in gens:
+            h_g = G.height()
+            h_comb = (P_test + G).height()
+            B_list.append((h_comb - h_ptest - h_g) / 2)
+        B = vector(RR, B_list)
+        
+        try:
+            # Solve M * n = B
+            coeffs = M.solve_right(B)
+            n_vals = [round(float(c)) for c in coeffs]
+            
+            # 4. Final Verification
+            verification = sum(n_vals[i] * gens[i] for i in range(len(gens)))
+            if verification == P_test:
+                return n_vals, T
+        except Exception:
+            continue   
+    return None, None
+
+def find_uv_by_EC(u: Rational, v0: Rational, coeff_lim: int=3,
+            v_h_lim=1e10, verbose=False):
+    """ Build D2 elliptic curve, and return map.
+    Walk the EC for small points, and map back to quart points v
+    limied by height.
+    """
+    E, bridge = u_to_E_min_map(u, v0)
+    v_set = set()
+
+    # Check that torsion points map back to quartic
+    tor = E.torsion_points()
+    for t in tor:
+        v = map_point_to_v(t, bridge)
+        v_set.add(v)
+        if verbose: print(f't = {t}, v = {v}')
+
+    # Collect generators
+    g2 = set() # gens in (x, y) form
+    R = pari(E).ellrankinit() # speed up ellrank
+    for effort in (3, 3, 4, 5):
+        rank = R.ellrank(2) # initialize saved points
+        rank = R.ellrank(effort-1, rank[3]) # don't redo saved points
+        rank = R.ellrank(effort, rank[3])
+        for g in rank[3]: g2.add(g)
+        if verbose: print(f' effort {effort}, rank {rank[:3]}, {len(g2)} gens')
+    gs = [E((g[0], g[1], 1)) for g in g2] # convert to (x, y, z) form
+
+    # Check whether EC root point is indepenent of generators
+    p0 = E(E.hyperelliptic_polynomials()[0].roots()[0][0], 0)
+    if p0 in tor:
+        if verbose: print(f'Root {p0} is a torsion point')
+    elif E.is_independent([p0] + gs):
+        if verbose: print(f'Adding root {p0} to gens')
+        gs.append(p0)
+
+    # Guarantee full basis of generators
+    gs = E.saturation(gs)[0]
+    if verbose: print(f'Found {len(gs)} basis gens')
+ 
+    # Check that generators map back to quartic
+    for g in gs:
+        v = map_point_to_v(g, bridge)
+        v_set.add(v)
+        if verbose: print(f'g = {g}, v = {v}')
+
+    # Storage for points: n1*G1 + n2*G2 + n3*G3 + n4*G4
+    # With 4 generators and limit 5, this is 11^4 = 14,641 combinations
+    ps = [None] * len(tor) * (2 * coeff_lim + 1) ** len(gs)
+    p_inx = 0
+    coeff_ranges = [range(-coeff_lim, coeff_lim + 1) for _ in range(len(gs))]
+    for coeffs in itertools.product(*coeff_ranges):
+        # Compute the linear combination n1*G1 + n2*G2 + ...
+        P = E(0)
+        for i, n in enumerate(coeffs):
+            P += n * gs[i]
+        
+        # Add the torsion points to this combination
+        for t in tor:
+            ps[p_inx] = t + P
+            p_inx += 1
+    assert p_inx == len(ps)
+    p_set = set(ps)
+    if verbose: print(f'Found {len(p_set)} unique points from {len(ps)}')
+
+    # Map back to v from points
+    for p in sorted(p_set):
+        v = map_point_to_v(p, bridge)
+        v_set.update(v)
+    
+    # Restrict v by height
+    vs = [(v.height(), v) for v in v_set if v.height() < v_h_lim]
+    return [v for h, v in sorted(vs)]
+
+def test_coeffs(n_gs: int=3, coeff_lim: int=3):
+    """ Show cominations of generator indexes and multipliers
+    There are (2 * coeff_lim + 1)**n_gs combinations
+    but one combo with n = 0 on all generators is unused.
+    """
+    # With 1 generators and limit 1, this is 3 - 1 combos
+    # With 2 generators and limit 1, this is 9 - 1 combos
+    # With 1 generators and limit 2, this is 5 - 1 combos
+    #
+    # With 4 generators and limit 5, this is 11^4 = 14,641 -1 combinations
+    coeff_ranges = [range(-coeff_lim, coeff_lim + 1) for _ in range(n_gs)]
+    for coeffs in itertools.product(*coeff_ranges):
+        print(list(coeffs))
+        for i, n in enumerate(coeffs):
+            print('\t', i, n)
+""" Yes, it generates all combinations of generators and multipliers
+"""
 
 def report_uvw(n_known: int=8):
     """ Scan known solutions for modular patterns in u,v,w.
@@ -242,6 +457,48 @@ def uvD_to_xyz(u: Rational, v: Rational, D: Rational) -> tuple:
         pair[inx] = (x, y, z)
     return pair
 
+def solve_v_list(u: Rational, v_list: list, max_d: int=int(1e27)):
+    """ Report abcd solutions for u, v pairs
+    """
+    # Look up index of known solution with denominator.
+    d_to_known_inx = {val['abcd'][-1]: inx 
+            for inx, val in enumerate(known.values(), start=1)}
+    D_hits = big_hits = known_hits = 0
+    found_knowns = set() # indexes of known solutions found in search
+    found_new = False
+    D2 = u_to_quartic(u)
+    for v in v_list:
+        d2 = D2(v)
+        assert d2.is_square()
+        D = d2.sqrt()
+        D_hits += 1
+        w = uv_to_w(u, v)
+        print(f'u {u}, v {v} -> D {D}, w {w}', flush=True)
+        pair = uvD_to_xyz(u, v, D)
+        for xyz in pair:
+            d = lcm([x.denom() for x in xyz])
+            a, b, c = abc = sorted(abs(x) * d for x in xyz)
+            assert a**4 + b**4 + c**4 == d**4
+            if d >= max_d:
+                big_hits += 1
+                print(f'\tbig {float(d):.4e}')
+                continue
+            if d in d_to_known_inx:
+                known_hits += 1
+                inx = d_to_known_inx[d]
+                found_knowns.add(inx)
+                print(f'\tknown #{inx}: {d}', flush=True)
+                continue
+            print(f'\n\nNEW {u}, {v} -> {d}; {c}, {b}, {a}',
+                    flush=True)
+            found_new = True
+            break
+        if found_new: break
+    print(f'big {big_hits}, known {known_hits}'
+        f'\nknowns {len(found_knowns)}: {sorted(found_knowns)}')
+    if found_new:
+        return u, v, xyz
+
 def uv_to_w(u: Rational, v: Rational) -> Rational:
     """The u, v, w derived from x^4 + y^4 + z^4 = 1
     have relationship 2(u+v+w)-uvw-4=0
@@ -249,7 +506,9 @@ def uv_to_w(u: Rational, v: Rational) -> Rational:
     w = 2 * (u + v - 2) / (u*v - 2)
     return w
 
-def get_quartic_pts(u: Rational, max_pt: int=100_00_000, D2=None) -> None|list:
+def get_quartic_pts(u: Rational, max_pt: int=100_00_000, D2=None,
+    d_list: tuple=(100_000, 1_000_000, 10_000_000, 50_000_000, 80_000_000, 100_000_000),
+        n_mult: tuple= (5, 3, 2, 1, 1, 1)) -> None|list:
     """Get points on quartic for u or on given quartic.
     """
     if D2 is None:
@@ -257,8 +516,8 @@ def get_quartic_pts(u: Rational, max_pt: int=100_00_000, D2=None) -> None|list:
 
     # If both D2 and -D2 return nothing too quickly, return None
     run_l = run_m = False
-    d = 100_000
-    n = 5 * d
+    d = d_list[0]
+    n = n_mult[0] * d
     time0e = datetime.now()
     p = pari(D2).hyperellratpoints([n, [4, d]], 0) 
     time1e = datetime.now()
@@ -282,8 +541,8 @@ def get_quartic_pts(u: Rational, max_pt: int=100_00_000, D2=None) -> None|list:
     l2 = l3 = l4 = l5 = l6 = m2 = m3 = m4 = m5 = m6 = []
     if max_pt > d:
         s = d + 2
-        d = min(1_000_000, max_pt)
-        n = 3 * d
+        d = min(d_list[1], max_pt)
+        n = n_mult[1] * d
         if run_l:
             p = pari(D2).hyperellratpoints([n, [s, d]], 0)
             l2 = list(p)
@@ -292,8 +551,8 @@ def get_quartic_pts(u: Rational, max_pt: int=100_00_000, D2=None) -> None|list:
             m2 = list(p)
         if max_pt > d:
             s = d + 2
-            d = min(10_000_000, max_pt)
-            n = 2 * d
+            d = min(d_list[2], max_pt)
+            n = n_mult[2] * d
             if run_l:
                 p = pari(D2).hyperellratpoints([n, [s, d]], 0)
                 l3 = list(p)
@@ -302,8 +561,8 @@ def get_quartic_pts(u: Rational, max_pt: int=100_00_000, D2=None) -> None|list:
                 m3 = list(p)
             if max_pt > d:
                 s = d + 2
-                d = min(50_000_000, max_pt)
-                n = d
+                d = min(d_list[3], max_pt)
+                n = n_mult[3] * d
                 if run_l:
                     p = pari(D2).hyperellratpoints([n, [s, d]], 0)
                     l4 = list(p)
@@ -312,8 +571,8 @@ def get_quartic_pts(u: Rational, max_pt: int=100_00_000, D2=None) -> None|list:
                     m4 = list(p)
                 if max_pt > d:
                     s = d + 2
-                    d = min(80_000_000, max_pt)
-                    n = d
+                    d = min(d_list[4], max_pt)
+                    n = n_mult[4] * d
                     if run_l:
                         p = pari(D2).hyperellratpoints([n, [s, d]], 0)
                         l5 = list(p)
@@ -322,8 +581,8 @@ def get_quartic_pts(u: Rational, max_pt: int=100_00_000, D2=None) -> None|list:
                         m5 = list(p)
                     if max_pt > d:
                         s = d + 2
-                        d = max(100_000_000, max_pt)
-                        n = d
+                        d = max(d_list[5], max_pt)
+                        n = n_mult[5] * d
                         if run_l:
                             p = pari(D2).hyperellratpoints([n, [s, d]], 0)
                             l6 = list(p)
@@ -426,32 +685,84 @@ find_uvD_pts(4, 4, 201, 201, 1010)
 hits: u 2, D 2, big 0, known 4
 knowns 2: [5, 12]
 elapsed: 0.1065s
-
-find_uvD_pts(200, 200, 1, 2001, 100_000)
--1617/200, -5/8 -> D 708019737/2560000
-	known #13: (186668000/589845921, 582665296/589845921, 260052385/589845921)
-	known #14: (-219076465/638523249, -275156240/638523249, -630662624/638523249)
--1617/200, -34272/4885 -> D 2365840162968393/477264500000
-	known #14: (275156240/638523249, 219076465/638523249, 630662624/638523249)
-	known #13: (-582665296/589845921, -186668000/589845921, -260052385/589845921)
-1873/200, -51416/9425 -> D 4964755565640087/1776612500000
-	known #41: (487814048600/26969608212297, 8528631804200/26969608212297, 26901926181047/26969608212297)
-	known #52: (-103028409596553328/103117303193818953, 24975412054750025/103117303193818953, -4092004076331400/103117303193818953)
-hits: u 149, D 3, big 0, known 6
-knowns 4: [13, 14, 41, 52]
-elapsed: 22.7084
 """
+
+# unfinished
+def scan_known(n_known: int=8, max_h: int=100_000_000, verbose=False,
+               max_d: int=int(1e27)) -> None:
+    """For all abcd in first n_known solutions, generate 12 u.
+    For each u with height less than max_h:
+        map u -> d, E a4, a6, E conductor, paired v
+            Walk E with v for solutions
+    ...
+    """
+    u_info = dict() # dict of info on bounded u
+        # ds: list of d from abcd
+        # a_46: Elliptic Curve (a4, a6) coefficients
+        # conductor: EC conductor
+        # vs: v found in EC
+    for val in list(known.values())[:n_known]:
+        a, b, c, d = abcd = val['abcd']
+        if verbose: print(d)
+        hu_s = abcd_to_h_u(abcd)
+        for h, u in hu_s:
+            if h > max_h: continue
+            #print(u, check_elkies_rules(u))
+            assert check_yt(u.inverse()), f'No y and t for u {u}'
+            if verbose: print('\t', u)
+            info = u_info[u] = u_info.get(u, dict())
+            ds = info['ds'] = info.get('d', list())
+            ds.append(d)
+            vs = info['vs'] = info.get('v', list())
+            D2 = u_to_quartic(u)
+            for _, v in hu_s:
+                if v == u: continue
+                d2 = D2(v)
+                if not d2.is_square(): continue
+                vs.append(v)
+            v0 = vs[0]
+            E_min, bridge = u_to_E_min_map(u, v0)
+            info['a_46'] = (E_min.a4(), E_min.a6())
+            info['conductor'] = E_min.conductor()
+            v_list = find_uv_by_EC(u, v0)
+            assert solve_v_list(u, v_list) is None, f'{u}: {info}' 
+
+    #print(f'#d {len({info['ds']) for info in u_info.values()})}')
+    print(f'#E {len({info['a_46'] for info in u_info.values()})}')
+    print(f'#c {len({info['conductor'] for info in u_info.values()})}')
+    pass
+    return u_info
+    """
+    python -um modular.solutions_modular scan_known 200
+    <function scan_known at 0x1561b9760>
+    #E 158
+    #c 158
+    158
+    finished after 53s
+
+    u_info = scan_known(200)
+    for (u,info) in u_info.items(): 
+        assert solve_v_list(u, find_uv_by_EC(u, info['vs'][0])) is None, f'{u}: {info}' 
+
+    (Pdb) debug scan_known()
+    ((Pdb)) len({info['d'] for info in u_info.values()})
+    8
+
+    """
+
 
 
 def DEBUG(*args):
-    import pdb; pdb.set_trace()
+    set_trace()
     pass; pass; pass # opportumity to debug
 """
-python -m elliptical.solutions_curves DEBUG 'QQ(4/6)' 4/6
+python -um modular.solutions_modular DEBUG 'QQ(2^3/6)' 2^3/6
 (Pdb) args
-args = (2/3, 2/3)
-(Pdb) 4/6
-0.6666666666666666
+args = (4/3, 4/3)
+(Pdb) 2^3/6
+*** TypeError: unsupported operand type(s) for ^: 'int' and 'float'
+(Pdb) 8/6
+1.3333333333333333
 """
 
 if __name__ == "__main__":
@@ -464,39 +775,6 @@ if __name__ == "__main__":
 
 """
 TODO
-How do EC from pairs compare to EC from solutions_curves.log?
-    python -m elliptical.solutions_curves get_optimized_rational_points -20/9
-    q_res = make_quartic(QQ(20/-9) with different quad_xy
-    get_quartic_pts(QQ(20/-9), 1_000_000, q_res[2])
-        with a dozen different quad_xy
-    e_res = model_quartic_as_elliptic_curve(q_res[2], k0)
-    factor(C0.conductor())
-vs  JD2 = u_to_D_to_EC
-The quartics differ, but the EC remain the same.
-
-Find places in solutions_curves with couldn't find quartic points.
-And use get_quartic_pts(QQ(20/-9), 1_000_000, q_res[2])
-
-How go from pnt on EC back to pnt on quartic and solution to abcd?
-
-Methods of building EC
-Use pieza_in_pairs.py
-    u_to_D_to_EC(u)
-
-Use solutions_curves.py
-    make_quartic(mn: Rational, quad_xy: tuple)
-
-Use curves_tomita.py
-    model_quartic_as_elliptic_curve(quartic_poly, quartic_x: Rational)
-Use modular.log
-# The Sage-native way to convert a quartic to an elliptic curve
-R.<x,y> = QQ[]
-f = x^4 + x + 1  # your quartic
-C = Curve(y^2 - f)
-E = Jacobian(C)
-print(E.minimal_model())
-
--------------
 
 >>> abcd_to_small_u((5_870_000, 8_282_543, 11_289_040, 12_197_457), 9e99)
 [-400/37, -1010819791893/158785763120, -338000022077/104832225800, -2433/920, 
@@ -505,48 +783,10 @@ print(E.minimal_model())
 >>> JD2 = u_to_D_to_EC(QQ(-93/80))
 >>> JD2[0]
 Elliptic Curve defined by y^2 = x^3 + 1687750917943790881*x - 294299265667029867546450078 over Rational Field
->>> JD2[1]
-876967441/40960000*v^4 - 1160148721/10240000*v^3 + 5260917/32000*v^2 - 930349361/5120000*v - 540248559/10240000
 >>> JD2[0].conductor()
 31173291851033505900611518136
 >>> from sage.all import factor
 >>> factor(JD2[0].conductor())
 2^3 * 17 * 41 * 73 * 89 * 241 * 1249 * 2137 * 2887 * 6569 * 70537
->>> JD2[0].torsion_points()
-[(0 : 1 : 0), (171390639 : 0 : 1)]
->>> JD2[0].hyperelliptic_polynomials()[0].roots()[0][0]
-171390639
->>> pari(JD2[0]).ellrank(15)
-[2, 2, 2, [[18821840650969/8649, 94094386506723420026/804357], [2216934161202292017321/77272324441, 104489172057583918416101354132502/21480083475784739]]]
-ellrank returns different values each time.
-[2, 2, 2, [[1057203921, 51687652673778], [7086871502336635716361489/30329632086478209, 56104185538669647074758265030211769294/5282028171881234074661823]]]
- 
->> g = JD2[0].gens(algorithm="pari", pari_effort=15)
-[(7086871502336635716361489/30329632086478209 : 56104185538669647074758265030211769294/5282028171881234074661823 : 1), (18821840650969/8649 : 94094386506723420026/804357 : 1)]
-but sage cache the values.
-
-[r,R,s,V] = ellrank(E)
-W = ellsaturation(E, V, 100)
-takes too long when V is longer than the rank.
-
-How to do LLL basis reduction on the generators to get smaller height points.
-# 1. Get the height matrix from your rank-2 (or rank-k) curve
-M = E.height_pairing_matrix(gens)
-
-# 2. Call PARI's qflll on that matrix
-# We convert the Sage matrix to a PARI object first
-pari_M = pari(M)
-T = pari_M.qflllgram() 
-
-# 3. Apply the transformation T to your generators
-# If gens = [P1, P2], and T = [[t11, t12], [t21, t22]]
-# New P1 = t11*P1 + t21*P2, etc.
-new_gens = []
-for col in range(len(gens)):
-    # Combine original generators using the coefficients in the T matrix
-    new_P = sum(int(T[i, col]) * gens[i] for i in range(len(gens)))
-    new_gens.append(new_P)
-
-# 4. new_gens now contains the LLL-reduced basis (shortest heights)
 
 """

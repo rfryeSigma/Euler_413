@@ -1231,11 +1231,21 @@ quad_xy = (QQ(-629/1074), QQ(941/3222))
 q_res = make_quartic(mn, quad_xy)
 get_quartic_pts(mn, 10_000_000, q_res[2])
 
+n = QQ(-44/5)
+quad_xy = (QQ(-629/1074), QQ(941/3222))
+q_res = make_quartic(mn, quad_xy)
+get_quartic_pts(mn, 10_000_000, q_res[2])
+Searching for pts on -44/5 quartic
+[]
+Try again with 
+quad_xy = (QQ(11/1074), QQ(979/3222))
+[]
+Give up on m=44
+
 ============================
 
 curves_tomita needs (u=-125/92) for C9
 search_mn(92, 1, 125)
-got side tracked
 No quartic point for 
 Trying mn -92/73, quad_xy (-757/1838, 1865/5514)
 Trying mn -92/73, quad_xy (48579819/221477162, 1865/5514)

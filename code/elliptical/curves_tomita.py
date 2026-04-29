@@ -144,14 +144,14 @@ def search_small_EC_points(e_res: tuple, quartic_poly: Polynomial_rational_flint
         print(f'\td {d}')
 
     # Check that generators map back to quartic
-    E = pari(e_res[0])
     g2 = set() # gens in (x, y) form
-    for effort in (2, 2, 2, 2, 3, 3, 3, 4, 4, 5):
-        rank = list(E.ellrank(effort))
-        g2.update(rank[-1])
-        #if rank[0] != rank[1]: continue
+    R = pari(E_min).ellrankinit() # speed up ellrank
+    for effort in (3, 3, 4, 5):
+        rank = R.ellrank(2) # initialize saved points
+        rank = R.ellrank(effort-1, rank[3]) # don't redo saved points
+        rank = R.ellrank(effort, rank[3])
+        for g in rank[3]: g2.add(g)
         print(f' effort {effort}, rank {rank[:3]}, {len(g2)} gens')
-        #break
     print(f'Found {len(g2)} gens')
     gs = {E_min((g[0], g[1], 1)) for g in g2} # convert to (x, y, z) form
     for g in gs:
