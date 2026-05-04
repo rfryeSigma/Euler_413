@@ -641,3 +641,77 @@ from sage.libs.mpmath.all import quad
      omega_real = quad(f, [E_min.period_lattice().real_period(), infinity])
 
 ----------------
+These Russian finds seem impossible with current u search strategy.
+Would have to find a way to bridge to these EC from somthing else.
+
+G68711_8=dict(info='Gerbicz (2006)', inx=9, m=(-21021, 9788), #2
+	abcd=(10_409_096, 42_878_560, 65_932_985, 68_711_097)
+uvw: (-21021/9788), (-6552/93017), (259045/56768)
+#9: 68711097
+#67: 6924977425096055771340
+1149698293853560833550543975784222977*x + 366053389950543217568299646495392804473412874049571778 
+-5911828593707106979740352495764489523*x + 3291008759344365211740813835259969879766667903669969278
+2^3 * 5 * 7 * 409 * 593 * 1801 * 15217 * 70489 * 808721 * 1548881 * 8465617 * 13433617 * 221985233
+
+G11711_9=dict(info='Gerbicz (2006)', inx=10, m=(11846053, 175812), #1
+	abcd=(34_918_520, 87_865_617, 106_161_120, 117_112_081)
+uvw: (11846053/175812), (-18948825/19835764), (-78061568/40207629)
+#10: 117112081
+Isogenies:
+343920496427197513535125924708044121933060296946731418177*x + 13270060877554004358726718387256859187235783643159089956432487354750005123446647790978
+-6741318737770562606819791653570539904145772394118932494323*x + 200876421663208946558759389337332979490090700543532490632477422722043242517431093068478
+2^3 * 5 * 7 * 17 * 53 * 89 * 337 * 593 * 1609 * 2617 * 23857 * 235577 * 5756209 * 50462391409 * 236746697129 * 11031222485100989253954793
+
+G87382_9=dict(info='Gerbicz (2009)', inx=15, m=(-12285, 4112), #2
+	abcd=(558_424_440, 606_710_871, 769_321_280, 873_822_121)
+Only smallish u: (-12285/4112)
+uvw: (-12285/4112), (-214309/129780), (-403496/89145)
+#15: 873822121
+#65: 2711100675240842912689
+6378274144629486029183269391746081*x + 290952195256791829747772468531359341459709132888162
+-46504164797285633526150589786429939*x + 3060514584301928488977793846279268069383239150431550
+2^3 * 7 * 17 * 31 * 167 * 1033 * 4703 * 16273 * 83706473 * 184738313 * 386801993 * 5108068039
+
+Question for Gemini, DeepSeek, and Perplexity:
+I have a table of 100 solutions to A^4+B^4+C^4=D^4 .
+A Russian group lead by Gerbicz did a brute force computational search up to D=2e9.
+Other solutions starting with Elkies have been found by searching elliptic curves 
+from small rationals u and from the 12 u associated with previously known solutions. 
+The remainder have been found by pairing (u, v) found among the known u and low height 
+searches using a method of Piezas.
+I am continuing the search for small (u, v) pairs, but I know small solutions discovered
+by Gerbicz are beyond reach by this method. For example, the 10th solution ordered by
+size of D is abcd=(34_918_520, 87_865_617, 106_161_120, 117_112_081),
+and this solution would require the huge (u, v) pair (11846053/175812), (-18948825/19835764).
+Therefore I am hoping for other ways of finding new solutions.
+I had hoped that modular forms could discover transformations of known solutions,
+but that seems a dead end because the coefficients of the elliptic curves are so large.
+Isogenies tend to be even larger; conductors do not show patterns in their factors;
+the curves do not have CM; new forms can not be calculated, and L-series are tiny.
+Please suggest another strategy.
+
+Gemini suggestions:
+The "Parametric Neighborhood" Approach:
+     find a different fibration
+     generators of the Picard group of the surface
+     see picard.py 
+Use a "Mordell-Weil Sieve" to rule out $(u, v)$ pairs
+Use LLL search for "near-misses"—rational points 
+     then Newton-style iterations to snap onto an actual rational point
+     see lll_approx.py
+Jacobians of hyperelliptic curve searching for rationals using Mumford representation
+     see jacobian_mumford.py
+
+DeepSeek:
+Find a recurrence or pattern in \((u, v)\) 
+     see uv_recurrence.py
+LLL on quadratic (A^2)^2 + (B^2)^2 + (C^2)^2 = (D^2)^2
+     see lll_quad.py
+Train a model on characteristics of solutions.
+Diophantine Approximation: x^4+y^4+z^4 -1 < eps
+     with continued fractions of LLL
+     and Baker's method (linear forms in logarithms) to bound solutions.
+     see lll_approx.py
+
+Perplexity:
+Search for new rational points on known x^4+y^4+z^4 surface

@@ -125,7 +125,7 @@ def check_known_uv_inv(file_name: str='solutions_uv.csv') -> None:
         reader = csv.reader(file)
         header = next(reader)
         for row in reader:
-            u_n, u_d, v_n, v_d= [int(row[i]) for i in range(4)]
+            u_n, u_d, v_n, v_d = [int(row[i]) for i in range(4)]
             u = QQ(u_n)/u_d
             assert check_yt(u.inverse()), f'row {row} fails u_d/u_n'
             v = QQ(v_n)/v_d
@@ -772,21 +772,3 @@ if __name__ == "__main__":
     args = list(map(sage_eval, sys.argv[2:]))
     result = command(*args)
     print(result)
-
-"""
-TODO
-
->>> abcd_to_small_u((5_870_000, 8_282_543, 11_289_040, 12_197_457), 9e99)
-[-400/37, -1010819791893/158785763120, -338000022077/104832225800, -2433/920, 
--35798568240/28609248113, -93/80, -84237/359800, 20632147/117135680, 
-8685847/22963880, 450668400/124346123, 11502160/2925527, 1867333/457280]
->>> JD2 = u_to_D_to_EC(QQ(-93/80))
->>> JD2[0]
-Elliptic Curve defined by y^2 = x^3 + 1687750917943790881*x - 294299265667029867546450078 over Rational Field
->>> JD2[0].conductor()
-31173291851033505900611518136
->>> from sage.all import factor
->>> factor(JD2[0].conductor())
-2^3 * 17 * 41 * 73 * 89 * 241 * 1249 * 2137 * 2887 * 6569 * 70537
-
-"""
