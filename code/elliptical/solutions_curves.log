@@ -381,7 +381,7 @@ eval_quartic(q_res[2], QQ(-59/81))
 -1493337137920714564 True
 -1493337137920714564/43046721 True
 True
-So the homegenous quartic calculation only returns the numerator.
+So the homogenous quartic calculation only returns the numerator.
 pt = QQ(-59/81)
 repeat('q_res[2](pt)', number=10_000, repeat=3, globals=globals())
 [0.0072071668691933155, 0.005871499888598919, 0.005070083076134324]

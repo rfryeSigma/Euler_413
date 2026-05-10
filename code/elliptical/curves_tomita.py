@@ -3,8 +3,9 @@ Code to explore how to manipulate elliptic curves like Seiji Tomita does.
 See my notes in curves_tomita.md
 and Tomita's notes in http://www.maroon.dti.ne.jp/fermat/dioph4e.html
 """
-from sage.all import EllipticCurve
+import itertools
 from elliptical.solutions_curves import *
+from sage.all import EllipticCurve
 
 def abcd_to_xyz(abcd: tuple) -> tuple:
     """Convert (a, b, c, d) representing a^4 + b^4 + c^4 = d^4 
@@ -125,70 +126,111 @@ def elliptic_point_to_k(P, E_res: tuple,
     return k
 
 def search_small_EC_points(e_res: tuple, quartic_poly: Polynomial_rational_flint, 
-                           k0: Rational, mn: Rational, 
-                           quad_xy: tuple):
+                           k0: Rational, mn: Rational, quad_xy: tuple,
+                           coeff_lim: int=3, k_h_lim: int=int(1e10), 
+                           verbose=False, max_d: int=int(1e27)) -> list:
+    """ Extract elliptic curve. Walk the EC for small points, 
+    and map back to quart points k limied by height.
+    """
     # Check that EC root point maps back to quartic
-    E_min = e_res[0]
-    p0 = E_min(E_min.hyperelliptic_polynomials()[0].roots()[0][0], 0)
-    k = elliptic_point_to_k(p0, e_res, quartic_poly, k0)
-    print(f'p0 = {p0}, k = {k}')
-    abc, d = k_to_abcd(mn, quad_xy, k) # Check that p0 works
-    print(f'\td {d}')
+    E = e_res[0]
+    k_set = set()
 
     # Check that torsion points map back to quartic
-    tor = E_min.torsion_points()
+    tor = E.torsion_points()
     for t in tor:
         k = elliptic_point_to_k(t, e_res, quartic_poly, k0)
-        print(f't = {t}, k = {k}')
+        k_set.add(k)
+        if verbose: print(f't = {t}, k = {k}')
         abc, d = k_to_abcd(mn, quad_xy, k) # Check that t works
-        print(f'\td {d}')
+        if verbose: print(f'\td {d}')
 
-    # Check that generators map back to quartic
+   # Collect generators
     g2 = set() # gens in (x, y) form
-    R = pari(E_min).ellrankinit() # speed up ellrank
+    R = pari(E).ellrankinit() # speed up ellrank
     for effort in (3, 3, 4, 5):
         rank = R.ellrank(2) # initialize saved points
         rank = R.ellrank(effort-1, rank[3]) # don't redo saved points
         rank = R.ellrank(effort, rank[3])
         for g in rank[3]: g2.add(g)
-        print(f' effort {effort}, rank {rank[:3]}, {len(g2)} gens')
-    print(f'Found {len(g2)} gens')
-    gs = {E_min((g[0], g[1], 1)) for g in g2} # convert to (x, y, z) form
+        if verbose: print(f' effort {effort}, rank {rank[:3]}, {len(g2)} gens')
+    gs = [E((g[0], g[1], 1)) for g in g2] # convert to (x, y, z) form
+
+    # Check whether EC root point is indepenent of generators
+    p0 = E(E.hyperelliptic_polynomials()[0].roots()[0][0], 0)
+    if p0 in tor:
+        if verbose: print(f'Root {p0} is a torsion point')
+    elif E.is_independent([p0] + gs):
+        if verbose: print(f'Adding root {p0} to gens')
+        gs.append(p0)
+
+    # Guarantee full basis of generators
+    gs = E.saturation(gs)[0]
+    if verbose: print(f'Found {len(gs)} basis gens')
+ 
+    # Check that generators map back to quartic
     for g in gs:
         k = elliptic_point_to_k(g, e_res, quartic_poly, k0)
-        print(f'g = {g}, k = {k}')
+        k_set.add(k)
+        if verbose: print(f'g = {g}, k = {k}')
         abc, d = k_to_abcd(mn, quad_xy, k) # Check that g works
-        print(f'\td {d}')
-    
-    # Augment generators
-    gs |= {-g for g in gs}
-    gs |= {2*g for g in gs}
-    gs |= {g1 + g2 for g1 in gs for g2 in gs}
-    gs |= {g1 + g2 + g3 for g1 in gs for g2 in gs for g3 in gs}
+        if verbose: print(f'\td {d}')
 
-    # Use p0 and tor and augmented generators to build list of points
-    p_set = set((p0,)) | gs
-    p_set |= {p0 + g for g in gs}
-    p_set |= {t + g for t in tor for g in gs}
-    p_list = sorted(p_set)
-    print(f'Using {len(p_list)} points on EC from {len(gs)} generators')
+    # Storage for points: n1*G1 + n2*G2 + n3*G3 + n4*G4
+    # With 4 generators and limit 5, this is 11^4 = 14,641 combinations
+    ps = [None] * len(tor) * (2 * coeff_lim + 1) ** len(gs)
+    p_inx = 0
+    coeff_ranges = [range(-coeff_lim, coeff_lim + 1) for _ in range(len(gs))]
+    for coeffs in itertools.product(*coeff_ranges):
+        # Compute the linear combination n1*G1 + n2*G2 + ...
+        P = E(0)
+        for i, n in enumerate(coeffs):
+            P += n * gs[i]
+        
+        # Add the torsion points to this combination
+        for t in tor:
+            ps[p_inx] = t + P
+            p_inx += 1
+    assert p_inx == len(ps)
+    p_set = set(ps)
+    if verbose: print(f'Found {len(p_set)} unique points from {len(ps)}')
+
+    # Map back to k from points
+    for p in sorted(p_set):
+        k = elliptic_point_to_k(p, e_res, quartic_poly, k0)
+        k_set.add(k)
+    
+    # Restrict k by height
+    ks = [(k.height(), k) for k in k_set if k.height() < k_h_lim]
+    if verbose: print(f'Restrict to {len(ks)} k with height < {k_h_lim}')
+    ks = [k for h, k in sorted(ks)]
+
+    # Report abcd solutions for points. Index known with denominator
+    d_to_known_inx = {val['abcd'][-1]: inx 
+        for inx, val in enumerate(known.values(), start=1)}
 
     # Generate solutions from points
-    d_count = 0
-    d_ok_set = set()
-    d_big_set = set()
-    for p in p_list:
-        k = elliptic_point_to_k(p, e_res, quartic_poly, k0)
+    big_hits = known_hits = 0
+    found_knowns = set()
+    for k in ks:
         abc, d = k_to_abcd(mn, quad_xy, k)
-        d_count += 1
-        if d < 1e27:
-            if d in d_ok_set: continue
-            d_ok_set.add(d)
-            print(f'd={d}, abc={abc}, EC p {p} -> k {k}')
-        else:
-            d_big_set.add(d)
-    print(f'{d_count} d, {len(d_ok_set)} ok, {len(d_big_set)} big')
-    return sorted(d_ok_set)
+        if d >= max_d:
+            big_hits += 1
+            if verbose: print(f'\tk {k} -> big d {float(d):.5e}')
+            continue
+        if d in d_to_known_inx:
+            known_hits += 1
+            inx = d_to_known_inx[d]
+            found_knowns.add(inx)
+            if verbose: print(f'\tk {k} -> known #{inx}: {d}')
+            continue
+        a, b, c = abc
+        print(f'\n\nNEW: k {k} -> {d}; {c}, {b}, {a}', flush=True)
+        return k, d, abc
+    found_knowns = sorted(found_knowns)
+    print(f'big {big_hits}, known {known_hits}'
+        f'\nknowns {len(found_knowns)}: {found_knowns}')
+    return found_knowns
 
 def DEBUG():
     import pdb; pdb.set_trace()

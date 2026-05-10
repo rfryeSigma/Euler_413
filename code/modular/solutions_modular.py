@@ -12,7 +12,7 @@ from sage.all import help, oo, pari, sage_eval, \
     DiagonalQuadraticForm, EllipticCurve, PolynomialRing
 from sage.rings.polynomial.polynomial_rational_flint import Polynomial_rational_flint
 from sage.modules.free_module_element import vector
-from timeit import repeat, time
+from timeit import repeat
 
 def xyz_to_u(x :Rational, y :Rational, z :Rational) -> Rational:
     """Convert (x, y, z) representing x^4 + y^4 + z^4 = 1
@@ -302,10 +302,9 @@ def decompose_point(E, P, gens, torsion_points):
     return None, None
 
 def find_uv_by_EC(u: Rational, v0: Rational, coeff_lim: int=3,
-            v_h_lim=1e10, verbose=False):
-    """ Build D2 elliptic curve, and return map.
-    Walk the EC for small points, and map back to quart points v
-    limied by height.
+            v_h_lim: int=int(1e10), verbose=False) -> list:
+    """ Build D2 elliptic curve. Walk the EC for small points, 
+    and map back to quart points v limied by height.
     """
     E, bridge = u_to_E_min_map(u, v0)
     v_set = set()
@@ -372,7 +371,50 @@ def find_uv_by_EC(u: Rational, v0: Rational, coeff_lim: int=3,
     
     # Restrict v by height
     vs = [(v.height(), v) for v in v_set if v.height() < v_h_lim]
+    if verbose: print(f'Restrict to {len(vs)} v with height < {v_h_lim}')
     return [v for h, v in sorted(vs)]
+
+def solve_v_list(u: Rational, v_list: list, max_d: int=int(1e27)):
+    """ Report abcd solutions for u, v pairs
+    """
+    # Look up index of known solution with denominator.
+    d_to_known_inx = {val['abcd'][-1]: inx 
+            for inx, val in enumerate(known.values(), start=1)}
+    D_hits = big_hits = known_hits = 0
+    found_knowns = set() # indexes of known solutions found in search
+    found_new = False
+    D2 = u_to_quartic(u)
+    for v in v_list:
+        d2 = D2(v)
+        assert d2.is_square()
+        D = d2.sqrt()
+        D_hits += 1
+        w = uv_to_w(u, v)
+        print(f'u {u}, v {v} -> D {D}, w {w}', flush=True)
+        pair = uvD_to_xyz(u, v, D)
+        for xyz in pair:
+            d = lcm([x.denom() for x in xyz])
+            a, b, c = abc = sorted(abs(x) * d for x in xyz)
+            assert a**4 + b**4 + c**4 == d**4
+            if d >= max_d:
+                big_hits += 1
+                print(f'\tbig {float(d):.5e}')
+                continue
+            if d in d_to_known_inx:
+                known_hits += 1
+                inx = d_to_known_inx[d]
+                found_knowns.add(inx)
+                print(f'\tknown #{inx}: {d}', flush=True)
+                continue
+            print(f'\n\nNEW {u}, {v} -> {d}; {c}, {b}, {a}',
+                    flush=True)
+            found_new = True
+            break
+        if found_new: break
+    print(f'big {big_hits}, known {known_hits}'
+        f'\nknowns {len(found_knowns)}: {sorted(found_knowns)}')
+    if found_new:
+        return u, v, xyz
 
 def test_coeffs(n_gs: int=3, coeff_lim: int=3):
     """ Show cominations of generator indexes and multipliers
@@ -457,48 +499,6 @@ def uvD_to_xyz(u: Rational, v: Rational, D: Rational) -> tuple:
         pair[inx] = (x, y, z)
     return pair
 
-def solve_v_list(u: Rational, v_list: list, max_d: int=int(1e27)):
-    """ Report abcd solutions for u, v pairs
-    """
-    # Look up index of known solution with denominator.
-    d_to_known_inx = {val['abcd'][-1]: inx 
-            for inx, val in enumerate(known.values(), start=1)}
-    D_hits = big_hits = known_hits = 0
-    found_knowns = set() # indexes of known solutions found in search
-    found_new = False
-    D2 = u_to_quartic(u)
-    for v in v_list:
-        d2 = D2(v)
-        assert d2.is_square()
-        D = d2.sqrt()
-        D_hits += 1
-        w = uv_to_w(u, v)
-        print(f'u {u}, v {v} -> D {D}, w {w}', flush=True)
-        pair = uvD_to_xyz(u, v, D)
-        for xyz in pair:
-            d = lcm([x.denom() for x in xyz])
-            a, b, c = abc = sorted(abs(x) * d for x in xyz)
-            assert a**4 + b**4 + c**4 == d**4
-            if d >= max_d:
-                big_hits += 1
-                print(f'\tbig {float(d):.4e}')
-                continue
-            if d in d_to_known_inx:
-                known_hits += 1
-                inx = d_to_known_inx[d]
-                found_knowns.add(inx)
-                print(f'\tknown #{inx}: {d}', flush=True)
-                continue
-            print(f'\n\nNEW {u}, {v} -> {d}; {c}, {b}, {a}',
-                    flush=True)
-            found_new = True
-            break
-        if found_new: break
-    print(f'big {big_hits}, known {known_hits}'
-        f'\nknowns {len(found_knowns)}: {sorted(found_knowns)}')
-    if found_new:
-        return u, v, xyz
-
 def uv_to_w(u: Rational, v: Rational) -> Rational:
     """The u, v, w derived from x^4 + y^4 + z^4 = 1
     have relationship 2(u+v+w)-uvw-4=0
@@ -506,100 +506,73 @@ def uv_to_w(u: Rational, v: Rational) -> Rational:
     w = 2 * (u + v - 2) / (u*v - 2)
     return w
 
-def get_quartic_pts(u: Rational, max_pt: int=100_00_000, D2=None,
-    d_list: tuple=(100_000, 1_000_000, 10_000_000, 50_000_000, 80_000_000, 100_000_000),
+def get_quartic_pts(u: Rational, max_pt: int=100_000, D2=None, verbose=True,
+        d_list: tuple=(100_000, 1_000_000, 10_000_000, 50_000_000, 
+                       80_000_000, 100_000_000),
         n_mult: tuple= (5, 3, 2, 1, 1, 1)) -> None|list:
     """Get points on quartic for u or on given quartic.
+    Return any points found immediately.
     """
     if D2 is None:
         D2 = u_to_quartic(u)
 
     # If both D2 and -D2 return nothing too quickly, return None
+    # Try to find all pts in range for timing consistency.
     run_l = run_m = False
     d = d_list[0]
     n = n_mult[0] * d
     time0e = datetime.now()
-    p = pari(D2).hyperellratpoints([n, [4, d]], 0) 
+    p = pari(D2).hyperellratpoints([n, [4, d]], 0) # 0 for all pts
     time1e = datetime.now()
-    l1 = list(p)
-    #print(f'{u}, l1 {len(l1)}, {time1e-time0e}')
-    if time1e-time0e >= timedelta(milliseconds=1) or 0 < len(l1): 
-        run_l = True
+    lp = list(p)
+    if 0 < len(lp):
+        pts = [(QQ(v), QQ(D)) for (v, D) in lp]
+        return pts
+    if time1e-time0e >= timedelta(milliseconds=1): run_l = True
 
     time0e = datetime.now()
-    p = pari(-D2).hyperellratpoints([n, [4, d]], 0) 
+    p = pari(-D2).hyperellratpoints([n, [4, d]], 0) # 0 for all pts
     time1e = datetime.now()
-    m1 = list(p)
-    #print(f'{u}, l1m {len(l1m)}, {time1e-time0e}')
-    if time1e-time0e >= timedelta(milliseconds=1) or 0 < len(m1): 
-        run_m = True
+    lp = list(p)
+    if 0 < len(lp):
+        pts = [(QQ(v), QQ(D)) for (v, D) in lp]
+        return pts
+    if time1e-time0e >= timedelta(milliseconds=1): run_m = True
     if not run_l and not run_m: return None
+    if max_pt <= d: return []
+    if verbose: print(f'Searching for pts on {u} quartic')
 
-    # Search for more pts
-    print(f'Searching for pts on {u} quartic')
-
-    l2 = l3 = l4 = l5 = l6 = m2 = m3 = m4 = m5 = m6 = []
-    if max_pt > d:
+    def search_range(r_inx: int, d: int) -> int|list:
+        if max_pt <= d: return []
         s = d + 2
-        d = min(d_list[1], max_pt)
-        n = n_mult[1] * d
+        d = min(d_list[r_inx], max_pt)
+        n = n_mult[r_inx] * d
         if run_l:
-            p = pari(D2).hyperellratpoints([n, [s, d]], 0)
-            l2 = list(p)
+            p = pari(D2).hyperellratpoints([n, [s, d]], 1)
+            lp = list(p)
+            if 0 < len(lp):
+                pts = [(QQ(v), QQ(D)) for (v, D) in lp]
+                return pts
         if run_m:
-            p = pari(-D2).hyperellratpoints([n, [s, d]], 0)
-            m2 = list(p)
-        if max_pt > d:
-            s = d + 2
-            d = min(d_list[2], max_pt)
-            n = n_mult[2] * d
-            if run_l:
-                p = pari(D2).hyperellratpoints([n, [s, d]], 0)
-                l3 = list(p)
-            if run_m:
-                p = pari(-D2).hyperellratpoints([n, [s, d]], 0)
-                m3 = list(p)
-            if max_pt > d:
-                s = d + 2
-                d = min(d_list[3], max_pt)
-                n = n_mult[3] * d
-                if run_l:
-                    p = pari(D2).hyperellratpoints([n, [s, d]], 0)
-                    l4 = list(p)
-                if run_m:
-                    p = pari(-D2).hyperellratpoints([n, [s, d]], 0)
-                    m4 = list(p)
-                if max_pt > d:
-                    s = d + 2
-                    d = min(d_list[4], max_pt)
-                    n = n_mult[4] * d
-                    if run_l:
-                        p = pari(D2).hyperellratpoints([n, [s, d]], 0)
-                        l5 = list(p)
-                    if run_m:
-                        p = pari(-D2).hyperellratpoints([n, [s, d]], 0)
-                        m5 = list(p)
-                    if max_pt > d:
-                        s = d + 2
-                        d = max(d_list[5], max_pt)
-                        n = n_mult[5] * d
-                        if run_l:
-                            p = pari(D2).hyperellratpoints([n, [s, d]], 0)
-                            l6 = list(p)
-                        if run_m:
-                            p = pari(-D2).hyperellratpoints([n, [s, d]], 0)
-                            m6 = list(p)
+            p = pari(-D2).hyperellratpoints([n, [s, d]], 1)
+            lp = list(p)
+            if 0 < len(lp):
+                pts = [(QQ(v), QQ(D)) for (v, D) in lp]
+                return pts
+        return d
 
-    l_pts = l1 + l2 + l3 + l4 + l5 + l6
-    m_pts = m1 + m2 + m3 + m4 + m5 + m6
-    pts = [(QQ(v), QQ(D)) for (v, D) in l_pts + m_pts]
-    return pts
+    for r_inx in range(1, len(d_list)):
+        res = search_range(r_inx, d)
+        if isinstance(res, list): return res
+        d = res
+    if max_pt > d and verbose: print(f'Search limit {d} < {max_pt}')
+    return []
 
 def find_uvD_pts(first_ud: int, last_ud: int, first_un: int, last_un: int,
-        max_pt: int=int(1e8), max_d: int=int(1e27)) -> None | tuple:
+        max_pt: int=int(1e8), step_u: int=4, max_d: int=int(1e27)) -> None | tuple:
     """ 
     Search for solution pairs using hyperellratpoints with:
-        ud in range(4<=first_ud, last_ud+1, 4);
+        ud in range(4<=first_ud, last_ud+1, step_u);
         un in range(1<=first_un, last_un+1, 2);
         (u_num, u_den) in ((un, ud), (-un, ud), (ud, un), (ud, -un));
         v a rational point on the quartic defined by u up to max_pt
@@ -607,13 +580,15 @@ def find_uvD_pts(first_ud: int, last_ud: int, first_un: int, last_un: int,
         to the solutions of the quadratics for y^2 and t^2.
     """
     # Check input parameters for sanity.
-    assert first_ud % 4 == 0
+    if 4 == step_u: 
+        assert first_ud % 4 == 0
+        assert 4 <= first_ud
+    assert first_ud <= last_ud
     assert first_un % 2 == 1
-    assert 4 <= first_ud <= last_ud
     assert 1 <= first_un <= last_un
     assert 1 <= max_pt
 
-    # Look up index of known solution with denominator.
+    # Look up index of known solutions with denominator.
     d_to_known_inx = {val['abcd'][-1]: inx 
             for inx, val in enumerate(known.values(), start=1)}
 
@@ -624,7 +599,7 @@ def find_uvD_pts(first_ud: int, last_ud: int, first_un: int, last_un: int,
 
     # Search for points and count results.
     start = datetime.now()
-    for ud in range(first_ud, last_ud + 1, 4):
+    for ud in range(first_ud, last_ud + 1, step_u):
         for un in range(first_un, last_un + 1, 2):
             if gcd(un, ud) != 1: continue
             uQ = QQ(un) / ud
@@ -666,11 +641,11 @@ def find_uvD_pts(first_ud: int, last_ud: int, first_un: int, last_un: int,
 
     # Report results and return if found new solution.
     elapsed = datetime.now() - start
-    print(f'hits: u {u_hits}, D {D_hits}, big {big_hits}, known {known_hits}'
-        f'\nknowns {len(found_knowns)}: {sorted(found_knowns)}')
+    print(f'hits: u {u_hits}, D {D_hits}, big {big_hits}, known {known_hits}')
+    if 0 < known_hits: 
+        print(f'knowns {len(found_knowns)}: {sorted(found_knowns)}')
     print(f'elapsed: {elapsed}')
-    if found_new:
-        return u, v, xyz
+    if found_new: return u, v, xyz
 """
 find_uvD_pts(4, 4, 201, 201, 1010)
 1: u 201/4

@@ -6,7 +6,8 @@ See my earlier notes in curves_tomita.{md/py}
 and Tomita's notes in http://www.maroon.dti.ne.jp/fermat/dioph4e.html
 """
 import csv
-from importlib import reload
+from datetime import datetime, timedelta
+from pdb import set_trace, runcall
 from sage.all import GF, Integer, QQ, Rational, RR, \
     DiagonalQuadraticForm, PolynomialRing, \
     continued_fraction, cos, gcd, hilbert_symbol, lcm, \
@@ -14,7 +15,6 @@ from sage.all import GF, Integer, QQ, Rational, RR, \
 from sage.rings.polynomial.polynomial_rational_flint import Polynomial_rational_flint
 from sage.schemes.generic.point import SchemePoint
 from solutions import known
-from time import time
 from timeit import repeat
 from typing import Union, List, Tuple
 
@@ -30,6 +30,11 @@ def map_D_to_u(file_name: str='solutions_uv.csv') -> dict:
             u_n, u_d, v_n, v_d, d = [int(row[i]) for i in range(5)]
             d_map[d] = d_map.get(d, set())
             d_map[d].update({(u_n, u_d), (v_n, v_d)})
+            # a side check that u obeys mod 4 conditions for m/n
+            n, m = (u_n, u_d) if u_n % 2 else (u_d, u_n)
+            assert m%4 == 0, f'{m}, {n} fail mod 4'
+            #assert abs(n)%4 == 1, f'{m}, {n} fail mod 4'
+            #fails 1000, 47
     return d_map
 """
 small_d = [d for d in d_map.keys() if d < 1e27]
@@ -178,7 +183,8 @@ find_point_instantly(QQ(20/-9))
 so only 20/-9 has no local obstruction to both t^2 and y^2.
 """
 
-def find_points_by_substitution(mn: Rational, limit: int=1000) -> list:
+def find_points_by_substitution(mn: Rational, limit: int=200, 
+                                first_d: int=1) -> list:
     a0, a, b, c = mn_to_xyt_conics(mn)[0]
     
     # Y^2 = D*v^2 + delta
@@ -190,7 +196,7 @@ def find_points_by_substitution(mn: Rational, limit: int=1000) -> list:
 
     # Search rational v = n/d
     points = []
-    for den in range(1, limit):
+    for den in range(first_d, limit):
         for num in range(-limit, limit):
             if gcd(num, den) != 1: continue
             v = QQ(num/den)
@@ -210,20 +216,24 @@ python -m elliptical.solutions_curves find_points_by_substitution -20/9 107
 [(-73039/144266, -23/106), (49/318, -23/106), (-73039/144266, 23/106), (49/318, 23/106)]
 """
 
-def get_optimized_rational_points(mn: Rational, search_limit: int=1000, 
-                    slope_limit: int=50, result_limit: int=10) -> list:
+def get_optimized_rational_points(mn: Rational, batch_size: int=200, 
+                    slope_limit: int=20, result_limit: int=5) -> list:
     """ Get small points sorted by height from base, substitution, slopes.
     """
     # Get y2 coefficients
     a0, a, b, c = mn_to_xyt_conics(mn)[0]
 
-    # Find 
+    # Collect base points by Gauss-Legendre and substitution batches
     base = find_point_instantly(mn)
-    if not base: 
-        return []
-    bases = find_points_by_substitution(mn, search_limit)
-    bases.append(base)
-    
+    if not base: return []
+    bases = [base]
+    first_d = 1
+    for i in range(1, 4):
+        batch = find_points_by_substitution(mn, i * batch_size, first_d)
+        bases.extend(batch)
+        if len(bases) > max(15, 3 * result_limit): break
+        first_d += i * batch_size
+
     # Augment the bases with x-axis reflection and collect for search
     seeds = set()
     for x0, y0 in bases:
@@ -248,8 +258,8 @@ def get_optimized_rational_points(mn: Rational, search_limit: int=1000,
         if rhs.is_square():
             y_val = rhs.sqrt()
             # We add both +y and -y
-            #for s in (1, -1):
-            for s in (1,): # only positive branch
+            for s in (1, -1):
+            #for s in (1,): # only positive branch
                 curr_y = s * y_val
                 height = max(x_val.height(), curr_y.height())
                 final_points.append((height, x_val, curr_y))
@@ -382,7 +392,7 @@ found -59/81 with rhs -1493337137920714564
 5.154595851898193
 """
 
-# Slower that find_quartic_points and finds less points
+# Slower than find_quartic_points and finds less points
 # but keep for Chebyshev nodes and continued fraction convergents code.
 def find_quartic_points_adaptive(quartic_poly: Polynomial_rational_flint,
             max_denom: int=10_000, n_nodes: int=100, pts_per_node: int=100,
@@ -569,6 +579,105 @@ Counts: mn 135, D 0, big 0, known 0
 doesn't find anything
 """
 
+def find_mn_y2t2_pts(first_m: int, last_m: int, first_n: int, last_n: int,
+        max_pt: int=int(1e8), quad_h: int=500_000,
+        step_m: int=4, max_d: int=int(1e27)) -> None | tuple:
+    """ Search for mn with rational points on both y^2 and t^2 conics.
+    """
+    from modular.solutions_modular import check_yt, get_quartic_pts
+    # Check input parameters for sanity.
+    if 4 == step_m: 
+        assert first_m % 4 == 0
+        assert 4 <= first_m
+    assert first_m <= last_m
+    assert first_n % 2 == 1
+    assert 1 <= first_n <= last_n
+    assert 1 <= max_pt
+
+    # Look up index of known solutions with denominator.
+    d_to_known_inx = {val['abcd'][-1]: inx 
+            for inx, val in enumerate(known.values(), start=1)}
+
+    # Declare search counts
+    u_hits = v_hits = big_hits = known_hits = 0
+    found_knowns = set() # indexes of known solutions found in search
+    found_new = False
+
+    # Search for points and count results.
+    start = datetime.now()
+    for m in range(first_m, last_m + 1, step_m):
+        for n in range(first_n, last_n + 1, 2):
+            if gcd(n, m) != 1: continue
+            uQ = QQ(m) / n
+            for mn in (uQ, -uQ, uQ.inverse(), -uQ.inverse()):
+                # Quadratics for y^2 and t^2 on must be solvable
+                if not check_yt(mn): continue
+                pts = get_quartic_pts(mn.inverse())
+                if pts is None: continue # u inverse quartic must be solvable
+                if 0 < len(pts):
+                    vs = sorted([v for v, D in pts if 0 < D])
+                    print(f'inv u {mn.inverse()} has v {vs}')
+                    v_hits += 1
+                    continue # No need to search
+                # Inverse solvable but solution not known, so mn a candidate.
+                #print(f'Trying mn {mn}', flush=True)
+                u_hits += 1
+                found_known = False
+                quad_pairs = get_optimized_rational_points(mn, result_limit=3)
+                for pair in quad_pairs:
+                    if pair[0].height() > quad_h or pair[1].height() > quad_h:
+                        break
+                    quad_xy = (QQ(pair[0]), QQ(pair[1]))
+                    q_res = make_quartic(mn, quad_xy)
+                    print(f'Trying mn {mn}, quad_xy {quad_xy}', flush=True)
+                    if 2 != len(q_res[2].real_roots()):
+                        print(f'has {len(q_res[2].real_roots())} real roots')
+                    pts = get_quartic_pts(mn, max_pt, q_res[2], verbose=False)
+                    if pts is None: continue # D2 not solvable
+                    if 0 == len(pts): continue # Failed to find quartic point
+                    set_trace()
+                    for k0, _ in pts:
+                        (a, b, c), d = k_to_abcd(mn, quad_xy, k0)
+                        assert a**4 + b**4 + c**4 == d**4
+                        if d >= max_d:
+                            big_hits += 1
+                            print(f'\t{k0} -> big {float(d):.4e}', flush=True)
+                            continue
+                        if d in d_to_known_inx:
+                            known_hits += 1
+                            found_known = True
+                            inx = d_to_known_inx[d]
+                            found_knowns.add(inx)
+                            print(f'\t{k0} -> known #{inx}: {d}', flush=True)
+                            break
+                        print(f'\n\nNEW {mn}, {quad_xy}, {k0}'
+                              f' -> {d}; {c}, {b}, {a}',
+                              flush=True)
+                        found_new = True
+                        break
+                    if found_new or found_known: break
+                if found_new: break
+            if found_new: break
+        if found_new: break
+
+    # Report results and return if found new solution.
+    elapsed = datetime.now() - start
+    print(f'hits: v {v_hits}, u {u_hits}, big {big_hits}, known {known_hits}')
+    if 0 < known_hits: 
+        print(f'knowns {len(found_knowns)}: {sorted(found_knowns)}')
+    print(f'elapsed: {elapsed}', flush=True)
+    if found_new: return mn, quad_xy, z0, d, (c, b, a)
+"""
+find_mn_y2t2_pts(8, 8, 5, 5, 1_000_000)
+inv u -5/8 has v [-1617/200, -1617/200, -477/692, -477/692, 20824/2003, 20824/2003, -34272/4885, -34272/4885, 36696/8687, 36696/8687, 398113/66200, 398113/66200, -124529/68084, -124529/68084]
+Trying mn -8/5
+Trying mn -8/5, quad_xy (-5/14, 25/42)
+Searching for pts on -8/5 quartic
+	known #13: 589845921
+hits: u 1, big 0, known 1
+knowns 1: [13]
+"""
+
 def DEBUG(*args):
     import pdb; pdb.set_trace()
     pass; pass; pass # opportumity to debug
@@ -587,9 +696,3 @@ if __name__ == "__main__":
     args = list(map(sage_eval, sys.argv[2:]))
     result = command(*args)
     print(result)
-
-""" 
-More consistency checks
-Try negative branch
-Try other m,n
-"""
