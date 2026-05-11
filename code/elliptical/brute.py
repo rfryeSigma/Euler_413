@@ -799,6 +799,10 @@ def make_uv_table(max_umn: int, max_vmn: int,
     big_v_set, known_denoms = known_to_big_v(lim_d_known, lim_d)
     print(f'big_v_set has {len(big_v_set)}')
 
+    # Look up index of known solutions with denominator.
+    d_to_known_inx = {val['abcd'][-1]: inx 
+            for inx, val in enumerate(known.values(), start=1)}
+
     # Separate the even and odd parts of the v
     evens = set() # set of abs values of even numerators, denominators
     odds = set() # set of abs values of odd numerators, denominators
@@ -821,7 +825,7 @@ def make_uv_table(max_umn: int, max_vmn: int,
     D_count = 0
     with open('solutions_uv.csv', 'w', newline='') as file:
         writer = csv.writer(file)
-        writer.writerow(['u_num', 'u_den', 'v_num', 'v_den', 'd', 'c', 'b', 'a'])
+        writer.writerow(['u_num', 'u_den', 'v_num', 'v_den', 'inx', 'd', 'c', 'b', 'a'])
         for u_inx_e, u_e in enumerate(evens[: u_evens_max_inx]):
             for u_o in odds[:u_odds_max_inx]:
                 if gcd(u_e, u_o) != 1: continue
@@ -841,10 +845,16 @@ def make_uv_table(max_umn: int, max_vmn: int,
                                 for xyz in pair:
                                     d = int(lcm([denominator(x) for x in xyz]))
                                     c, b, a = sorted([abs(int(x * d)) for x in xyz], reverse=True)
-                                    row = [u_num, u_den, v_num, v_den, d, c, b, a]
-                                    writer.writerow(row)
                                     if d < lim_d_known:
-                                        assert d in known_denoms, f'New solution: {row}'
+                                        try:
+                                            d_inx = d_to_known_inx[d]
+                                        except KeyError:
+                                            d_inx = -1 # NEW solution
+                                    else:
+                                        d_inx = 999
+                                    row = [u_num, u_den, v_num, v_den, d_inx, d, c, b, a]
+                                    writer.writerow(row)
+                                    assert d_inx != -1, f'NEW SOLUTION: {row}'
     print(count, D_count)
     
 """ 
@@ -877,6 +887,18 @@ cpu 9:59.07 total
 % time python -m elliptical.brute make_uv_table 12_000_000 100_000_000
 2840930576 191
 cpu 32:04.23 total
+383 lines
+
+cp  solutions_uv.csv solutions_uv.save.csv 
+% time python -m elliptical.brute make_uv_table 1_000_000 1_000_000_000
+3866827440 240
+cpu 46:14.37 total
+481 lines
+
+% time python -m elliptical.brute make_uv_table 1_000_000 10_000_000_000
+5701693120 283
+python -m elliptical.brute make_uv_table 1_000_000 10_000_000_000  4040.60s user 7.53s system 97% cpu 1:09:05.69 total
+567 lines
 """
 
 def collected_mn_to_brute(mn_list: list, lim_d_known: int=int(1e27), lim_d: int=int(1e40)) -> None:

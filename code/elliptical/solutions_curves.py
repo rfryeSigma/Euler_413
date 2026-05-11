@@ -258,8 +258,8 @@ def get_optimized_rational_points(mn: Rational, batch_size: int=200,
         if rhs.is_square():
             y_val = rhs.sqrt()
             # We add both +y and -y
-            for s in (1, -1):
-            #for s in (1,): # only positive branch
+            #for s in (1, -1):
+            for s in (1,): # only positive branch
                 curr_y = s * y_val
                 height = max(x_val.height(), curr_y.height())
                 final_points.append((height, x_val, curr_y))
@@ -580,7 +580,7 @@ doesn't find anything
 """
 
 def find_mn_y2t2_pts(first_m: int, last_m: int, first_n: int, last_n: int,
-        max_pt: int=int(1e8), quad_h: int=500_000,
+        max_pt: int=int(1e8), quad_h: int=500_000, quad_lim: int=3,
         step_m: int=4, max_d: int=int(1e27)) -> None | tuple:
     """ Search for mn with rational points on both y^2 and t^2 conics.
     """
@@ -623,7 +623,8 @@ def find_mn_y2t2_pts(first_m: int, last_m: int, first_n: int, last_n: int,
                 #print(f'Trying mn {mn}', flush=True)
                 u_hits += 1
                 found_known = False
-                quad_pairs = get_optimized_rational_points(mn, result_limit=3)
+                quad_pairs = get_optimized_rational_points(mn, 
+                                result_limit=quad_lim)
                 for pair in quad_pairs:
                     if pair[0].height() > quad_h or pair[1].height() > quad_h:
                         break
@@ -635,9 +636,13 @@ def find_mn_y2t2_pts(first_m: int, last_m: int, first_n: int, last_n: int,
                     pts = get_quartic_pts(mn, max_pt, q_res[2], verbose=False)
                     if pts is None: continue # D2 not solvable
                     if 0 == len(pts): continue # Failed to find quartic point
-                    set_trace()
+                    #set_trace()
                     for k0, _ in pts:
-                        (a, b, c), d = k_to_abcd(mn, quad_xy, k0)
+                        try:
+                            (a, b, c), d = k_to_abcd(mn, quad_xy, k0)
+                        except AssertionError:
+                            print(f'AssertionError k_to_abcd({mn}, {quad_xy}, {k0})')
+                            continue
                         assert a**4 + b**4 + c**4 == d**4
                         if d >= max_d:
                             big_hits += 1

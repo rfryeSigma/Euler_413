@@ -1,16 +1,50 @@
-""" Lattice Dependency Check
-Final note: Why I gave up
+""" Search for a recurrence pattern in (u, v).
+1. Scatter plot from a suggestion by Phil Hadley
 
-To check for a hidden "lattice structure" among 100 solutions, 
-we can use the **LLL algorithm** to see if the numerators and 
-denominators of $u$ and $v$ values satisfy a small linear relation. 
-If they do, they are traveling along specific geometric "tracks" 
-(rational curves) on the K3 surface.
+2. Lattice Dependency Check
+    Final note: Why I gave up
+
+    To check for a hidden "lattice structure" among 100 solutions, 
+    we can use the **LLL algorithm** to see if the numerators and 
+    denominators of $u$ and $v$ values satisfy a small linear relation. 
+    If they do, they are traveling along specific geometric "tracks" 
+    (rational curves) on the K3 surface.
 """
 import csv
 from pdb import runcall, set_trace
-from sage.all import QQ, ZZ, Matrix, sage_eval
+from sage.all import QQ, ZZ, Matrix, sage_eval, scatter_plot
 
+""" ----------------
+2. Scatter Plot
+"""
+def scatter_known(row_s :int=1, row_e :int=100, clip :float=50.0,
+        file_name: str='solutions_uv.csv') -> None:
+    """ Check known (u, v) pairs for recurrence patterns
+    For initial data row after header use row_s = 2 .
+    Each (u, v) pair covers 2 rows, so skips odd row numbers.
+    """
+    data = []
+    with open(file_name, mode='r', encoding='utf-8') as file:
+        reader = csv.reader(file)
+        for _ in range(1, row_s):
+            next(reader)
+        for i_row in range(row_s, row_e + 1):
+            try:
+                row = next(reader)
+            except StopIteration: break
+            if i_row%2 == 1: continue # duplicate (u, v)
+            u_n, u_d, v_n, v_d = [int(row[i]) for i in range(4)]
+            if not (-clip < float(u_n)/u_d < clip): continue
+            if not (-clip < float(v_n)/v_d < clip): continue
+            data.append((QQ(u_n)/u_d, QQ(v_n)/v_d))
+    p = scatter_plot(data, marker='o', markersize=2, facecolor='black',
+                 title='(u, v) scatter')
+    p.show(gridlines=True)
+    p.save('uv_scatter.png')
+
+""" ----------------
+2. Lattice Dependency Check
+"""
 def check_uv_lattice(p: int, q: int, r :int, s : int) -> tuple:
     """
     Checks if the components of (u, v) satisfy a small linear relation.

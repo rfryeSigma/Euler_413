@@ -526,7 +526,7 @@ def get_quartic_pts(u: Rational, max_pt: int=100_000, D2=None, verbose=True,
     time1e = datetime.now()
     lp = list(p)
     if 0 < len(lp):
-        pts = [(QQ(v), QQ(D)) for (v, D) in lp]
+        pts = [(QQ(v), QQ(D)) for (v, D) in lp if 0 < D]
         return pts
     if time1e-time0e >= timedelta(milliseconds=1): run_l = True
 
@@ -535,7 +535,7 @@ def get_quartic_pts(u: Rational, max_pt: int=100_000, D2=None, verbose=True,
     time1e = datetime.now()
     lp = list(p)
     if 0 < len(lp):
-        pts = [(QQ(v), QQ(D)) for (v, D) in lp]
+        pts = [(QQ(v), QQ(D)) for (v, D) in lp if 0 < D]
         return pts
     if time1e-time0e >= timedelta(milliseconds=1): run_m = True
     if not run_l and not run_m: return None
