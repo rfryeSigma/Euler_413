@@ -1,7 +1,7 @@
 The code in the modular sub-folder attempts to find relationships
 between elliptical curves with modular curves and forms and other transformsations.
 
-jacobian_mumford.py-- AI suggestion on Mumford representation of Jacobian of D2 quartic
+jacobian_mumford.py-- AI suggestions on Mumford representation of Jacobian of D2 quartic. FAILED
 
 lll_approx.py -- AI suggestion for LLL on ax^4 + y^4 + z^4 ~1. IMPRACTICAL.
 

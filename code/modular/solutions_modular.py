@@ -8,7 +8,7 @@ from math import gcd
 from pdb import set_trace, runcall
 from solutions import known
 from sage.all import help, oo, pari, sage_eval, \
-    QQ, RR, Rational, hilbert_symbol, lcm, \
+    GF, QQ, RR, Rational, hilbert_symbol, kronecker, lcm, \
     DiagonalQuadraticForm, EllipticCurve, PolynomialRing
 from sage.rings.polynomial.polynomial_rational_flint import Polynomial_rational_flint
 from sage.modules.free_module_element import vector
@@ -95,10 +95,10 @@ def mn_to_xyt_conics(mn: Rational) -> tuple:
                  n2 - 2 * m2)
     return y2_coeffs, t2_coeffs
 
-def check_quadratic_solvability(D, delta):
+def check_quadratic(D, delta):
     """ Check the Hilbert symbol on equation X^2 - Dy^2 - delta*z^2 = 0
     at infinite prime (Real Solvability)
-    and at 2 and odd primes dividing coeffs
+    and at 2 and odd primes (Local) Solvability)
     """
     return hilbert_symbol(D, delta, -1) == 1 == hilbert_symbol(D, delta, 2)
 
@@ -109,30 +109,13 @@ def check_yt(mn: Rational) -> bool:
     for a0, a, b, c in (t2_coeffs, y2_coeffs):
         D = 4 * a * a0
         delta = b**2 - 4 * a * c
-        if not check_quadratic_solvability(D, delta):
+        if not check_quadratic(D, delta):
             return False
         Q = DiagonalQuadraticForm(QQ, [1, -D, -delta])
         try: # find a rational point (X, V, Z)
             point = Q.solve()
         except Exception as e: return False
     return True
-
-def check_known_uv_inv(file_name: str='solutions_uv.csv') -> None:
-    """Check hypothesis that inverses of a uv pair
-    are always y^2 and t^2 solvable and have a point.
-    """
-    with open(file_name, mode='r', encoding='utf-8') as file:
-        reader = csv.reader(file)
-        header = next(reader)
-        for row in reader:
-            u_n, u_d, v_n, v_d = [int(row[i]) for i in range(4)]
-            u = QQ(u_n)/u_d
-            assert check_yt(u.inverse()), f'row {row} fails u_d/u_n'
-            v = QQ(v_n)/v_d
-            assert check_yt(v.inverse()), f'row {row} fails v_d/v_n'
-            #print(row, u, v)
-""" Success
-"""
 
 def u_to_quartic(u: Rational) -> Polynomial_rational_flint:
     """ Given u, build rational quartic polynomial in v.
@@ -150,6 +133,49 @@ def u_to_quartic(u: Rational) -> Polynomial_rational_flint:
     D2 = d0 + d1 * v + d2 * v**2 + d3 * v**3 + d4 * v**4
     D2 = D2.univariate_polynomial()
     return D2
+
+def check_quartic(q_poly, verbose=False,
+        p_list=(3,5,7,11,13,17)) -> int:
+    """ Check Kronecker symbol `(x|y)` for local solvability of quartic.
+    Return prime that fails, or 0 on success.
+    """
+    for inx, p in enumerate(p_list):
+        K = GF(p)
+        try: q_mod = q_poly.change_ring(K)
+        except ZeroDivisionError: continue
+
+        # Sum of Kronecker symbols for finite points
+        s = sum(kronecker(q_mod(x).lift(), p) for x in K)
+
+        # Points at infinity
+        inf = kronecker(q_mod.leading_coefficient().lift(), p)
+        val = p + 1 + s + inf
+        if 0 == val: return p # no prime residue
+    return 0
+
+def check_known_uv(file_name: str='solutions_uv.csv') -> None:
+    """Check hypothesis that inverses of a u, v in known pairs
+    are always y^2 and t^2 solvable.
+    Also check that quartics for u, v are solvable
+    """
+    with open(file_name, mode='r', encoding='utf-8') as file:
+        reader = csv.reader(file)
+        header = next(reader)
+        for row in reader:
+            u_n, u_d, v_n, v_d = [int(row[i]) for i in range(4)]
+            u = QQ(u_n)/u_d
+            assert check_yt(u.inverse()), f'quad u in {row}'
+            q4 = u_to_quartic(u)
+            assert 0 == check_quartic(q4), f'quart u in {row}'
+            assert 0 == check_quartic(-q4), f'-quart u in {row}'
+            v = QQ(v_n)/v_d
+            assert check_yt(v.inverse()), f'quad v in {row}'
+            q4 = u_to_quartic(v)
+            assert 0 == check_quartic(q4), f'quart v in {row}'
+            assert 0 == check_quartic(-q4), f'-quart v in {row}'
+            #print(row, u, v)
+""" Success
+"""
 
 def u_to_E_min_map(u, v0):
     """ Generate D2 quartic, minimal elliptic curve and
@@ -176,7 +202,8 @@ def u_to_E_min_map(u, v0):
     a6 = a2 * a4
     
     E_orig = EllipticCurve([a1, a2, a3, a4, a6])
-    E_min = E_orig.minimal_model()
+    #E_min = E_orig.minimal_model()
+    E_min = E_orig.short_weierstrass_model().minimal_model()
     iso = E_min.isomorphism_to(E_orig)
     iso_inv = E_orig.isomorphism_to(E_min)
     
@@ -506,40 +533,150 @@ def uv_to_w(u: Rational, v: Rational) -> Rational:
     w = 2 * (u + v - 2) / (u*v - 2)
     return w
 
+# Totally broken. Can never find a rational solution.
+def hensel_lift(q_poly, target_prec=8, p_list=(19, 23, 29, 31,)):
+    """
+    Find a rational point on y^2 = q_poly using a local mod p seed
+    and rational reconstruction, without invoking any LLL lattice step.
+    """
+    from sage.all import Integer, IntegerModRing, rational_reconstruction, factor, QQ
+    dq_dx_poly = q_poly.derivative()
+
+    for p in p_list:
+        K = GF(p)
+        q_mod = q_poly.change_ring(K)
+        dq_dx_mod = dq_dx_poly.change_ring(K)
+        print(K)
+        print(q_mod)
+        print(dq_dx_mod)
+
+        # Find a safe, non-singular starting point mod p
+        for x_val in K:
+            y_sq = q_mod(x_val)
+            if y_sq == 0 or not y_sq.is_square(): continue
+            
+            # Ensure the point is non-singular
+            if dq_dx_mod(x_val) == 0: continue
+            
+            x = Integer(x_val)
+            y = Integer(y_sq.sqrt())
+            print(f'\nTry lifting {x, y} in {K}')
+            modulus = p
+
+            # Lift the local point to p-adic precision
+            for step in range(1, target_prec):
+                modulus *= p
+                R = IntegerModRing(modulus)
+                q_R = q_poly.change_ring(R)
+                dq_R = dq_dx_poly.change_ring(R)
+                xR = R(x)
+                yR = R(y)
+
+                F = yR * yR - q_R(xR)
+                if F != 0:
+                    dFdx = -dq_R(xR)
+                    try: 
+                        dx = -F * ~dFdx
+                    except ZeroDivisionError: 
+                        break # Singular path, abandon this root
+                    x = Integer(R(x + dx))
+                    xR = R(x)
+
+                qx = q_R(xR)
+                err = qx - yR * yR
+                if err != 0:
+                    dy = err * ~(R(2 * y))
+                    y = Integer(R(y + dy))
+                
+                print(f'{step}: (x,y) lifted to {(x, y)} in {factor(modulus)}')
+
+                # --- RECONSTRUCTION ATTEMPT ---
+                # Attempt reconstruction when we have gathered enough p-adic precision
+                if step >= 5: 
+                    try:
+                        x_rat = rational_reconstruction(x, modulus)
+                        x_cand = QQ(x_rat)
+                        q_val = q_poly(x_cand)
+                        if q_val >= 0 and q_val.is_square():
+                            print(f'>>> Successfully reconstructed rational point!')
+                            return x_cand, q_val.sqrt()
+                    except (ArithmeticError, ZeroDivisionError):
+                        continue # Keep lifting, not enough precision yet
+                        
+    return None
+
+# --- Pure Python Setup & Execution Example ---
+def run_hensel_lift():
+    from sage.all import Integers,rational_reconstruction
+    # Define the polynomial ring without using Sage syntax shortcuts
+    R = PolynomialRing(QQ, 'v')
+    v = R.gen()
+    
+    # Pre-test the reconsruction
+    m = 19**8
+    u = QQ(-9)/20
+    q_poly = u_to_quartic(u)
+    v = QQ(-1041)/320
+    assert q_poly(v).is_square()
+    assert rational_reconstruction(Integers(m)(v), m) == v
+    v = QQ(-1425)/412
+    assert q_poly(v).is_square()
+    assert rational_reconstruction(Integers(m)(v), m) == v
+
+    # Run the solver
+    result = hensel_lift(q_poly)
+    print(f"Resulting Point: {result}")
+"""
+>>> run_hensel_lift()
+Try lifting (1, 1) in Finite Field of size 7
+Try reconstruct {x} mod {modulus}
+Try lifting (3, 1) in Finite Field of size 7
+Try reconstruct {x} mod {modulus}
+Try lifting (4, 3) in Finite Field of size 7
+Try lifting (0, 5) in Finite Field of size 11
+Try reconstruct {x} mod {modulus}
+Try lifting (1, 3) in Finite Field of size 11
+...
+Try lifting (2, 14) in Finite Field of size 29
+...
+Try lifting (23, 14) in Finite Field of size 29
+Try reconstruct {x} mod {modulus}
+Try lifting (26, 4) in Finite Field of size 29
+Try reconstruct {x} mod {modulus}
+Resulting Point: None
+
+You are entirely right to be skeptical, and your frustration is 100% justified. 
+Every time an LLM is asked to write an "Elkies lattice solver" or a "$p$-adic 
+Hensel lift point-finder" for a quartic curve, it invariably manufactures 
+a hybrid mathematical phantom.AI models tend to blend three entirely 
+different concepts: Schoof-Elkies-Atkin (SÉA) (which uses Hensel lifting 
+on modular equations over finite fields to count points), Coppersmith’s 
+Method (which uses LLL to find small integer roots of polynomials modulo $M$), 
+and Noam Elkies' actual 2000 paper on finding rational points near curves. 
+The result is always a flawed script that tries to linearly lift a non-linear 
+curve from a random local root mod $p$.A standard Hensel lift is a purely 
+local tool; it converges to a $p$-adic number in $mathbb{Q}_p$. Because 
+the set of $p$-adic points on your curve is uncountable, a blind local 
+lift will almost always shoot off into a transcendental $p$-adic space, 
+completely missing the discrete, global rational points you are looking for.
+
+"""
+
 def get_quartic_pts(u: Rational, max_pt: int=100_000, D2=None, verbose=True,
         d_list: tuple=(100_000, 1_000_000, 10_000_000, 50_000_000, 
                        80_000_000, 100_000_000),
-        n_mult: tuple= (5, 3, 2, 1, 1, 1)) -> None|list:
+        n_mult: tuple= (10, 5, 3, 1, 1, 1)) -> None|list:
     """Get points on quartic for u or on given quartic.
+    Return None if not solvable
     Return any points found immediately.
     """
     if D2 is None:
         D2 = u_to_quartic(u)
 
-    # If both D2 and -D2 return nothing too quickly, return None
-    # Try to find all pts in range for timing consistency.
-    run_l = run_m = False
-    d = d_list[0]
-    n = n_mult[0] * d
-    time0e = datetime.now()
-    p = pari(D2).hyperellratpoints([n, [4, d]], 0) # 0 for all pts
-    time1e = datetime.now()
-    lp = list(p)
-    if 0 < len(lp):
-        pts = [(QQ(v), QQ(D)) for (v, D) in lp if 0 < D]
-        return pts
-    if time1e-time0e >= timedelta(milliseconds=1): run_l = True
-
-    time0e = datetime.now()
-    p = pari(-D2).hyperellratpoints([n, [4, d]], 0) # 0 for all pts
-    time1e = datetime.now()
-    lp = list(p)
-    if 0 < len(lp):
-        pts = [(QQ(v), QQ(D)) for (v, D) in lp if 0 < D]
-        return pts
-    if time1e-time0e >= timedelta(milliseconds=1): run_m = True
-    if not run_l and not run_m: return None
-    if max_pt <= d: return []
+    # If D2 or -D2 solvable, run them, else quit
+    run_p = (0 == check_quartic(D2))
+    run_m = (0 == check_quartic(-D2))
+    if not run_p and not run_m: return None
     if verbose: print(f'Searching for pts on {u} quartic')
 
     def search_range(r_inx: int, d: int) -> int|list:
@@ -547,7 +684,7 @@ def get_quartic_pts(u: Rational, max_pt: int=100_000, D2=None, verbose=True,
         s = d + 2
         d = min(d_list[r_inx], max_pt)
         n = n_mult[r_inx] * d
-        if run_l:
+        if run_p:
             p = pari(D2).hyperellratpoints([n, [s, d]], 1)
             lp = list(p)
             if 0 < len(lp):
@@ -560,8 +697,9 @@ def get_quartic_pts(u: Rational, max_pt: int=100_000, D2=None, verbose=True,
                 pts = [(QQ(v), QQ(D)) for (v, D) in lp]
                 return pts
         return d
-
-    for r_inx in range(1, len(d_list)):
+    
+    d = 2 # so first s = 4
+    for r_inx in range(len(d_list)):
         res = search_range(r_inx, d)
         if isinstance(res, list): return res
         d = res

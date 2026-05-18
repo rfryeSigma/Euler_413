@@ -1,0 +1,1063 @@
+This is a log of what ranges have been searhed using
+    elliptical/solutions_curves.py find_mn_y2t2_pts
+
+5/6/2026W
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 4 4 1 1_000 1_000_000; date
+hits: u 21, big 0, known 0
+elapsed: 1:14:56.960545
+
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 8 20 1 1_000 1_000_000; date
+Searching for pts on 201/8 quartic
+Trying mn 201/8, quad_xy (-28489/44194, 11431/44194)
+	-89397/44360 -> known #5: 16003017
+Trying mn -5/16, quad_xy (-3/14, 1/42)
+	1151/1401 -> known #7: 20615673
+hits: v 3, u 134, big 0, known 2
+knowns 2: [5, 7]
+elapsed: 6:49:39.344867
+
+Note that 201/8 picked up solutions from 201/4
+And -5/16 picked up solutions from -5/8.
+Also note that uvD method didn't even search on quartics
+for 8/201 and 16/-5.
+
+mn = QQ(201)/8
+quad_xy = (QQ(-28489)/44194, QQ(11431)/44194)
+k0 = QQ(-89397)/44360
+q_res = make_quartic(mn, quad_xy)
+e_res = model_quartic_as_elliptic_curve(q_res[2], k0)
+search_small_EC_points(e_res, q_res[2], k0, mn, quad_xy, 5, verbose=True)
+	k -89397/44360 -> known #5: 16003017
+	k 2179989/3128011 -> known #5: 16003017
+	k -16322973/5296723 -> known #12: 156646737
+Fewer than uvD 201/4
+
+mn = QQ(-5)/16
+quad_xy = (QQ(-3)/14, QQ(1)/42)
+k0 = QQ(1151)/1401
+q_res = make_quartic(mn, quad_xy)
+e_res = model_quartic_as_elliptic_curve(q_res[2], k0)
+search_small_EC_points(e_res, q_res[2], k0, mn, quad_xy, 5, verbose=True)
+Restrict to 14 k with height < 10000000000
+	k 1151/1401 -> known #7: 20615673
+	k -12667/8370 -> known #13: 589845921
+	k 40519/29121 -> known #14: 638523249
+	k 145991/103119 -> known #13: 589845921
+	k 81593/229738 -> known #20: 3393603777
+	k -336673/373977 -> known #7: 20615673
+	k -546541/367285 -> known #14: 638523249
+	k -503873/1183047 -> known #20: 3393603777
+	k 9880987/6394142 -> known #37: 5062297699257
+	k -71736227/43518453 -> known #37: 5062297699257
+	k 47948911/111212249 -> known #51: 62940516903410601
+	k -52360309/115798515 -> known #50: 20249506709579721
+	k 134026033/351655722 -> known #50: 20249506709579721
+	k -4223374763/2864683827 -> known #61: 108593344076382641697
+Very similar to uvD -5/8.
+
+5/7/2026R
+I modified get_quartic_pts to return as soon as it finds any point.
+But it's still slow:
+    get_quartic_pts -15/476 100_000  cpu 4.010 total
+    get_quartic_pts -15/476 200_000  cpu 5.976 total
+    get_quartic_pts -15/476 300_000  cpu 10.078 total
+    get_quartic_pts -15/476 400_000  cpu 16.506 total
+    get_quartic_pts -15/476 500_000  cpu 25.342 total
+    get_quartic_pts -15/476 1_000_000  cpu 1:44.61 total
+so rather than search up to v.height 1_000_000, stop at 400_000
+
+Also get_optimized_rational_points is too slow. ~ 35s.
+I sped it up by increasing batch size as needed, and limiting slopes.
+
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 4 4 1 1_000 400_000; date
+hits: v 1, u 20, big 0, known 0
+elapsed: 0:06:59.662765
+
+but quad_h was set too low, so no results after 1075. Bump to 1_000_000
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 4 4 1_001 10_000 400_000; date
+hits: v 0, u 70, big 0, known 0
+elapsed: 0:09:10.120654
+but still sparse.
+
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 8 8 1 10_000 400_000; date
+hits: v 1, u 172, big 0, known 0
+elapsed: 0:24:53.655324
+but quad_h was set too low, so no results after 1075. Bump to 1_000_000
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 8 8 1_001 10_000 400_000; date
+Trying mn -9205/8, quad_xy (-43172/292043, -604/1257)
+hits: v 0, u 137, big 0, known 0
+elapsed: 0:17:17.990420
+
+I guess this isn't so bad. Decrease quad_h to 500_000.
+Don't use this mn_y2t2 dual for broad survey.
+Concentrate on m that have lots of candidates in the uvD search.
+
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 12 12 1 10_000 500_000 500_000; date
+Trying mn 12/6653, quad_xy (15638/51399, -9820/17133)
+hits: v 1, u 107, big 0, known 0
+elapsed: 0:25:12.542682
+
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 16 16 1 10_000 500_000 500_000; date
+Trying mn -16/7595, quad_xy (32104/109027, -188332/327081)
+hits: v 0, u 163, big 0, known 1
+knowns 1: [7]
+elapsed: 0:35:43.681728
+Investigated above
+
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 20 20 1 10_000 500_000 500_000; date
+Trying mn -20/4049, quad_xy (1227/18962, 20237/56886)
+hits: v 1, u 248, big 0, known 0
+elapsed: 0:56:45.723188
+
+4/8/2026F
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 48 48 1 10_000 500_000 500_000; date
+Trying mn 48/25, quad_xy (-166/211, 28/211)
+has 0 real roots
+Trying mn 48/25, quad_xy (-166/211, -28/211)
+has 0 real roots
+Trying mn 48/25, quad_xy (-323/422, 65/422)
+has 0 real roots
+677)
+Trying mn 9295/48, quad_xy (-8162/131031, -14344/43677)
+hits: v 0, u 225, big 0, known 0
+elapsed: 0:47:09.926735
+
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 24 24 1 10_000 500_000 500_000; date
+Trying mn -29/24, quad_xy (-57/142, 51/142)
+	261059/143383 -> known #3: 8707481
+hits: v 0, u 227, big 0, known 1
+knowns 1: [3]
+elapsed: 0:48:55.069366
+Restrict to 6 k with height < 10000000000
+	k 261059/143383 -> known #3: 8707481
+	k -403609/1526709 -> known #36: 2051764828361
+	k -3897274/3213249 -> known #45: 45556888578449
+	k -11234077/2329127 -> known #3: 8707481
+	k -52142666/62023713 -> known #36: 2051764828361
+	k 30163471/621029997 -> known #45: 45556888578449
+Same as uvD -29/12
+
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 40 40 1 10_000 500_000 500_000; date
+Trying mn -9/40, quad_xy (-49/318, 23/106)
+	59/81 -> known #1: 422481
+Restrict to 12 k with height < 10000000000
+	k 59/81 -> known #1: 422481
+	k -4162/2643 -> known #2: 2813001
+	k -151301/97921 -> known #1: 422481
+	k 599551/591709 -> known #23: 15434547801
+	k -832289/426669 -> known #23: 15434547801
+	k 2581958/2550495 -> known #17: 1679142729
+	k 6538883/8717495 -> known #2: 2813001
+	k -9251273/4745947 -> known #17: 1679142729
+	k -78483809/104842989 -> known #48: 573646321871961
+	k 10413631/125984029 -> known #48: 573646321871961
+	k -288471578/406365655 -> known #44: 29999857938609
+	k 36086663/753257643 -> known #44: 29999857938609
+Very similar to uvD -9/20
+
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 40 40 141 10_000 500_000 500_000; date
+Trying mn 40/141, quad_xy (196121/285974, 1765/16822)
+has 0 real roots
+Trying mn 40/141, quad_xy (196121/285974, -1765/16822)
+has 0 real roots
+Trying mn -40/291, quad_xy (1448/7293, 152/221)
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/Users/rogerfrye/Documents/Git/Euler_413/code/elliptical/solutions_curves.py", line 695, in <module>
+    result = command(*args)
+             ^^^^^^^^^^^^^^
+  File "/Users/rogerfrye/Documents/Git/Euler_413/code/elliptical/solutions_curves.py", line 638, in find_mn_y2t2_pts
+    (a, b, c), d = k_to_abcd(mn, quad_xy, k0)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/rogerfrye/Documents/Git/Euler_413/code/elliptical/solutions_curves.py", line 489, in k_to_abcd
+    assert t_sq.is_square()
+           ^^^^^^^^^^^^^^^^
+AssertionError
+I tried to find a way to anticipate that this quartic would fail, but couldn't
+So I put the k_to_abcd inside a try.
+
+python -um elliptical.solutions_curves find_mn_y2t2_pts 40 40 1 1_000 500_000 500_000; date
+Trying mn -9/40, quad_xy (-49/318, 23/106)
+	59/81 -> known #1: 422481
+
+The AssertionError happens only for -40/291
+It was getting both +/- D, so I removed -D.
+Is there any value in trying positive and negative quad_xy?
+No, it just switches r and s in k_to_abcd, so only use positve branch.
+
+Trying mn -40/291, quad_xy (1448/7293, 152/221)
+AssertionError k_to_abcd(-40/291, (1448/7293, 152/221), -1292115/175762)
+Trying mn -40/291, quad_xy (-371/14586, 205/442)
+AssertionError k_to_abcd(-40/291, (-371/14586, 205/442), 6501/16493)
+AssertionError k_to_abcd(-40/291, (-371/14586, 205/442), -193809/71767)
+hits: v 0, u 89, big 0, known 1
+
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 40 40 1001 10_000 500_000 500_000; date
+hits: v 0, u 396, big 0, known 0
+elapsed: 0:44:39.464051
+NOTE 40 had 740 hits in the uvD search!!!
+I think restricting to positive D2 and quad points halved that.
+
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 56 56 1 10_000 500_000 500_000; date
+hits: v 0, u 169, big 0, known 0
+elapsed: 0:26:33.814787
+
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 40 40 1 20_000 1_000_000; date
+Trying mn -40/6393, quad_xy (6529/487258, 95929/487258)
+hits: v 0, u 820, big 0, known 1
+knowns 1: [1]
+elapsed: 3:57:11.122256
+
+5/11/2026M
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 4 4 1 20_000 1_000_000; date
+Trying mn -4/9205, quad_xy (43172/292043, 604/1257)
+hits: v 1, u 152, big 0, known 0
+elapsed: 0:50:00.039247
+But quad_h default 500_000 is too low. Try 10_000_000
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 4 4 1 20_000 1_000_000 10_000_000; date
+Trying mn -4/19343, quad_xy (735034/3256529, 5341336/9769587)
+hits: v 1, u 152, big 0, known 0
+elapsed: 1:29:12.344518
+
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 8 8 1 20_000 1_000_000 10_000_000; date
+Trying mn 201/8, quad_xy (-350905/765358, 403949/765358)
+	-921681/179347 -> known #5: 16003017
+Trying mn -19343/8, quad_xy (-735034/3256529, 5341336/9769587)
+hits: v 1, u 301, big 0, known 1
+knowns 1: [5]
+elapsed: 3:05:23.012935
+
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 12 12 1 20_000 1_000_000 10_000_000; date
+Trying mn 12/15875, quad_xy (723668/3218317, 1753396/3218317)
+hits: v 1, u 176, big 0, known 0
+elapsed: 1:54:08.790188
+
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 16 16 1 20_000 1_000_000 10_000_000; date
+Trying mn -5/16, quad_xy (-3/14, 1/42)
+	1151/1401 -> known #7: 20615673
+Trying mn 18627/16, quad_xy (-673496/1187393, 488840/1187393)
+hits: v 0, u 283, big 0, known 1
+knowns 1: [7]
+elapsed: 2:50:02.293456
+
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 20 20 1 20_000 1_000_000 10_000_000; date
+Trying mn -20/18091, quad_xy (33884/3013023, 1409692/9039069)
+hits: v 1, u 415, big 0, known 0
+elapsed: 4:09:53.145374
+
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 24 24 1 20_000 1_000_000 10_000_000; date
+Trying mn -29/24, quad_xy (-57/142, 51/142)
+	261059/143383 -> known #3: 8707481
+Trying mn 19865/24, quad_xy (-764908/5023817, 2429524/5023817)
+hits: v 0, u 390, big 0, known 1
+knowns 1: [3]
+elapsed: 3:44:49.871202
+Investigate
+mn = QQ(-29)/24
+quad_xy = QQ(-57)/142, QQ(51)/142
+k0 = QQ(261059)/143383
+q_res = make_quartic(mn, quad_xy)
+e_res = model_quartic_as_elliptic_curve(q_res[2], k0)
+search_small_EC_points(e_res, q_res[2], k0, mn, quad_xy, 5, verbose=True)
+    k 261059/143383 -> known #3: 8707481
+	k -403609/1526709 -> known #36: 2051764828361
+	k -3897274/3213249 -> known #46: 45556888578449
+	k -11234077/2329127 -> known #3: 8707481
+	k -52142666/62023713 -> known #36: 2051764828361
+	k 30163471/621029997 -> known #46: 45556888578449
+Similar to uv -29/12
+
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 28 28 1 20_000 1_000_000 10_000_000; date
+Trying mn 28/8907, quad_xy (4437356/7301145, 808472/2433715)
+hits: v 0, u 166, big 0, known 0
+elapsed: 1:27:08.009034
+
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 32 32 1 20_000 1_000_000 10_000_000; date
+Trying mn 17829/32, quad_xy (-1950290/2953383, 115772/984461)
+hits: v 0, u 289, big 0, known 0
+elapsed: 3:08:59.373094
+
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 36 36 1 20_000 1_000_000 10_000_000; date
+Trying mn -36/11665, quad_xy (350569/2688494, 1248125/2688494)
+hits: v 1, u 207, big 0, known 0
+elapsed: 1:34:20.094509
+
+48 had 455 uv hits
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 48 48 1 20_000 1_000_000 10_000_000 5; date
+Trying mn 48/16415, quad_xy (398533/1665594, 101747/185066)
+hits: v 0, u 402, big 0, known 0
+elapsed: 4:07:07.012324
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 52 52 1 20_000 1_000_000 10_000_000; date
+Trying mn -52/19385, quad_xy (1362387/3053242, 4984915/9159726)
+hits: v 0, u 191, big 0, known 0
+elapsed: 1:40:59.427093
+
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 60 60 1 20_000 1_000_000 10_000_000; date
+Trying mn 60/19979, quad_xy (151933/952202, 463885/952202)
+hits: v 1, u 520, big 0, known 0
+elapsed: 3:57:14.027949
+
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 72 72 1 20_000 1_000_000 10_000_000; date
+Trying mn -41/72, quad_xy (98/303, 48/101)
+	2501322/200831 -> known #16: 1259768473
+Trying mn -72/19285, quad_xy (20881/38858, 17689/38858)
+hits: v 0, u 408, big 0, known 1
+knowns 1: [16]
+elapsed: 3:47:22.857073
+Investigate
+mn = QQ(-41)/72
+quad_xy = (QQ(98)/303, QQ(48)/101)
+k0 = QQ(2501322)/200831
+q_res = make_quartic(mn, quad_xy)
+e_res = model_quartic_as_elliptic_curve(q_res[2], k0)
+search_small_EC_points(e_res, q_res[2], k0, mn, quad_xy, 5, verbose=True)
+	k -1728117/667183 -> known #26: 46055390617
+	k 2501322/200831 -> known #16: 1259768473
+	k 47056671/2816653 -> known #26: 46055390617
+	k -899660958/382130117 -> known #16: 1259768473
+Similar to uv -41/36
+
+5/12/2026T
+Redo 40 with quad_lim=5.
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 40 40 1 20_000 1_000_000 10_000_000 5; date
+Trying mn -9/40, quad_xy (-49/318, 23/106)
+	59/81 -> known #1: 422481
+Trying mn -40/18907, quad_xy (57238/3021241, 1836116/9063723)
+hits: v 0, u 820, big 0, known 1
+knowns 1: [1]
+elapsed: 9:18:45.245734
+
+80 had 769 uv hits
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 80 80 1 20_000 1_000_000 10_000_000 5; date
+inv u -93/80 has v [-400/37, -2433/920]
+Trying mn -291/80, quad_xy (-1448/7293, 152/221)
+AssertionError k_to_abcd(-291/80, (-1448/7293, 152/221), 1292115/175762)
+Trying mn -291/80, quad_xy (371/14586, 205/442)
+AssertionError k_to_abcd(-291/80, (371/14586, 205/442), -6501/16493)
+AssertionError k_to_abcd(-291/80, (371/14586, 205/442), 193809/71767)
+Trying mn -291/80, quad_xy (4208/710017, 32516/64547)
+Trying mn -291/80, quad_xy (103771/1146054, 96429/382018)
+Trying mn -291/80, quad_xy (-368429/1146054, 253829/382018)
+inv u 553/80 has v [-33400/19537]
+Trying mn 80/18921, quad_xy (2651921/4688042, 1953671/4688042)
+hits: v 2, u 835, big 0, known 0
+elapsed: 7:57:20.473340
+
+120 had 892 uv hits
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 120 120 1 20_000 1_000_000 10_000_000 5; date
+Trying mn 19979/120, quad_xy (-151933/952202, 463885/952202)
+hits: v 0, u 1037, big 0, known 0
+elapsed: 8:13:04.625064
+
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 140 140 1 20_000 1_000_000 10_000_000 5; date
+Trying mn -140/18729, quad_xy (167681/440682, 2596089/4500298)
+hits: v 0, u 481, big 0, known 0
+elapsed: 4:31:39.432357
+
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 144 144 1 20_000 1_000_000 10_000_000 5; date
+Trying mn -19285/144, quad_xy (-20881/38858, 17689/38858)
+hits: v 0, u 365, big 0, known 0
+elapsed: 2:47:48.401717
+
+160 had 737 uv hits
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 160 160 1 20_000 1_000_000 10_000_000 5; date
+Trying mn -93/160, quad_xy (-985/14274, 3805/4758)
+	-11487/2225 -> known #4: 12197457
+Trying mn 553/160, quad_xy (-209395/1117662, 905/37674)
+	1141603/539493 -> known #21: 5179020201
+Trying mn 18921/160, quad_xy (-2651921/4688042, 1953671/4688042)
+hits: v 0, u 842, big 0, known 2
+knowns 2: [4, 21]
+elapsed: 6:47:29.791375
+Investigate #4 
+mn = QQ(-93)/160
+quad_xy = QQ(-985)/14274, QQ(3805)/4758
+k0 = QQ(-11487)/2225
+q_res = make_quartic(mn, quad_xy)
+e_res = model_quartic_as_elliptic_curve(q_res[2], k0)
+search_small_EC_points(e_res, q_res[2], k0, mn, quad_xy, 5, verbose=True)
+	k -11487/2225 -> known #4: 12197457
+	k 486077/7920947 -> known #18: 1787882337
+	k -23163867/2702092 -> known #18: 1787882337
+	k -74532903/225289705 -> known #4: 12197457
+Similar to -93/80
+Investigate #21
+mn = QQ(553)/160
+quad_xy = QQ(-209395)/1117662, QQ(905)/37674
+k0 = QQ(1141603)/539493
+q_res = make_quartic(mn, quad_xy)
+e_res = model_quartic_as_elliptic_curve(q_res[2], k0)
+search_small_EC_points(e_res, q_res[2], k0, mn, quad_xy, 5, verbose=True)
+	k 1141603/539493 -> known #21: 5179020201
+	k -3881634697/2077964817 -> known #21: 5179020201
+Similar to 553/80
+
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 168 168 1 20_000 1_000_000 10_000_000 5; date
+Trying mn 168/17285, quad_xy (623994/934379, 104160/934379)
+hits: v 0, u 437, big 0, known 0
+elapsed: 3:40:34.821828
+
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 180 180 1 20_000 1_000_000 10_000_000 5; date
+Trying mn -180/19727, quad_xy (3613597/5657334, 384379/1885778)
+hits: v 0, u 549, big 0, known 0
+elapsed: 4:20:42.753327
+
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 260 260 1 20_000 1_000_000 10_000_000 5; date
+Trying mn -260/18851, quad_xy (358135/1601934, 2713925/4805802)
+hits: v 0, u 529, big 0, known 0
+elapsed: 3:56:08.250079
+
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 264 264 1 20_000 1_000_000 10_000_000 5; date
+Trying mn -19825/264, quad_xy (-456193/2305202, 1240241/2305202)
+hits: v 0, u 390, big 0, known 0
+elapsed: 3:25:16.760966
+
+---------
+investigate mn patterns with similar uv solutions:
+mn -> uv
+201/8 -> 201/4
+-5/16 -> -5/8
+-29/24 -> -29/12
+-9/40 -> -9/20
+-41/72 -> -41/36
+Did not run uv -5/44, 56/-165, 233/60
+-93/160 -> -93/80
+553/160 -> 553/80
+Did not run uv -125/92, 1865/132, 136/-133
+
+Investigate half of u inverted; e.g 201/4 -> 2/201, -9/20 -> 10/-9
+The hope is that these simpler u may reveal more solutions.
+
+2/201, 4/-5, 6/-29 failed with None immediately
+time python -um modular.solutions_modular get_quartic_pts 10/-9 10_000_000
+[] cpu 1:44:05.81 total
+time python -um modular.solutions_modular get_quartic_pts 18/41 10_000_000
+[] cpu 19:08.28 total
+time python -um modular.solutions_modular get_quartic_pts 22/-5 10_000_000
+[] cpu 14:58.23 total
+28/-165 
+time python -um modular.solutions_modular get_quartic_pts 30/233 10_000_000
+[] cpu 21:32.37 total
+time python -um modular.solutions_modular get_quartic_pts 40/-93 10_000_000
+[] cpu 27:26.97 total
+40/553, 46/-125 failed with None immediately
+time python -um modular.solutions_modular get_quartic_pts 66/1865 10_000_000
+[] cpu 1:21:06.15 total
+time python -um modular.solutions_modular get_quartic_pts -133/68 10_000_000
+[] cpu 44:22.09 total
+---------
+
+5/13/2026W
+200 had 643 uv hits
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 200 200 1 20_000 1_000_000 10_000_000 5; date
+Trying mn -200/37, quad_xy (-4277/10418, 18413/31254)
+	18940/38337 -> known #18: 1787882337
+Trying mn 18831/200, quad_xy (-2141341/4760074, 2565485/4760074)
+hits: v 2, u 816, big 0, known 1
+knowns 1: [18]
+elapsed: 8:17:32.634778
+Investigate #18
+mn = QQ(200)/-37
+quad_xy = (QQ(-4277)/10418, QQ(18413)/31254)
+k0 = QQ(18940)/38337
+q_res = make_quartic(mn, quad_xy)
+e_res = model_quartic_as_elliptic_curve(q_res[2], k0)
+search_small_EC_points(e_res, q_res[2], k0, mn, quad_xy, 5, verbose=True)
+Restrict to 4 k with height < 10000000000
+	k 18940/38337 -> known #18: 1787882337
+	k -163660/5668707 -> known #4: 12197457
+	k -355465363/94740639 -> known #4: 12197457
+	k -908186393/100151229 -> known #18: 1787882337
+Similar to -93/80 and 400/-37
+
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 280 280 1 20_000 1_000_000 10_000_000 5; date
+Trying mn -280/19157, quad_xy (254795/2989782, 3772255/8969346)
+hits: v 0, u 948, big 0, known 0
+elapsed: 8:28:07.726735
+
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 300 300 1 20_000 1_000_000 10_000_000 5; date
+Trying mn 300/19729, quad_xy (33409/818418, 58747/272806)
+hits: v 0, u 504, big 0, known 0
+elapsed: 3:38:11.298723
+
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 312 312 1 20_000 1_000_000 10_000_000 5; date
+Trying mn -17027/312, quad_xy (-1431732/3155989, 1707840/3155989)
+hits: v 0, u 466, big 0, known 0
+elapsed: 3:28:47.665895
+
+320 had 665 uv hits
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 320 320 1 20_000 1_000_000 10_000_000 5; date
+Trying mn 17601/320, quad_xy (-4564898/6780071, 211852/6780071)
+hits: v 1, u 819, big 0, known 0
+elapsed: 6:13:25.133254
+
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 336 336 1 20_000 1_000_000 10_000_000 5; date
+Trying mn 17285/336, quad_xy (-447137/1868758, 1009171/1868758)
+hits: v 0, u 428, big 0, known 0
+elapsed: 3:19:43.130483
+
+360 had 887 uv hits
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 360 360 1 20_000 1_000_000 10_000_000 5; date
+Trying mn -19727/360, quad_xy (-1504117/5657334, 1087539/1885778)
+hits: v 0, u 1090, big 0, known 0
+elapsed: 7:38:02.916085
+
+400 had 651 uv hits
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 400 400 1 20_000 1_000_000 10_000_000 5; date
+Trying mn -17721/400, quad_xy (-4396666/6703491, 146496/2234497)
+hits: v 2, u 803, big 0, known 0
+elapsed: 5:58:32.294826
+
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 408 408 1 20_000 1_000_000 10_000_000 5; date
+Trying mn 408/19355, quad_xy (522343/1163522, 1923701/3613042)
+hits: v 0, u 355, big 0, known 0
+elapsed: 2:21:48.494696
+
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 416 416  1 20_000 1_000_000 10_000_000 5; date
+Trying mn -18185/416, quad_xy (-390929/594574, 144355/5351166)
+hits: v 0, u 380, big 0, known 0
+elapsed: 2:54:35.072160
+
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 420 420 1 20_000 1_000_000 10_000_000 5; date
+Trying mn -420/19717, quad_xy (119994/8342393, 594804/2238203)
+hits: v 0, u 599, big 0, known 0
+elapsed: 4:02:34.121805
+
+440 had 903 uv hits
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 440 440 1 20_000 1_000_000 10_000_000 5; date
+Trying mn 440/19563, quad_xy (485885/3665862, 167975/407318)
+hits: v 0, u 876, big 0, known 0
+elapsed: 6:38:14.548874
+
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 456 456 1 20_000 1_000_000 10_000_000 5; date
+Trying mn 19075/456, quad_xy (-672581/2458774, 1359127/2458774)
+hits: v 0, u 423, big 0, known 0
+elapsed: 2:40:02.687114
+
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 460 460 1 20_000 1_000_000 10_000_000 5; date
+Trying mn -460/19957, quad_xy (-23668/3207427, 1698268/9622281)
+hits: v 0, u 395, big 0, known 0
+elapsed: 3:01:28.040068
+
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 464 464 1 20_000 1_000_000 10_000_000 5; date
+Trying mn 464/19587, quad_xy (4192208/6824325, 780936/2274775)
+hits: v 0, u 309, big 0, known 0
+elapsed: 2:19:10.167111
+
+504 had 529 uv hits
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 504 504 1 20_000 1_000_000 10_000_000 5; date
+Trying mn -504/19195, quad_xy (142781/7750146, 766775/2583382)
+hits: v 0, u 420, big 0, known 0
+elapsed: 3:09:38.916444
+
+528 had 526 uv hits
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 528 528 1 20_000 1_000_000 10_000_000 5; date
+Trying mn -14785/528, quad_xy (-3925273/7680798, 138105/284474)
+hits: v 0, u 395, big 0, known 0
+elapsed: 3:02:49.312835
+
+540 had 527 uv hits
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 540 540 1 20_000 1_000_000 10_000_000 5; date
+Trying mn 540/15187, quad_xy (12452/331077, 892/110359)
+hits: v 1, u 517, big 0, known 0
+elapsed: 3:25:31.979806
+
+5/14/2026R
+480 had 1119 uv hits
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 480 480 1 20_000 1_000_000 10_000_000 5; date
+Trying mn -480/19991, quad_xy (-118003/6413494, 646847/6413494)
+hits: v 0, u 1094, big 0, known 0
+elapsed: 7:50:23.662027
+
+520 had 1030 uv hits
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 520 520 1 20_000 1_000_000 10_000_000 5; date
+Trying mn -18851/520, quad_xy (-358135/1601934, 2713925/4805802)
+hits: v 0, u 1028, big 0, known 0
+elapsed: 7:13:06.834808
+
+560 had 964 uv hits
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 560 560 1 20_000 1_000_000 10_000_000 5; date
+Trying mn -19157/560, quad_xy (-254795/2989782, 3772255/8969346)
+hits: v 0, u 945, big 0, known 0
+elapsed: 7:38:40.498167
+
+572 had 242 uv hits
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 572 572  1 20_000 1_000_000 10_000_000 5; date
+Trying mn -572/13295, quad_xy (-273038/7637677, 6500/63471)
+hits: v 0, u 189, big 0, known 0
+elapsed: 1:18:00.423465
+
+576 had 492 hits and new
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 576 576 1 20_000 1_000_000 10_000_000 5; date
+Trying mn -576/18095, quad_xy (322474/685919, 363440/685919)
+hits: v 0, u 371, big 0, known 0
+elapsed: 2:41:29.886217
+
+580 had 429 uv hits
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 580 580 1 20_000 1_000_000 10_000_000 5; date
+Trying mn 580/18759, quad_xy (583476/5797577, 1930776/5797577)
+hits: v 0, u 418, big 0, known 0
+elapsed: 3:10:07.391502
+
+600 had 1034 uv hits
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 600 600 1 20_000 1_000_000 10_000_000 5; date
+Trying mn 19729/600, quad_xy (-157292/409209, 76236/136403)
+hits: v 0, u 1007, big 0, known 0
+elapsed: 6:18:47.211004
+
+620 had 421 uv hits
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 620 620 1 20_000 1_000_000 10_000_000 5; date
+Trying mn 620/19299, quad_xy (4453422/6443647, 285756/6443647)
+hits: v 0, u 415, big 0, known 0
+elapsed: 2:57:46.982249
+
+624 had 578 uv hits
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 624 624 1 20_000 1_000_000 10_000_000 5; date
+Trying mn 624/16585, quad_xy (1286049/8606326, 3462387/8606326)
+hits: v 0, u 459, big 0, known 0
+elapsed: 3:11:01.706420
+
+640 had 844 uv hits
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 640 640 1 20_000 1_000_000 10_000_000 5; date
+Trying mn -1041/640, quad_xy (-987922/2254587, 282912/751529)
+	-1247335/227379 -> known #1: 422481
+Trying mn 15897/640, quad_xy (-1579497/7885942, 3909819/7885942)
+hits: v 0, u 827, big 0, known 1
+Investigate #1
+mn = QQ(-1041)/640
+quad_xy = (QQ(-987922)/2254587, QQ(282912)/751529)
+k0 = QQ(-1247335)/227379
+q_res = make_quartic(mn, quad_xy)
+e_res = model_quartic_as_elliptic_curve(q_res[2], k0)
+search_small_EC_points(e_res, q_res[2], k0, mn, quad_xy, 5, verbose=True)
+Restrict to 4 k with height < 10000000000
+	k -1247335/227379 -> known #1: 422481
+	k -4337564/5060543 -> known #17: 1679142729
+	k -20491196/64752337 -> known #17: 1679142729
+	k 3745647769/2066192973 -> known #1: 422481
+Similar to -1041/320
+
+660 had 557 uv hits
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 660 660 1 20_000 1_000_000 10_000_000 5; date
+Trying mn 660/17123, quad_xy (3204020/6345441, 1037360/2115147)
+hits: v 1, u 546, big 0, known 0
+elapsed: 3:26:16.094084
+
+672 had 542 uv hits
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 672 672 1 20_000 1_000_000 10_000_000 5; date
+Trying mn -672/16675, quad_xy (368042/3261763, 1670396/3261763)
+hits: v 0, u 411, big 0, known 0
+elapsed: 2:50:01.890112
+
+680 had 761 uv hits
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 680 680 1 20_000 1_000_000 10_000_000 5; date
+Trying mn -680/19131, quad_xy (770802/1912147, 1114116/1912147)
+hits: v 0, u 744, big 0, known 0
+elapsed: 5:10:25.568402
+
+696 had 495 uv hits
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 696 696 1 20_000 1_000_000 10_000_000 5; date
+Trying mn 18275/696, quad_xy (-3513868/6878609, 3362752/6878609)
+hits: v 0, u 391, big 0, known 0
+elapsed: 2:49:10.706656
+
+720 had 1082 uv hits
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 720 720 1 20_000 1_000_000 10_000_000 5; date
+Trying mn 17359/720, quad_xy (-22541/393726, 33091/131242)
+hits: v 0, u 1060, big 0, known 0
+elapsed: 6:03:52.528237
+
+728 had 495 uv hits
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 728 728 1 20_000 1_000_000 10_000_000 5; date
+Trying mn 19155/728, quad_xy (-109694/1789479, 161980/596493)
+hits: v 0, u 378, big 0, known 0
+elapsed: 2:58:42.001886
+
+740 had 430 uv hits
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 740 740 1 20_000 1_000_000 10_000_000 5; date
+Trying mn -740/19889, quad_xy (1156011/3101366, 5563231/9304098)
+hits: v 0, u 418, big 0, known 0
+elapsed: 2:28:03.379055
+
+744 had 497 uv hits
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 744 744 1 20_000 1_000_000 10_000_000 5; date
+Trying mn 17743/744, quad_xy (-1702213/3164790, 486339/1054930)
+hits: v 0, u 392, big 0, known 0
+elapsed: 2:18:01.094568
+
+760 had 824 uv hits
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 760 760 1 20_000 1_000_000 10_000_000 5; date
+Trying mn -19647/760, quad_xy (-376454/1620563, 934216/1620563)
+hits: v 0, u 806, big 0, known 0
+elapsed: 5:17:28.361161
+
+780 had 648 uv hits
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 780 780 1 20_000 1_000_000 10_000_000 5; date
+Trying mn 780/19673, quad_xy (2977721/4345026, 217341/1448342)
+hits: v 0, u 648, big 0, known 0
+elapsed: 3:46:10.155683
+
+792 had 477 uv hits
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 792 792 1 20_000 1_000_000 10_000_000 5; date
+Trying mn 16385/792, quad_xy (-1785812/2891437, 973600/2891437)
+hits: v 0, u 369, big 0, known 0
+elapsed: 2:31:39.180455
+
+800 had 816 uv hits
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 800 800 1 20_000 1_000_000 10_000_000 5; date
+Trying mn 800/19833, quad_xy (570801/1183246, 597333/1183246)
+hits: v 0, u 802, big 0, known 0
+elapsed: 4:44:20.422758
+
+832 had 454 uv hits
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 832 832 1 20_000 1_000_000 10_000_000 5; date
+Trying mn 832/14931, quad_xy (3967349/7348434, 1123521/2449478)
+hits: v 0, u 354, big 0, known 0
+elapsed: 1:55:55.483634
+
+5/15/2026F
+840 had 1145 uv hits
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 840 840 1 20_000 1_000_000 10_000_000 5; date
+Trying mn -19717/840, quad_xy (-119994/8342393, 594804/2238203)
+hits: u 1127, big 0, known 0
+elapsed: 6:07:52.289069
+
+I'm beginning to think the mn_y2t2 is as important for discovery as uv,
+and it's not much slower, so go back and do more of the small mn.
+Also Tomita is searching for higher v_num, so increase d mult to 10,5,3 .
+Also increase quad_h to 100_000_000 .
+
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 56 56 1 20_000 1_000_000 10_000_000 5; date
+Trying mn -56/19395, quad_xy (85653/136318, 35775/136318)
+hits: u 324, big 0, known 0
+elapsed: 2:17:27.283620
+
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 64 64 1 20_000 1_000_000 10_000_000 5; date
+Trying mn 16405/64, quad_xy (-2040934/3328597, 3163868/9985791)
+hits: u 313, big 0, known 0
+elapsed: 2:35:06.168915
+
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 68 68 1 20_000 1_000_000 10_000_000 5; date
+Trying mn -68/133, quad_xy (1451/5590, 11263/16770)
+	-14243/492 -> known #5: 16003017
+Trying mn -68/14505, quad_xy (169534/7471291, 1723108/7471291)
+hits: u 121, big 0, known 1
+elapsed: 0:41:58.877346
+Investigate #5
+mn = QQ(-68)/133
+quad_xy = QQ(1451)/5590, QQ(11263)/16770
+k0 = QQ(-14243)/492
+q_res = make_quartic(mn, quad_xy)
+e_res = model_quartic_as_elliptic_curve(q_res[2], k0)
+search_small_EC_points(e_res, q_res[2], k0, mn, quad_xy, 5, verbose=True)
+	k -14243/492 -> known #5: 16003017
+	k 950701/88476 -> known #12: 156646737
+	k -11936357/11531883 -> known #12: 156646737
+	k -993277639/484534761 -> known #5: 16003017
+Similar to 136/-133
+
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 76 76 1 20_000 1_000_000 100_000_000 5; date
+Trying mn -76/19815, quad_xy (10589253/17447054, 5654943/17447054)
+hits: u 154, big 0, known 0
+elapsed: 3:55:06.112278
+
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 84 84 1 20_000 1_000_000 100_000_000 5; date
+Trying mn 84/18955, quad_xy (4754989/18304022, 10200961/18304022)
+hits: u 220, big 0, known 0
+elapsed: 5:37:51.600496
+
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 88 88 1 20_000 1_000_000 100_000_000 5; date
+Trying mn 18795/88, quad_xy (-32331054/72529811, 39355848/72529811)
+hits: u 323, big 0, known 0
+elapsed: 8:19:32.509543
+
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 92 92 1 20_000 1_000_000 100_000_000 5; date
+Trying mn -92/19135, quad_xy (17673330/27605017, 1588600/7528641)
+hits: u 144, big 0, known 0
+elapsed: 3:29:19.893570
+
+5/16/2026Sa
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 96 96 1 20_000 1_000_000 100_000_000 5; date
+Trying mn 19565/96, quad_xy (-25808770/77715647, 44682820/77715647)
+hits: u 365, big 0, known 0
+elapsed: 9:17:08.229624
+
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 100 100 1 20_000 1_000_000 100_000_000 5; date
+Trying mn 100/18831, quad_xy (2141341/4760074, 2565485/4760074)
+hits: u 415, big 0, known 0
+elapsed: 9:12:12.225832
+
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 104 104 1 20_000 1_000_000 100_000_000 5; date
+Trying mn 19945/104, quad_xy (-8561/2971714, 2241649/98066562)
+hits: u 374, big 0, known 0
+
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 108 108 1 20_000 1_000_000 100_000_000 5; date
+Trying mn 108/18689, quad_xy (543953/3139234, 1557841/3139234)
+hits: u 174, big 0, known 0
+elapsed: 4:38:00.452870
+
+----------
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 112 112 1 20_000 1_000_000 100_000_000 5; date
+...
+Trying mn -112/75, quad_xy (-2371/8006, 5473/8006)
+Trying mn -112/285, quad_xy (921/2254, 813/2254)
+...
+Trying mn 112/18965, quad_xy (5885299/23806322, 39253963/71418966)
+hits: u 320, big 0, known 0
+elapsed: 6:38:18.712093
+
+Why doesn't mn 112/-165 even try to find uvd 546/-165 ?
+>>> mn = QQ(112)/-165
+>>> check_yt(mn)
+False
+so that's why it didn't try. Even so, keep going
+>>> qp = u_to_quartic(mn.inverse())
+>>> check_quartic(qp)
+13
+>>> check_quartic(-qp)
+13
+and furthermore, the quartic for the inverse fails. Even so, keep going
+>>> quad_pairs = get_optimized_rational_points(mn, 5)
+Error: no solution found (local obstruction at 13)
+
+find_uvD_pts finds
+u -56/165, v -383021/380940 -> D 997084931509393/1975381798005000, w 210241305/52130512
+	known #34: 1367141947873
+	known #70: 228746036963039501833
+hits: u 2, D 1, big 0, known 2
+
+Verify that since uv -5/8 pairs with many, that mn finds 8/-5
+Trying mn -8/5, quad_xy (-5/14, 25/42)
+	-36719/2346 -> known #13: 589845921
+
+But mn miss -165/56 ? 
+Trying mn 165/56, quad_xy (-340921/567018, 1337/3706)
+Trying mn 165/56, quad_xy (-432721/567018, 737/3706)
+Trying mn 165/56, quad_xy (-329417/1197038, 737/3706)
+Trying mn 165/56, quad_xy (-3902465/5758614, 35455/112914)
+Trying mn 165/56, quad_xy (-5235316/7103421, 193760/789269)
+Trying mn -165/56, quad_xy (-614/20631, 4184/6877)
+Trying mn -165/56, quad_xy (-22657/41262, 1225/13754)
+Trying mn -165/56, quad_xy (-64369/129766, 50413/129766)
+Trying mn -165/56, quad_xy (52879/418094, 68683/418094)
+Trying mn -165/56, quad_xy (-315929/1008462, 227697/336154)
+>>> mn = QQ(-165)/56
+>>> quad_pairs = get_optimized_rational_points(mn, result_limit=10)
+>>> quad_pairs[4:]
+[(-315929/1008462, 227697/336154),
+ (-1400905/16038222, 3561855/5346074), 
+ (-11746390/22386751, 6199040/22386751), 
+ (1295799/22669766, 10265355/22669766), 
+ (3596132/30344613, 2251440/10114871), 
+ (2701290/45633679, 20428680/45633679)]
+>>> q_res = make_quartic(mn, quad_pairs[5])
+>>> pts = get_quartic_pts(mn, 1_000_000, q_res[2])
+Tried 6,7,8,9, but no pts.
+Also rerun 0 with 10_000_000, but no pts.
+
+So, it just didn't find a parallel solution in mn space.
+----------
+
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 116 116 1 20_000 1_000_000 100_000_000 5; date
+Trying mn 116/19629, quad_xy (36691316/54839733, 20420/309829)
+hits: u 166, big 0, known 0
+elapsed: 3:38:56.218064
+
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 124 124 1 20_000 1_000_000 100_000_000 5; date
+Trying mn -124/18865, quad_xy (-174310/31055093, 3979820/93165279)
+hits: u 152, big 0, known 0
+elapsed: 2:57:51.626648
+
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 128 128 1 20_000 1_000_000 100_000_000 5; date
+Trying mn 19391/128, quad_xy (-4672843/8125794, 9754435/24377382)
+hits: u 312, big 0, known 0
+elapsed: 5:51:51.032957
+
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 132 132 1 20_000 1_000_000 100_000_000 5; date
+Trying mn -132/19825, quad_xy (456193/2305202, 1240241/2305202)
+hits: u 194, big 0, known 1
+knowns 1: [3]
+elapsed: 4:30:30.754474
+
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 136 136 1 20_000 1_000_000 100_000_000 5; date
+Trying mn -133/136, quad_xy (-3442/12821, 25220/38463)
+	90883/42927 -> known #5: 16003017
+elapsed: 4:09:51.065687
+hits: u 233, big 0, known 1
+Corresponds to u 136/-133
+
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 148 148 1 20_000 1_000_000 100_000_000 5; date
+Trying mn 148/19737, quad_xy (30421358/50179259, 17138600/50179259)
+hits: u 147, big 0, known 0
+elapsed: 3:01:42.972440
+
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 152 152 1 20_000 1_000_000 100_000_000 5; date
+Trying mn -19815/152, quad_xy (-3063814/8723527, 5058284/8723527)
+hits: u 318, big 0, known 0
+elapsed: 6:46:42.686799
+
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 156 156 1 20_000 1_000_000 100_000_000 5; date
+Trying mn -156/17027, quad_xy (-182179/31559890, 2578901/31559890)
+hits: u 237, big 0, known 0
+elapsed: 4:34:51.646050
+
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 164 164 1 20_000 1_000_000 100_000_000 5; date
+Trying mn -164/19425, quad_xy (39091100/59328009, 997660/19776003)
+hits: u 130, big 0, known 0
+elapsed: 2:47:07.473316
+
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 172 172 1 20_000 1_000_000 100_000_000 5; date
+Trying mn -172/18945, quad_xy (57155894/87134399, 7577800/87134399)
+hits: u 134, big 0, known 0
+elapsed: 2:48:43.314486
+
+5/17/2026Su
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 176 176 1 20_000 1_000_000 100_000_000 5; date
+Trying mn 176/19455, quad_xy (616336/43157269, 4286672/43157269)
+hits: u 318, big 0, known 0
+elapsed: 7:55:56.768837
+
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 184 184 1 20_000 1_000_000 100_000_000 5; date
+Trying mn -19135/184, quad_xy (-17673330/27605017, 1588600/7528641)
+hits: u 304, big 0, known 0
+elapsed: 7:38:06.240608
+
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 188 188 1 20_000 1_000_000 100_000_000 5; date
+Trying mn 188/18729, quad_xy (3583633/13191438, 2438567/4397146)
+hits: u 149, big 0, known 0
+elapsed: 2:52:02.813728
+
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 192 192 1 20_000 1_000_000 100_000_000 5; date
+Trying mn 192/19795, quad_xy (1332461/54381334, 533711/3198902)
+hits: u 370, big 0, known 0
+elapsed: 8:57:29.707859
+
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 196 196 1 20_000 1_000_000 100_000_000 5; date
+Trying mn 196/17443, quad_xy (2676787/4048914, 2001835/12146742)
+hits: u 143, big 0, known 0
+elapsed: 3:47:19.360164
+
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 204 204 1 20_000 1_000_000 100_000_000 5; date
+Trying mn -204/19943, quad_xy (526621/18048758, 4980977/18048758)
+hits: u 179, big 0, known 0
+elapsed: 4:03:27.504250
+
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 208 208 1 20_000 1_000_000 100_000_000 5; date
+Trying mn 208/19989, quad_xy (23875321/35422446, 465969/11807482)
+hits: u 375, big 0, known 0
+
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 212 212 1 20_000 1_000_000 100_000_000 5; date
+Trying mn -212/19395, quad_xy (2196628/8114259, 17265544/29752283)
+hits: u 161, big 0, known 0
+elapsed: 2:53:10.622349
+
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 216 216 1 20_000 1_000_000 100_000_000 5; date
+Trying mn 216/19685, quad_xy (13680248/24133729, 10108952/24133729)
+hits: u 352, big 0, known 0
+elapsed: 8:10:38.310483
+
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 220 220 1 20_000 1_000_000 100_000_000 5; date
+Trying mn 220/19451, quad_xy (5932740/9331307, 7521800/27993921)
+hits: u 437, big 0, known 0
+elapsed: 9:41:13.479925
+
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 224 224 1 20_000 1_000_000 100_000_000 5; date
+Trying mn 18965/224, quad_xy (-7878390/11903161, 4819760/35709483)
+hits: u 314, big 0, known 0
+elapsed: 7:28:53.580123
+
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 228 228 1 20_000 1_000_000 100_000_000 5; date
+Trying mn 228/19195, quad_xy (31566693/60711814, 29129607/60711814)
+hits: u 226, big 0, known 0
+elapsed: 4:43:09.357625
+
+5/18/2026M
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 232 232 1 20_000 1_000_000 100_000_000 5; date
+Trying mn 19629/232, quad_xy (-36691316/54839733, 20420/309829)
+hits: u 334, big 0, known 0
+elapsed: 7:51:43.434332
+
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 236 236 1 20_000 1_000_000 100_000_000 5; date
+Trying mn -236/19425, quad_xy (11903228/42624533, 24888680/42624533)
+hits: u 145, big 0, known 0
+elapsed: 3:03:56.696254
+
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 244 244 1 20_000 1_000_000 100_000_000 5; date
+Trying mn 244/18275, quad_xy (16283218/25360829, 19217684/76082487)
+hits: u 145, big 0, known 0
+elapsed: 2:40:49.646439
+
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 248 248 1 20_000 1_000_000 100_000_000 5; date
+Trying mn -18865/248, quad_xy (174310/31055093, 3979820/93165279)
+hits: u 298, big 0, known 0
+elapsed: 5:53:30.806818
+
+DOING
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 240 240 1 20_000 1_000_000 100_000_000 5; date
+Trying mn 240/1861, quad_xy (13196149/22790106, 3065335/7596702)
+	-97701/698107 -> known #11: 145087793
+Investigate mn 240/1861
+	k -97701/698107 -> known #11: 145087793
+
+
+
+
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 252 252 1 20_000 1_000_000 100_000_000 5; date
+
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 256 256 1 20_000 1_000_000 100_000_000 5; date
+
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 268 268 1 20_000 1_000_000 100_000_000 5; date
+
+TODO
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts  1 20_000 1_000_000 100_000_000 5; date
+
+Try
+272
+276
+284
+288
+292
+296
+304 - 308
+316
+324 - 356
+364 - 396
+404
+412
+424 - 436
+444 - 452
+468 - 500
+etc
+
+
+------------
+How to check mn EC:
+q_res = make_quartic(mn, quad_xy)
+e_res = model_quartic_as_elliptic_curve(q_res[2], k0)
+search_small_EC_points(e_res, q_res[2], k0, mn, quad_xy, 5, verbose=True)
+
+How to check uv EC:
+v_list = find_uv_by_EC(u, v0, 5, verbose=True)
+solve_v_list(u, v_list)
+------------
+
+Example uv investigation.
+from modular.solutions_modular import *
+find_uvD_pts(4, 4, 201, 201, 1_000_000)
+v_list = find_uv_by_EC(QQ(201)/4, QQ(136)/-133, 5, verbose=True)
+solve_v_list(uQQ(201)/4, v_list)
+
+Example mn_y2t2 investigation.
+from elliptical.curves_tomita import *
+find_mn_y2t2_pts(16, 16, 5, 5, 1_000_000)
+Trying mn -5/16, quad_xy (-3/14, 1/42)
+	1151/1401 -> known #7: 20615673
+mn = QQ(-5)/16
+quad_xy = (QQ(-3)/14, QQ(1)/42)
+k0 = QQ(1151)/1401
+q_res = make_quartic(mn, quad_xy)
+e_res = model_quartic_as_elliptic_curve(q_res[2], k0)
+search_small_EC_points(e_res, q_res[2], k0, mn, quad_xy, 5, verbose=True)
+
+----------

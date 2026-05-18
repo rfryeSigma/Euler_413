@@ -584,7 +584,8 @@ def find_mn_y2t2_pts(first_m: int, last_m: int, first_n: int, last_n: int,
         step_m: int=4, max_d: int=int(1e27)) -> None | tuple:
     """ Search for mn with rational points on both y^2 and t^2 conics.
     """
-    from modular.solutions_modular import check_yt, get_quartic_pts
+    from modular.solutions_modular import check_yt, get_quartic_pts, \
+        u_to_quartic, check_quartic
     # Check input parameters for sanity.
     if 4 == step_m: 
         assert first_m % 4 == 0
@@ -599,7 +600,7 @@ def find_mn_y2t2_pts(first_m: int, last_m: int, first_n: int, last_n: int,
             for inx, val in enumerate(known.values(), start=1)}
 
     # Declare search counts
-    u_hits = v_hits = big_hits = known_hits = 0
+    u_hits = big_hits = known_hits = 0
     found_knowns = set() # indexes of known solutions found in search
     found_new = False
 
@@ -610,15 +611,10 @@ def find_mn_y2t2_pts(first_m: int, last_m: int, first_n: int, last_n: int,
             if gcd(n, m) != 1: continue
             uQ = QQ(m) / n
             for mn in (uQ, -uQ, uQ.inverse(), -uQ.inverse()):
-                # Quadratics for y^2 and t^2 on must be solvable
+                # Quadratics for y^2 and t^2 and quartic on inverse must be solvable
                 if not check_yt(mn): continue
-                pts = get_quartic_pts(mn.inverse())
-                if pts is None: continue # u inverse quartic must be solvable
-                if 0 < len(pts):
-                    vs = sorted([v for v, D in pts if 0 < D])
-                    print(f'inv u {mn.inverse()} has v {vs}')
-                    v_hits += 1
-                    continue # No need to search
+                qp = u_to_quartic(mn.inverse())
+                if 0 != check_quartic(qp) and 0 != check_quartic(-qp): continue
                 # Inverse solvable but solution not known, so mn a candidate.
                 #print(f'Trying mn {mn}', flush=True)
                 u_hits += 1
@@ -631,8 +627,6 @@ def find_mn_y2t2_pts(first_m: int, last_m: int, first_n: int, last_n: int,
                     quad_xy = (QQ(pair[0]), QQ(pair[1]))
                     q_res = make_quartic(mn, quad_xy)
                     print(f'Trying mn {mn}, quad_xy {quad_xy}', flush=True)
-                    if 2 != len(q_res[2].real_roots()):
-                        print(f'has {len(q_res[2].real_roots())} real roots')
                     pts = get_quartic_pts(mn, max_pt, q_res[2], verbose=False)
                     if pts is None: continue # D2 not solvable
                     if 0 == len(pts): continue # Failed to find quartic point
@@ -667,7 +661,7 @@ def find_mn_y2t2_pts(first_m: int, last_m: int, first_n: int, last_n: int,
 
     # Report results and return if found new solution.
     elapsed = datetime.now() - start
-    print(f'hits: v {v_hits}, u {u_hits}, big {big_hits}, known {known_hits}')
+    print(f'hits: u {u_hits}, big {big_hits}, known {known_hits}')
     if 0 < known_hits: 
         print(f'knowns {len(found_knowns)}: {sorted(found_knowns)}')
     print(f'elapsed: {elapsed}', flush=True)
