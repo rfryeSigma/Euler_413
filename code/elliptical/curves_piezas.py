@@ -30,7 +30,7 @@ conductor must be < 300_000 .
 """
 
 """
-What does discriminant() tll me?
+What does discriminant() tell me?
 $\Delta < 0$: The curve has only one component. 
 This is a single infinite curve. 
 This happens when the underlying cubic has only one real root and two complex ones.

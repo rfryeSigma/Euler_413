@@ -124,12 +124,27 @@ is_locally_solvable(QQ(9/20))
 False
 """
 
-def check_solvability(D, delta):
+def check_quadratic(D, delta):
     """ Check the Hilbert symbol on equation X^2 - Dy^2 - delta*z^2 = 0
     at infinite prime (Real Solvability)
     and at 2 and odd primes dividing coeffs
     """
     return hilbert_symbol(D, delta, -1) == 1 == hilbert_symbol(D, delta, 2)
+
+def check_yt(mn: Rational) -> bool:
+    """ Return whether both y^2 and t^2 are solvable and have a point
+    """
+    y2_coeffs, t2_coeffs = mn_to_xyt_conics(mn)
+    for a0, a, b, c in (t2_coeffs, y2_coeffs):
+        D = 4 * a * a0
+        delta = b**2 - 4 * a * c
+        if not check_quadratic(D, delta):
+            return False
+        Q = DiagonalQuadraticForm(QQ, [1, -D, -delta])
+        try: # find a rational point (X, V, Z)
+            point = Q.solve()
+        except Exception as e: return False
+    return True
 
 def find_point_instantly(mn: Rational) -> tuple:
     """ Find base point by Gauss-Legendre. Check both t^2 and y^2,
@@ -183,6 +198,7 @@ find_point_instantly(QQ(20/-9))
 so only 20/-9 has no local obstruction to both t^2 and y^2.
 """
 
+# obsolete
 def find_points_by_substitution(mn: Rational, limit: int=200, 
                                 first_d: int=1) -> list:
     a0, a, b, c = mn_to_xyt_conics(mn)[0]
@@ -190,7 +206,7 @@ def find_points_by_substitution(mn: Rational, limit: int=200,
     # Y^2 = D*v^2 + delta
     D = 4 * a * a0
     delta = b**2 - 4 * a * c
-    if not check_solvability(D, delta):
+    if not check_quadratic(D, delta):
         print(f'{mn} not locally solvable')
         return None 
 
@@ -216,6 +232,7 @@ python -m elliptical.solutions_curves find_points_by_substitution -20/9 107
 [(-73039/144266, -23/106), (49/318, -23/106), (-73039/144266, 23/106), (49/318, 23/106)]
 """
 
+# obsolete
 def get_optimized_rational_points(mn: Rational, batch_size: int=200, 
                     slope_limit: int=20, result_limit: int=5) -> list:
     """ Get small points sorted by height from base, substitution, slopes.
@@ -276,6 +293,47 @@ time python -m elliptical.solutions_curves get_optimized_rational_points -20/9
 cpu 47.900 total
 """
 
+def get_rational_points(mn: Rational, max_pt: int=1_000_000,
+        result_limit: int=5, verbose=True,
+        d_list: tuple=(100_000, 1_000_000, 10_000_000,),
+        n_mult: tuple= (5, 2, 1,)) -> list:
+    """Get result_limit rational points on y2 polynomial
+    """
+    # Build y2 polynomial
+    a0, a, b, c = mn_to_xyt_conics(mn)[0]
+    R = PolynomialRing(QQ, 'k, y')
+    k, y = R.gens()
+    y2 = c/a0 + k * b/a0 + k**2 * a/a0
+    y2 = y2.univariate_polynomial()
+
+    # Collect base points by Gauss-Legendre and hyperellratpoints batches
+    base = find_point_instantly(mn)
+    if not base: return []
+    bases = [base]
+    d = 0
+    for r_inx in range(len(d_list)):
+        s = d + 1
+        if max_pt <= d: break
+        d = min(d_list[r_inx], max_pt)
+        n = n_mult[r_inx] * d
+        p = pari(y2).hyperellratpoints([n, [s, d]], 0)
+        lp = list(p)
+        batch = [(QQ(k), QQ(y)) for (k, y) in lp if 0 <= y]
+        bases.extend(batch)
+        if len(bases) > result_limit: break
+
+    # Augment the bases with x-axis reflection and collect for search
+    seeds = set()
+    for x0, y0 in bases:
+        seeds.update([(x0, y0), ((-b - 2*a*x0)/(a), y0)])
+
+    # Sort by height
+    final_points = []
+    for x0, y0 in seeds:
+        height = max(x0.height(), y0.height())
+        final_points.append((height, x0, y0))
+    return sorted(final_points)[:result_limit]
+    
 def make_quartic(mn: Rational, quad_xy: tuple):
     """ Parameterize y^2 and t^2 conic with quad point to make t^2 quartic
     """
@@ -339,7 +397,7 @@ make_quartic(QQ(20/-9), (QQ(49/318), QQ(23/106)))
  4)
 """
 
-# Faster than direct search over nz and nx in find_quartic_points
+# Old. See more robust solutions_modular.get_quartic_pts
 def find_quartic_points_hyper(quartic_poly: Polynomial_rational_flint,
             max_num: int, min_den: int, max_den: int) -> list:
     """ Use hyperellratpoints on quartic_poly to find quartic points.
@@ -353,115 +411,6 @@ def find_quartic_points_hyper(quartic_poly: Polynomial_rational_flint,
     if 0 < len(pts): return pts
     pts = pari(-poly).hyperellratpoints((max_num, (min_den, max_den)), 0)
     return pts
-
-# Obsolete because slower than find_quartic_points_hyper.
-def find_quartic_points(quartic_poly: Polynomial_rational_flint, 
-            range_s: int=1, range_e: int=1000,
-            gcd=gcd, abs=abs) -> list:
-    """ Search for rational k = nx/nz that make poly(k) or -poly(k) a square.
-    """
-    c0, c1, c2, c3, c4 = quartic_poly.list()
-    # Search rationals for square rhs
-    found = set()
-    for nz in range(range_s, range_e + 1):
-        nz2 = nz*nz
-        nz3 = nz*nz2
-        c3nz = c3*nz
-        c2nz2 = c2*nz2
-        c1nz3 = c1*nz3
-        c0nz4 = c0*nz*nz3
-        for nx in range(-range_e, range_e + 1):
-            if gcd(nx, nz) != 1: continue
-            rhs = (((c4*nx + c3nz)*nx + c2nz2)*nx + c1nz3)*nx + c0nz4
-            y2 = abs(rhs)
-            if y2.is_square():
-                p = QQ(nx/nz)
-                print(f'found {p} with rhs {rhs}')
-                rhs = quartic_poly(p)
-                y2 = abs(rhs)
-                assert y2.is_square()
-                found.add(p)
-    return sorted(found)
-"""
-q_res = make_quartic(QQ(20/-9), (QQ(49/318), QQ(23/106)))
-q_res[2]
-4858767860*k^4 - 1337905101*k^3 + 32584720500*k^2 - 48737893941*k - 89364400362
-start=time(); find_quartic_points(q_res[2], 1, 1000); elapsed=time()-start; elapsed
-found -59/81 with rhs -1493337137920714564
-[-59/81]
-5.154595851898193
-"""
-
-# Slower than find_quartic_points and finds less points
-# but keep for Chebyshev nodes and continued fraction convergents code.
-def find_quartic_points_adaptive(quartic_poly: Polynomial_rational_flint,
-            max_denom: int=10_000, n_nodes: int=100, pts_per_node: int=100,
-            abs=abs, cos=cos, pi=RR(pi))->list:
-    """
-    Find rational k that make poly(k) or -poly(k) a square.
-    Samples the interval between roots using adaptive density 
-    based on the absolute value of the polynomial's derivative.
-    """
-    coeffs = quartic_poly.list()
-    c0, c1, c2, c3, c4 = coeffs
-    roots = sorted(quartic_poly.real_roots())
-    print(f'roots {roots}')
-    assert 2 == len(roots)
-    r_min, r_max = roots
-    deriv = quartic_poly.derivative()
-    
-    # Create initial segments as Chebyshev nodes so more dense near roots
-    nodes = [0.0] * n_nodes
-    for i in range(1, n_nodes + 1):
-        # Chebyshev nodes on [-1, 1]
-        node = cos((2*i - 1) * pi / (2 * n_nodes))
-        # Map from [-1, 1] to [r_min, r_max]
-        mapped_node = 0.5 * (r_max + r_min + (r_max - r_min) * node)
-        nodes[i-1] = mapped_node
-    nodes.extend(roots)
-    nodes.sort()
-    
-    # Calculate local slope intensity
-    slopes = [abs(deriv(x)) for x in nodes]
-    total_slope = sum(slopes)
-    
-    # Distribute samples proportional to slope
-    seeds = []
-    expand = float(pts_per_node * n_nodes / total_slope)
-    for i in range(n_nodes):
-        # Number of samples in this segment
-        n_pts = max(1, int((max(slopes[i], slopes[i+1]) * expand)))
-        step = (nodes[i+1] - nodes[i]) / n_pts
-        pts = [nodes[i] + step * p for p in range(n_pts)]
-        seeds.extend(pts)
-    seeds.append(r_max)
-      
-    # Process seeds to find rational convergents
-    candidate_x = set()
-    for seed in seeds:
-        cf = continued_fraction(seed)
-        convergents = cf.convergents()
-        for x_frac in convergents:
-            if r_min <= x_frac <= r_max:
-                if x_frac.denominator() > max_denom: break
-                candidate_x.add(x_frac)
-    print(f'Testing {len(candidate_x):_} candidates from {len(seeds):_} seeds')
-    
-    # Check each candidate x for a square |poly(x)|
-    found = set()
-    for x in candidate_x:
-        nx = x.numerator()
-        nz = x.denominator()
-        rhs = (c4 * nx**4 + 
-               c3 * nx**3 * nz + 
-               c2 * nx**2 * nz**2 +
-               c1 * nx * nz**3 +
-               c0 * nz**4)
-        y2 = abs(rhs)
-        if y2.is_square():
-            print(f'found {x}')
-            found.add(x)
-    return sorted(found)
 
 def k_to_abcd(mn: Rational, quad_xy: tuple, quartic_x: Rational) -> List[Integer]:
     """ Produce solution (A,B,C,D) from (m,n); parameterized x, y; x on quartic.
@@ -519,6 +468,7 @@ r 95800/422481, s -414560/422481
 ([95800, 217519, 414560], 422481)
 """
 
+# Old. See find_mn_y2t2_pts
 def search_mn(m: int, n_s: int, n_e: int, quad_n: int=5, 
               quart_s: int=1, quart_e: int=50_000) -> set:
     """ Given m, search n over range (n_s, n_e)
@@ -537,13 +487,13 @@ def search_mn(m: int, n_s: int, n_e: int, quad_n: int=5,
             mn = QQ(mn_pair[0]) / QQ(mn_pair[1])
             if find_point_instantly(mn) == None: continue
             print(f'Trying mn {mn}')
-            quad_pairs = get_optimized_rational_points(mn, result_limit=quad_n)
-            for quad_pair in quad_pairs:
-                quad_xy = (QQ(quad_pair[0]), QQ(quad_pair[1]))
+            quad_hxy = get_rational_points(mn, result_limit=quad_n)
+            for hxy in quad_hxy:
+                quad_xy = hxy[1:]
                 q_res = make_quartic(mn, quad_xy)
                 print(f'Trying mn {mn}, quad_xy {quad_xy}')
                 assert 2 == len(q_res[2].real_roots())
-                pts = find_quartic_points(q_res[2], quart_s, quart_e)
+                pts = find_quartic_points_hyper(q_res[2], quart_s, quart_e)
                 if 0 == len(pts):
                     print(f'No quartic point for mn {mn}')
                 for pt in pts:
@@ -580,7 +530,7 @@ doesn't find anything
 """
 
 def find_mn_y2t2_pts(first_m: int, last_m: int, first_n: int, last_n: int,
-        max_pt: int=int(1e8), quad_h: int=500_000, quad_lim: int=3,
+        max_pt: int=1_000_000, quad_h: int=100_000_000, quad_lim: int=3,
         step_m: int=4, max_d: int=int(1e27)) -> None | tuple:
     """ Search for mn with rational points on both y^2 and t^2 conics.
     """
@@ -619,15 +569,15 @@ def find_mn_y2t2_pts(first_m: int, last_m: int, first_n: int, last_n: int,
                 #print(f'Trying mn {mn}', flush=True)
                 u_hits += 1
                 found_known = False
-                quad_pairs = get_optimized_rational_points(mn, 
-                                result_limit=quad_lim)
-                for pair in quad_pairs:
-                    if pair[0].height() > quad_h or pair[1].height() > quad_h:
-                        break
-                    quad_xy = (QQ(pair[0]), QQ(pair[1]))
+                quad_hxy = get_rational_points(mn, result_limit=quad_lim)
+                for hxy in quad_hxy:
+                    if hxy[0] > quad_h: break
+                    quad_xy = hxy[1:]
                     q_res = make_quartic(mn, quad_xy)
+                    if 0 != check_quartic(q_res[2]) or \
+                        0 != check_quartic(-q_res[2]): continue
                     print(f'Trying mn {mn}, quad_xy {quad_xy}', flush=True)
-                    pts = get_quartic_pts(mn, max_pt, q_res[2], verbose=False)
+                    pts = get_quartic_pts(mn, max_pt, q_res[2])
                     if pts is None: continue # D2 not solvable
                     if 0 == len(pts): continue # Failed to find quartic point
                     #set_trace()
@@ -665,7 +615,7 @@ def find_mn_y2t2_pts(first_m: int, last_m: int, first_n: int, last_n: int,
     if 0 < known_hits: 
         print(f'knowns {len(found_knowns)}: {sorted(found_knowns)}')
     print(f'elapsed: {elapsed}', flush=True)
-    if found_new: return mn, quad_xy, z0, d, (c, b, a)
+    if found_new: return mn, quad_xy, k0, d, (c, b, a)
 """
 find_mn_y2t2_pts(8, 8, 5, 5, 1_000_000)
 inv u -5/8 has v [-1617/200, -1617/200, -477/692, -477/692, 20824/2003, 20824/2003, -34272/4885, -34272/4885, 36696/8687, 36696/8687, 398113/66200, 398113/66200, -124529/68084, -124529/68084]
@@ -676,6 +626,9 @@ Searching for pts on -8/5 quartic
 hits: u 1, big 0, known 1
 knowns 1: [13]
 """
+
+
+
 
 def DEBUG(*args):
     import pdb; pdb.set_trace()

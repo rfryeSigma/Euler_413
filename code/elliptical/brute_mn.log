@@ -1,0 +1,40 @@
+This is a log of what ranges have been searched using
+elliptical/solutions_curves.py find_mn_y2t2_pts
+with get_rational_points and hyperellratpoints.
+
+It duplicates and supercedes previous searches in brute_mn_y2t2.log
+
+5/22/2026F
+
+DOING
+
+TEMPLATE
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts  1 20_000; date
+
+TODO
+4 - 1000 by 4
+
+------
+Example mn_y2t2 investigation.
+from elliptical.curves_tomita import *
+find_mn_y2t2_pts(16, 16, 5, 5, 1_000_000)
+Trying mn -5/16, quad_xy (-3/14, 1/42)
+	1151/1401 -> known #7: 20615673
+
+mn = QQ(-5)/16
+quad_xy = (QQ(-3)/14, QQ(1)/42)
+k0 = QQ(1151)/1401
+q_res = make_quartic(mn, quad_xy)
+e_res = model_quartic_as_elliptic_curve(q_res[2], k0)
+search_small_EC_points(e_res, q_res[2], k0, mn, quad_xy, 10, verbose=True)
+
+
+Example uv investigation.
+from modular.solutions_modular import *
+find_uvD_pts(4, 4, 201, 201, 1_000_000)
+
+u = QQ(201)/4
+v0 = QQ(136)/-133
+solve_v_list(uQQ(u, find_uv_by_EC(u, v0, 10, verbose=True))
+
+-------

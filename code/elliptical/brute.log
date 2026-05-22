@@ -1875,6 +1875,16 @@ date; python -um modular.solutions_modular find_uvD_pts 912 912 1 20_000 1_000_0
 hits: u 471, D 0, big 0, known 0
 elapsed: 19:34:17.346913
 
+date; python -um modular.solutions_modular find_uvD_pts 920 920 1 20_000 1_000_000; date
+Searching for pts on -2433/920 quartic
+u -2433/920, v -400/37 -> D 985189443879/579360800, w -93/80
+	known #18: 1787882337
+	known #4: 12197457
+hits: u 819, D 1, big 0, known 2
+knowns 2: [4, 18]
+elapsed: 1 day, 10:13
+All 3 uvw in solutions_uv table
+
 date; python -um modular.solutions_modular find_uvD_pts 924 924 1 20_000 1_000_000; date
 hits: u 285, D 0, big 0, known 0
 elapsed: 14:27:30.918961
@@ -1883,42 +1893,88 @@ date; python -um modular.solutions_modular find_uvD_pts 928 928 1 20_000 1_000_0
 hits: u 351, D 0, big 0, known 0
 elapsed: 10:15:34.174724
 
-DOING
-date; python -um modular.solutions_modular find_uvD_pts 920 920 1 20_000 1_000_000; date
-
 date; python -um modular.solutions_modular find_uvD_pts 936 936 1 20_000 1_000_000; date
-
-date; python -um modular.solutions_modular find_uvD_pts 940 940 1 20_000 1_000_000; date
+u -936/5281, v -125/92 -> D 514986989385/118026082952, w 1717941/427352
+	known #27: 64244765937
+	known #41: 25866132798297
+hits: u 566, D 1, big 0, known 2
+knowns 2: [27, 41]
+elapsed: 1 day, 0:05:33.736914
 
 date; python -um modular.solutions_modular find_uvD_pts 944 944 1 20_000 1_000_000; date
+hits: u 315, D 0, big 0, known 0
+elapsed: 9:48:05.614612
+
+9/19/2026T
+date; python -um modular.solutions_modular find_uvD_pts 940 940 1 20_000 1_000_000; date
+hits: u 397, D 0, big 0, known 0
+elapsed: 18:32:23.974790
+
+date; python -um modular.solutions_modular find_uvD_pts 948 948 1 20_000 1_000_000; date
+hits: u 201, D 0, big 0, known 0
+elapsed: 8:45:56.766610
+
+date; python -um modular.solutions_modular find_uvD_pts 956 956 1 20_000 1_000_000; date
+hits: u 182, D 0, big 0, known 0
+elapsed: 6:14:48.068662
+
+date; python -um modular.solutions_modular find_uvD_pts 964 964 1 20_000 1_000_000; date
+hits: u 165, D 0, big 0, known 0
+elapsed: 5:38:43.957135
+
+date; python -um modular.solutions_modular find_uvD_pts 968 968 1 20_000 1_000_000; date
+hits: u 365, D 0, big 0, known 0
+elapsed: 12:21:53.277880
+
+date; python -um modular.solutions_modular find_uvD_pts 972 972 1 20_000 1_000_000; 
+hits: u 228, D 0, big 0, known 0
+elapsed: 10:06:18.314737
+
+9/20/2026W
+date; python -um modular.solutions_modular find_uvD_pts 976 976 1 20_000 1_000_000; date
+hits: u 378, D 0, big 0, known 0
+elapsed: 12:25:30.878083
+
+date; python -um modular.solutions_modular find_uvD_pts 980 980 1 20_000 1_000_000; date
+hits: u 457, D 0, big 0, known 0
+elapsed: 21:52:33.460600
+
+date; python -um modular.solutions_modular find_uvD_pts 984 984 1 20_000 1_000_000; date
+hits: u 398, D 0, big 0, known 0
+elapsed: 15:47:32.726774
+
+date; python -um modular.solutions_modular find_uvD_pts 988 988 1 20_000 1_000_000; date
+hits: u 229, D 0, big 0, known 0
+elapsed: 8:25:57.696620
+
+date; python -um modular.solutions_modular find_uvD_pts 992 992 1 20_000 1_000_000; date
+hits: u 356, D 0, big 0, known 0
+elapsed: 11:09:51.644783
+
+5/21/2026R
+date; python -um modular.solutions_modular find_uvD_pts 960 960 1 20_000 1_000_000; date
+hits: u 991, D 0, big 0, known 0
+elapsed: 2 days, 5:01:16.021618
+
+date; python -um modular.solutions_modular find_uvD_pts 996 996 1 20_000 1_000_000; date
+hits: u 215, D 0, big 0, known 0
+elapsed: 9:48:18.465074
+
+5/22/2026F
+date; python -um modular.solutions_modular find_uvD_pts 1000 1000 1 20_000 1_000_000; date
+u 1000/47, v -9/20 -> D 495260031/441800, w -1041/320
+	known #17: 1679142729
+	known #1: 422481
+hits: u 765, D 1, big 0, known 2
+knowns 2: [1, 17]
+elapsed: 1 day, 9:35:23.232501
+
+DOING
 
 TODO
-date; python -um modular.solutions_modular find_uvD_pts 1 20_000 1_000_000; date
+date; python -um modular.solutions_modular find_uvD_pts  1 20_000 1_000_000; date
+1004
 
-u = 1865/132 Done Tito specials and mult 80 extend
-u = 1861/240 Doing Tito specials and mult 80 extend
-Done 432 432 1 3000 3_000_000, next 436 to 480
-Done mults of 80 = 16 * 5 to 400 with 20_000 1_000_000
-u = 936/-5281 Done Tito specials
-u = -1581/1520 Done Tito specials
-u = -1245/5012 Done Tito specials
-Done other mults of 16 < 500 to 20_000 1_000_000
-Done odd mults of 8 < 500 to 20_000 1_000_000
-Done odd mults of 4 < 500 to 20_000 1_000_000:
-
-mults of 4 >= 500 n 1 20_000 1_000_000:
-948
-956
-960
-964
-968
-972
-976
-980
-984
-988
-992
-996
-1000
+Finish coding scan_known_mn, and run it.
 
 ----------

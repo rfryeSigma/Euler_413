@@ -199,7 +199,7 @@ def u_to_D_to_EC(u):
     D2 = D2.univariate_polynomial()
     f = -D**2 + D2
     C = Curve(f)
-    E = Jacobian(C).short_weierstrass_model().minimal_model()
+    E = Jacobian(C).minimal_model().short_weierstrass_model()
     return E, D2
 """
 For C7

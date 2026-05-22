@@ -1,6 +1,8 @@
 The code in the elliptical sub_folder attempts to match factoring solutions 
 with Elliptical Curve solutions.
 
+brute_mn_y2t2.log -- log of progress elliptical/solutions_curves.py find_mn_y2t2_pts
+
 brute.log -- log of progress using brute.py
 
 brute.py -- do a brute force search on quartic surfaces.

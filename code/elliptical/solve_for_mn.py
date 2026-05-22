@@ -39,6 +39,44 @@ r                    | s                    | t                    | (m, n)
 2682440/20615673     | -18796760/20615673   | 15365639/20615673    | (8, -5)
 -2682440/20615673    | 18796760/20615673    | 15365639/20615673    | (2211506178056, 40143752605885)
 -2682440/20615673    | -18796760/20615673   | 15365639/20615673    | (199797104, -46747125)
+
+5/20/2026W
+I asked Gemini:
+    In Elkies 1988 paper "A^4 + B^4 + C^4 D^4", he defines
+    r^4 + s^4 + t^2 = 1
+    r = x+y, s = x-y, so x = (r + s)/2, y = (r - s)/2
+    u = (-1 +(r+s)^2 + t) / (r^2 + rs + s^2 + r + s)
+    Then he says:
+    "u -> 2/u merely replaces (r, s, t, x, y) by (-s, -r, -t, -x, y)
+    Thus we may take u of the form 2m/n with m and n relatively prime integers,
+    m > 0 and n odd, because otherwise 2/u is of that form."
+    Show me the logic of his deductions.
+It produced proofs of the relationships.
+
+I asked:
+    Tito Piezas III, in his posting to MSE on why solutions come in pairs, defines
+    u = ((r-s)^2 - t^2 -1) / (r^2 -rs + s^2 + (r-s))
+    Describe the relation of his u to Elkies 2m/n.
+Answer: u_Piezas = -u_Elkies
+
+I asked Gemini to find a direct relationship betwen the mn quartic and uv quartic.
+Answer:
+    v = (alpha k + beta) / (gamma k + delta)
+    k = (delta v - beta) / (-gamma v + alpha)
+with code outline:
+roots_k = clean_poly.roots(QQbar, multiplicities=False)
+roots_v = D2.roots(QQbar, multiplicities=False)
+
+# A fractional linear transformation is uniquely determined by 3 points.
+# Pair 3 roots from roots_k to their matching counterparts in roots_v.
+# (You may need to test permutations of the roots to find the right alignment)
+k1, k2, k3 = roots_k[0], roots_k[1], roots_k[2]
+v1, v2, v3 = roots_v[0], roots_v[1], roots_v[2] # Adjust permutation if needed
+
+# Use Sage's built-in Moebius transformation finder or solve the system:
+# (v - v1)*(v2 - v3) / ((v - v3)*(v2 - v1)) = (k - k1)*(k2 - k3) / ((k - k3)*(k2 - k1))
+We tried several iterations of doing that but failed.
+
 """
 from fractions import Fraction
 import math

@@ -203,7 +203,7 @@ def u_to_E_min_map(u, v0):
     
     E_orig = EllipticCurve([a1, a2, a3, a4, a6])
     #E_min = E_orig.minimal_model()
-    E_min = E_orig.short_weierstrass_model().minimal_model()
+    E_min = E_orig.minimal_model().short_weierstrass_model()
     iso = E_min.isomorphism_to(E_orig)
     iso_inv = E_orig.isomorphism_to(E_min)
     
@@ -329,7 +329,7 @@ def decompose_point(E, P, gens, torsion_points):
     return None, None
 
 def find_uv_by_EC(u: Rational, v0: Rational, coeff_lim: int=3,
-            v_h_lim: int=int(1e10), verbose=False) -> list:
+            v_h_lim: int=int(1e15), verbose=False) -> list:
     """ Build D2 elliptic curve. Walk the EC for small points, 
     and map back to quart points v limied by height.
     """
@@ -677,7 +677,8 @@ def get_quartic_pts(u: Rational, max_pt: int=100_000, D2=None, verbose=True,
     run_p = (0 == check_quartic(D2))
     run_m = (0 == check_quartic(-D2))
     if not run_p and not run_m: return None
-    if verbose: print(f'Searching for pts on {u} quartic')
+    flags = '+-' if run_p and run_m else '+' if run_p else '-'
+    if verbose: print(f'Searching for {flags} pts on {u} quartic')
 
     def search_range(r_inx: int, d: int) -> int|list:
         if max_pt <= d: return []
@@ -800,28 +801,28 @@ knowns 2: [5, 12]
 elapsed: 0.1065s
 """
 
-# unfinished
-def scan_known(n_known: int=8, max_h: int=100_000_000, verbose=False,
-               max_d: int=int(1e27)) -> None:
-    """For all abcd in first n_known solutions, generate 12 u.
+def scan_known_uv(known_s: int=1, known_e: int=9999, max_h: int=100_000_000, 
+            verbose=False, max_d: int=int(1e27)) -> dict:
+    """For range of known abcd solutions, generate 12 u.
     For each u with height less than max_h:
         map u -> d, E a4, a6, E conductor, paired v
             Walk E with v for solutions
-    ...
+    Report by u: #Elliptic Curves, #Conductors
+    Return u_into.
     """
     u_info = dict() # dict of info on bounded u
         # ds: list of d from abcd
         # a_46: Elliptic Curve (a4, a6) coefficients
         # conductor: EC conductor
         # vs: v found in EC
-    for val in list(known.values())[:n_known]:
+    for val in list(known.values())[known_s - 1: known_e]:
         a, b, c, d = abcd = val['abcd']
         if verbose: print(d)
         hu_s = abcd_to_h_u(abcd)
         for h, u in hu_s:
             if h > max_h: continue
             #print(u, check_elkies_rules(u))
-            assert check_yt(u.inverse()), f'No y and t for u {u}'
+            assert check_yt(u.inverse()), f'No y^2 and t^2 for u {u}'
             if verbose: print('\t', u)
             info = u_info[u] = u_info.get(u, dict())
             ds = info['ds'] = info.get('d', list())
@@ -843,7 +844,6 @@ def scan_known(n_known: int=8, max_h: int=100_000_000, verbose=False,
     #print(f'#d {len({info['ds']) for info in u_info.values()})}')
     print(f'#E {len({info['a_46'] for info in u_info.values()})}')
     print(f'#c {len({info['conductor'] for info in u_info.values()})}')
-    pass
     return u_info
     """
     python -um modular.solutions_modular scan_known 200
