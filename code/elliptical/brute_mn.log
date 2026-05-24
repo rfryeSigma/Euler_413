@@ -5,14 +5,504 @@ with get_rational_points and hyperellratpoints.
 It duplicates and supercedes previous searches in brute_mn_y2t2.log
 
 5/22/2026F
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 4 4 1 20_000; date
+Trying mn 4/201, quad_xy (2649/10354, 5529/10354)
+Searching for +- pts on 4/201 quartic
+	564093/1907 -> known #5: 16003017
+mn = QQ(4)/201
+quad_xy = (QQ(2649)/10354, QQ(5529)/10354)
+k0 = QQ(564093)/1907
+q_res = make_quartic(mn, quad_xy)
+e_res = model_quartic_as_elliptic_curve(q_res[2], k0)
+search_small_EC_points(e_res, q_res[2], k0, mn, quad_xy, 10, verbose=True)
+	k 81279/156580 -> known #5: 16003017
+	k 564093/1907 -> known #5: 16003017
+	k -1768539/202165 -> known #12: 156646737
+	k 7019927283/40404656467 -> known #12: 156646737
+	k 55578312189051/253960242094475 -> known #97: 8997319881974346759473697
+big 0, known 5
+knowns 3: [5, 12, 97]
+    Similar to uv 201/4
+Searching for - pts on -4/19343 quartic
+hits: u 153, big 0, known 
+knowns 1: [5]
+elapsed: 5:11:43.706165
+    One more hit than in old log, but 5:11 vs 1:29 
+
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 12 12 1 20_000; date
+Trying mn -12/29, quad_xy (57/142, 51/142)
+Searching for +- pts on -12/29 quartic
+	-261059/143383 -> known #3: 8707481
+Found
+	k -261059/143383 -> known #3: 8707481
+	k 403609/1526709 -> known #36: 2051764828361
+	k 3897274/3213249 -> known #46: 45556888578449
+	k 11234077/2329127 -> known #3: 8707481
+	k 52142666/62023713 -> known #36: 2051764828361
+	k -30163471/621029997 -> known #46: 45556888578449
+	k 404117881143157/127470920374207 -> big d 4.00915e+28
+	k 521309203799113/141642526623909 -> big d 1.34304e+27
+big 2, known 6
+knowns 3: [3, 36, 46]
+    Similar to uv -29/12
+Searching for + pts on -12/19495 quartic
+hits: u 177, big 0, known 1
+knowns 1: [3]
+elapsed: 7:01:01.895836
+
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 28 28 1 20_000; date
+hits: u 166, big 0, known 0
+elapsed: 5:06:28.591167
+    Same hits as in old log, but 5:06 vs 1:27
+
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 36 36 1 20_000; date
+Trying mn -36/41, quad_xy (-98/303, 48/101)
+Searching for +- pts on -36/41 quartic
+	-2501322/200831 -> known #16: 
+Found
+	k 1728117/667183 -> known #26: 46055390617
+	k -2501322/200831 -> known #16: 1259768473
+	k -47056671/2816653 -> known #26: 46055390617
+	k 899660958/382130117 -> known #16: 1259768473
+	k 401983110174/259862091301 -> known #82: 18276027741543869996617
+	k -1092199181031/171724585381 -> known #79: 11305555143522867817873
+	k 13399308030933/8069032216591 -> known #79: 11305555143522867817873
+	k -13828380830922/2392448694751 -> known #82: 18276027741543869996617
+big 0, known 8
+knowns 4: [16, 26, 79, 82]
+    Similar to uv -41/36 but #82 not in uv table
+hits: u 208, big 0, known 1
+knowns 1: [16]
+elapsed: 6:55:31.022188
+
+5/23/2026Sa
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 8 8 1 20_000; date
+Trying mn -8/5, quad_xy (-5/14, 25/42)
+Searching for + pts on -8/5 quartic
+	-36719/2346 -> known #13: 589845921
+Found
+	k 17767/5430 -> known #20: 3393603777
+	k 25561/17649 -> known #14: 638523249
+	k -36719/2346 -> known #13: 589845921
+	k 57181/25925 -> known #7: 20615673
+	k 211247/6375 -> known #7: 20615673
+	k -283183/17097 -> known #14: 638523249
+	k 509131/357629 -> known #13: 589845921
+	k -1639189/134685 -> known #37: 5062297699257
+	k 11261743/1333305 -> known #20: 3393603777
+	k 112378589/86441010 -> known #37: 5062297699257
+	k 140412871/15878561 -> known #52: 20249506709579721
+	k 377847827/123743643 -> known #54: 62940516903410601
+	k 2763838981/284685021 -> known #54: 62940516903410601
+	k 6849659659/2144025006 -> known #52: 20249506709579721
+	k 88078464583/60248498015 -> known #68: 108593344076382641697
+	k -558402489181/32639046555 -> known #68: 108593344076382641697
+	k 4443948869249/2512284847641 -> known #98: 19874054816411213708481009
+	k 15117863428079/576553787910 -> big d 1.67748e+27
+	k 31845692478939/24559378264526 -> big d 7.72094e+29
+	k 52965124173019/10445650714221 -> big d 1.76444e+28
+	k -58390391370967/1065665070753 -> known #98: 19874054816411213708481009
+	k -179154929385503/3818713201865 -> known #105: 133140691304639620846181457
+	k 381370841735621/218690838550605 -> known #105: 133140691304639620846181457
+big 3, known 20
+knowns 10: [7, 13, 14, 20, 37, 52, 54, 68, 98, 105]
+    Similar to uv -5/8, but #98 not in uv table.
+Trying mn 201/8, quad_xy (-2649/10354, 5529/10354)
+Searching for +- pts on 201/8 quartic
+	-564093/1907 -> known #5: 16003017
+Note that k -564093/1907 was on EC for 4/201, so duplicate investigation
+Note also that brute_mn_y2t2.log reports same find with larger quad_xy
+hits: u 303, big 0, known 2
+knowns 2: [5, 13]
+elapsed: 10:48:47.145383
+
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 16 16 1 20_000; date
+Trying mn -5/16, quad_xy (-3/14, 1/42)
+Searching for - pts on -5/16 quartic
+	1151/1401 -> known #7: 20615673
+Investigated in old log. Similar to uv -5/8 .
+hits: u 284, big 0, known 1
+knowns 1: [7]
+elapsed: 10:28:48.476268
+
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 20 20 1 20_000; date
+Trying mn -20/9, quad_xy (49/318, 23/106)
+Searching for +- pts on -20/9 quartic
+	-59/81 -> known #1: 422481
+Found
+	k -59/81 -> known #1: 422481
+	k 4162/2643 -> known #2: 2813001
+	k 151301/97921 -> known #1: 422481
+	k -599551/591709 -> known #23: 15434547801
+	k 832289/426669 -> known #23: 15434547801
+	k -2581958/2550495 -> known #17: 1679142729
+	k -6538883/8717495 -> known #2: 2813001
+	k 9251273/4745947 -> known #17: 1679142729
+	k 78483809/104842989 -> known #49: 573646321871961
+	k -10413631/125984029 -> known #49: 573646321871961
+	k 288471578/406365655 -> known #44: 29999857938609
+	k -36086663/753257643 -> known #44: 29999857938609
+	k 205621067081/105637378901 -> known #92: 1171867103503245199920081
+	k -252471057611/320077031649 -> known #96: 6714012701109174954871521
+	k -528700730798/748910404003 -> known #67: 101783028910511968041
+	k -1166194585099/1512532431041 -> known #87: 120175486227071990769561
+	k 1719236180957/1135003836695 -> known #67: 101783028910511968041
+	k 2346655260221/1463479095641 -> known #87: 120175486227071990769561
+	k 8459649642041/12604481529701 -> big d 1.00716e+28
+	k 23138860218877/14461403819895 -> known #99: 21291952935426564624339201
+	k -53996948727983/53293788474163 -> known #107: 227529118288906398066378489
+	k -183618554093039/181720736220301 -> known #92: 1171867103503245199920081
+	k 623933825574629/383246669937409 -> known #96: 6714012701109174954871521
+big 1, known 22
+knowns 12: [1, 2, 17, 23, 44, 49, 67, 87, 92, 96, 99, 107]
+    Similar to uv -9/20 but #67,#87,#92,#107 not in uv table
+hits: u 416, big 0, known 1
+knowns 1: [1]
+elapsed: 13:45:06.020543
+
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 24 24 1 20_000; date
+Trying mn -29/24, quad_xy (-57/142, 51/142)
+Searching for +- pts on -29/24 quartic
+	261059/143383 -> known #3: 8707481
+Note that k0 -261059/143383 was for -12/29, so duplicate investigation
+Note also that old log investigated it too.
+hits: u 390, big 0, known 1
+knowns 1: [3]
+elapsed: 13:49:05.521065
+
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 32 32 1 20_000; date
+hits: u 289, big 0, known 0
+elapsed: 10:46:12.312191
+
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 44 44 1 20_000; date
+    failed to match uv -5/44
+hits: u 167, big 0, known 0
+elapsed: 5:56:00.114918
+failed to match uv -5/44, not run in old log
+        max_pt: int=1_000_000, quad_h: int=100_000_000, quad_lim: int=3,
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 44 44 5 5 5_000_000 1_000_000_000 20; date
+hits: u 1, big 0, known 0
+elapsed: 4:20:26.404631
+    Still failed deeper search
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 48 48 1 20_000; date
+hits: u 402, big 0, known 0
+elapsed: 12:52:16.447833
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 52 52 1 20_000; date
+hits: u 191, big 0, known 0
+elapsed: 5:59:14.993917
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 56 56 1 20_000; date
+    failed to match uv 56/-165
+hits: u 324, big 0, known 0
+elapsed: 9:41:04.408601
+failed to match uv 56/-165, missed in old log too
+        max_pt: int=1_000_000, quad_h: int=100_000_000, quad_lim: int=3,
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 56 56 165 165 2_000_000 1_000_000_000 10; date
+Searching for +- pts on -165/56 quartic
+Trying mn -165/56, quad_xy (-97/1618, 1039/1618)
+Searching for +- pts on -165/56 quartic
+Trying mn -165/56, quad_xy (295/9182, 4675/9182)
+Searching for +- pts on -165/56 quartic
+Trying mn -165/56, quad_xy (410/16611, 2900/5537)
+Searching for +- pts on -165/56 quartic
+Trying mn -165/56, quad_xy (-5588/18057, 4092/6019)
+Searching for +- pts on -165/56 quartic
+Trying mn -165/56, quad_xy (-614/20631, 4184/6877)
+Searching for +- pts on -165/56 quartic
+Trying mn -165/56, quad_xy (-4006/20643, 4892/6881)
+Searching for +- pts on -165/56 quartic
+Trying mn -165/56, quad_xy (-4289/21674, 15415/21674)
+Searching for +- pts on -165/56 quartic
+Trying mn -165/56, quad_xy (-12422/22611, 636/7537)
+Searching for +- pts on -165/56 quartic
+	2019201/225211 -> known #34: 1367141947873 it needed more quad_xy AND max_pts
+	k 2019201/225211 -> known #34: 1367141947873
+	k -87357987033/4576043827 -> known #34: 1367141947873
+	k -885318940584297/26744476781197 -> known #70: 228746036963039501833
+	k 972735879192561/86163113685125 -> known #70: 228746036963039501833
+big 0, known 4
+knowns 2: [34, 70]
+hits: u 2, big 0, known 1
+knowns 1: [34]
+elapsed: 1:36:38.675433
+
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 64 64 1 20_000; date
+hits: u 313, big 0, known 0
+elapsed: 11:11:50.698388
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 68 68 1 20_000; date
+Searching for - pts on -68/133 quartic
+	-528613/41475 -> known #12: 156646737
+	k -33911/44895 -> known #5: 16003017
+	k -528613/41475 -> known #12: 156646737
+	k -8461/571461 -> known #12: 156646737
+	k -1764801439/390505689 -> known #5: 16003017
+	k -7120040532103/1277846701103 -> known #88: 409840652625395469143913
+	k -18462026010773/33730649253075 -> known #88: 409840652625395469143913
+	k -71338389553919/42257187855015 -> known #106: 174088703841632292189275073
+big 0, known 7
+knowns 4: [5, 12, 88, 106]
+    investigated in old log; similar to 136/-133, but more pts this time
+hits: u 121, big 0, known 1
+knowns 1: [12]
+elapsed: 3:15:05.718902
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 72 72 1 20_000; date
+Trying mn -41/72, quad_xy (98/303, 48/101)
+Searching for +- pts on -41/72 quartic
+	2501322/200831 -> known #16: 1259768473
+	k -1728117/667183 -> known #26: 46055390617
+	k 2501322/200831 -> known #16: 1259768473
+	k 47056671/2816653 -> known #26: 46055390617
+	k -899660958/382130117 -> known #16: 1259768473
+	k -401983110174/259862091301 -> known #82: 18276027741543869996617
+	k 1092199181031/171724585381 -> known #79: 11305555143522867817873
+	k -13399308030933/8069032216591 -> known #79: 11305555143522867817873
+	k 13828380830922/2392448694751 -> known #82: 18276027741543869996617
+big 0, known 8
+knowns 4: [16, 26, 79, 82]
+    Similar to uv -41/36, but #82 not in uv table.
+hits: u 408, big 0, known 1
+knowns 1: [16]
+elapsed: 13:49:46.384984
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 76 76 1 20_000; date
+hits: u 154, big 0, known 0
+elapsed: 4:59:30.921825
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 84 84 1 20_000; date
+hits: u 220, big 0, known 0
+elapsed: 8:11:04.415719
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 92 92 1 20_000; date
+Searching for + pts on -92/125 quartic
+	3268237/319878 -> known #27: 64244765937
+Restrict to 7 k with height < 1_000_000_000_000_000
+	k 3268237/319878 -> known #27: 64244765937
+	k 174348329/96790866 -> known #27: 64244765937
+	k 267598323/328463387 -> known #41: 25866132798297
+	k 719371556653/27218829250 -> known #66: 77107030404994920297
+	k -2263705802261/78583278381 -> known #41: 25866132798297
+	k 658473877875581/607248891439125 -> big d 3.67722e+27
+	k 940508979399787/712922135456562 -> known #66: 77107030404994920297
+big 1, known 6
+knowns 3: [27, 41, 66]
+    similar to uv -125/
+hits: u 144, big 0, known 1
+knowns 1: [27]
+elapsed: 5:17:31.286199
+
+5/24/2026Su
+date; python -um elliptical.solutions_curves find_mn_y2t2_pts 40 40 1 20_000; date
+Searching for +- pts on -9/40 quartic
+	59/81 -> known #1: 422481
+    investigated in old log
+    similar to -9/20
+old run gave
+    hits: v 0, u 820, big 0, known 1
+    knowns 1: [1]
+    elapsed: 3:57:11.122256
+AssertionError k_to_abcd(-40/291, (1448/7293, 152/221), -1292115/175762)
+AssertionError k_to_abcd(-40/291, (-371/14586, 205/442), 6501/16493)
+AssertionError k_to_abcd(-40/291, (7906/15351, 1936/5117), -30/17)
+    It turns out that the quartic point has a quadratic twist, so no solution.
+hits: u 820, big 0, known 1
+knowns 1: [1]
+elapsed: 1 day, 4:37:59.680969
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 60 60 1 20_000; date
+Trying mn 60/233, quad_xy (14276/23221, 4672/23221)
+Searching for +- pts on 60/233 quartic
+Trying mn 60/233, quad_xy (21358/27431, 4048/27431)
+Searching for +- pts on 60/233 quartic
+Trying mn 60/233, quad_xy (16222/34463, 2320/34463)
+    failed to match uv 233/60
+hits: u 522, big 0, known 0
+elapsed: 18:35:20.995605
+failed to match uv 233/60, missed in old log too
+        max_pt: int=1_000_000, quad_h: int=100_000_000, quad_lim: int=3,
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 60 60 233 233 2_000_000 1_000_000_000 10; date
+Trying mn 60/233, quad_xy (14276/23221, 4672/23221)
+Searching for +- pts on 60/233 quartic
+Trying mn 60/233, quad_xy (21358/27431, 4048/27431)
+Searching for +- pts on 60/233 quartic
+Trying mn 60/233, quad_xy (16222/34463, 2320/34463)
+Searching for +- pts on 60/233 quartic
+Trying mn 60/233, quad_xy (27390/39547, 7860/39547)
+Searching for +- pts on 60/233 quartic
+Trying mn 60/233, quad_xy (21673/46442, 2465/46442)
+Searching for +- pts on 60/233 quartic
+Trying mn 60/233, quad_xy (41540/49717, 1040/49717)
+Searching for +- pts on 60/233 quartic
+Trying mn 60/233, quad_xy (39822/50339, 6708/50339) it just needed more quad_xy
+Searching for +- pts on 60/233 quartic
+	63724/72571 -> known #22: 12558554489
+	k 63724/72571 -> known #22: 12558554489
+	k 41875456/1274305439 -> known #22: 12558554489
+	k -19073325869821/12205317531039 -> known #60: 481334894209428521
+	k -56708396224277/5347645756905 -> known #60: 481334894209428521
+	k 620530603151413/173447303897655 -> known #71: 375075545025537358721
+big 0, known 5
+knowns 3: [22, 60, 71]
+hits: u 2, big 0, known 1
+knowns 1: [22]
+elapsed: 1:24:03.008130
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 80 80 1 20_000; date
+Trying mn -80/93, quad_xy (-254/907, 536/907)
+Searching for +- pts on -80/93 quartic
+	-25236/1129 -> known #4: 12197457
+	k -25236/1129 -> known #4: 12197457
+	k 550836/283711 -> known #4: 12197457
+	k 8063601/5898475 -> known #18: 1787882337
+	k -16536838503/1900317053 -> known #18: 1787882337
+	k -50930364501447/1298472119197 -> known #81: 17503689286309573964097
+big 0, known 5
+knowns 3: [4, 18, 81]
+    similar to uv -93/80
+Trying mn -291/80, quad_xy (-1448/7293, 152/221)
+Searching for +- pts on -291/80 quartic
+AssertionError k_to_abcd(-291/80, (-1448/7293, 152/221), 1292115/175762)
+I put a try/except around k_to_abcd:
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 80 80 291 20_000; date
+Trying mn 80/553, quad_xy (8456/25167, 26908/75501)
+Searching for + pts on 80/553 quartic
+	-4379777/265710 -> known #21: 5179020201
+	k -4379777/265710 -> known #21: 5179020201
+	k 7212707/11043678 -> known #21: 5179020201
+	k -36792481/3258626649 -> known #51: 5380742305932201
+	k -184907753162827/35223107603133 -> known #91: 1088768337585323892067521
+big 0, known 4
+knowns 3: [21, 51, 91]
+    Similar to uv 553/80
+hits: u 813, big 0, known 1
+knowns 1: [21]
+elapsed: 1 day, 0:38:07.011212
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 96 96 1 20_000; date
+hits: u 365, big 0, known 0
+elapsed: 13:07:55.260984
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 100 100 1 20_000; date
+hits: u 415, big 0, known 0
+elapsed: 12:56:05.312864
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 104 104 1 20_000; date
+hits: u 374, big 0, known 0
+elapsed: 11:55:30.939929
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 108 108 1 20_000; date
+hits: u 174, big 0, known 0
+elapsed: 6:20:23.759283
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 112 112 1 20_000; date
+hits: u 320, big 0, known 0
+elapsed: 10:02:01.856188
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 116 116 1 20_000; date
+hits: u 166, big 0, known 0
+elapsed: 5:23:21.150332
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 124 124 1 20_000; date
+hits: u 152, big 0, known 0
+elapsed: 4:12:53.441064
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 128 128 1 20_000; date
+hits: u 312, big 0, known 0
+elapsed: 10:04:33.111007
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 132 132 1 20_000; date
+Searching for +- pts on 132/1865 quartic
+	3820824/800111 -> known #3: 8707481
+	k 3820824/800111 -> known #3: 8707481
+	k -5857947/2848247 -> known #3: 8707481
+	k 2882124003/1963807807 -> known #36: 
+    similar to uv 1865/132
+big 0, known 3
+knowns 2: [3, 36]
+hits: u 194, big 0, known 1
+knowns 1: [3]
+elapsed: 6:17:53.571938
+
+Large mn base
+T29999_14
+Found 4 solutions for (7592431981391, 22495595284040, 27239791692640, 29999857938609)
+22495595284040/29999857938609 | -27239791692640/29999857938609 | 7592431981391/29999857938609 | (3500, -4209)
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 3500 3500 4209 4209 5_000_000 1_000_000_000 20; date
+Trying mn -3500/4209, quad_xy (-30922/125471, 81832/125471)
+Searching for +- pts on -3500/4209 quartic
+	2337/365 -> known #1: 422481
+	k 2337/365 -> known #1: 422481
+	k 10774545147/2636906657 -> known #1: 422481
+	k 187335994434/177423254491 -> known #44: 29999857938609
+	k -9085834793838/1026759962233 -> known #44: 29999857938609
+big 0, known 4
+knowns 2: [1, 44]
+hits: u 1, big 0, known 1
+knowns 1: [1]
+elapsed: 0:00:05.795014
+
+Large mn base
+G68711_8
+Found 4 solutions for (10409096, 42878560, 65932985, 68711097)
+10409096/68711097    | -42878560/68711097   | 65932985/68711097    | (9788, -21021)
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 9788 9788 21021 21021 5_000_000 1_000_000_000 20; date
+hits: u 1, big 0, known 0
+elapsed: 0:00:04.203317
+
+Large mn base
+G87382_9
+Found 4 solutions for (558424440, 606710871, 769321280, 873822121)
+558424440/873822121  | -769321280/873822121 | 606710871/873822121  | (129780, -214309)
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 129780 129780 214309 214309 5_000_000 1_000_000_000 20; date
+hits: u 1, big 0, known 0
+elapsed: 0:00:03.056238
+
+G17878_10
+Found 4 solutions for (686398000, 1237796960, 1662997663, 1787882337)
+686398000/1787882337 | -1237796960/1787882337 | 1662997663/1787882337 | (920, -2433)
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 920 920 2433 2433 5_000_000 1_000_000_000 20; date
+hits: u 1, big 0, known 0
+elapsed: 0:00:03.094650
+
+Because of success on 44, 56 at 7th and 8th quad_lim, increase default from 3:
+Increase default quad_lim: int=5
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 136 136 1 20_000; date
+hits: u 233, big 0, known 1
+knowns 1: [12]
+elapsed: 8:24:08.936975
 
 DOING
 
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 88 88 1 20_000; date
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 120 120 1 20_000; date
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 140 140 1 20_000; date
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 144 144 1 20_000; date
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 148 148 1 20_000; date
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 152 152 1 20_000; date
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 156 156 1 20_000; date
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 160 160 1 20_000; date
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 164 164 1 20_000; date
+
+
 TEMPLATE
-date; python -um elliptical.solutions_curves find_mn_y2t2_pts  1 20_000; date
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts  1 20_000; date
 
 TODO
-4 - 1000 by 4
+next 168
+
 
 ------
 Example mn_y2t2 investigation.
@@ -35,6 +525,6 @@ find_uvD_pts(4, 4, 201, 201, 1_000_000)
 
 u = QQ(201)/4
 v0 = QQ(136)/-133
-solve_v_list(uQQ(u, find_uv_by_EC(u, v0, 10, verbose=True))
+solve_v_list(u, find_uv_by_EC(u, v0, 10, verbose=True))
 
 -------

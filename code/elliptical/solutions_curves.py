@@ -320,11 +320,11 @@ def get_rational_points(mn: Rational, max_pt: int=1_000_000,
         lp = list(p)
         batch = [(QQ(k), QQ(y)) for (k, y) in lp if 0 <= y]
         bases.extend(batch)
-        if len(bases) > result_limit: break
+        if len(bases) > 1 * result_limit: break
 
     # Augment the bases with x-axis reflection and collect for search
     seeds = set()
-    for x0, y0 in bases:
+    for x0, y0 in set(bases):
         seeds.update([(x0, y0), ((-b - 2*a*x0)/(a), y0)])
 
     # Sort by height
@@ -339,7 +339,7 @@ def make_quartic(mn: Rational, quad_xy: tuple):
     """
     y2_coeffs, t2_coeffs = mn_to_xyt_conics(mn)
     x0, y0 = quad_xy
-    
+
     # Use Sage's symbolic variables
     var('x_var, k')
     line = k*(x_var - x0) + y0
@@ -386,15 +386,24 @@ def make_quartic(mn: Rational, quad_xy: tuple):
     if clean_poly.leading_coefficient() < 0:
         clean_poly = -clean_poly
 
+    # Force t_sq into the Fraction Field of the Polynomial Ring
+    # This strips away the fragile symbolic 'var' types entirely.
+    Frac_R = R.fraction_field()
+    t_sq_rational = Frac_R(t_sq) 
+    
+    # Now divide formal rational expressions and let sage simplify.
+    t_scale_expr = t_sq_rational / clean_poly
+
     # Return parameterized conics x and y
     # and rhs of y^2 = quartic polynomial
-    return x_k, y_k, clean_poly, t2_coeffs
+    # and how to evaluate t_sq
+    return x_k, y_k, clean_poly, t_scale_expr
 """
 make_quartic(QQ(20/-9), (QQ(49/318), QQ(23/106)))
 (1/318*(43169*k^2 - 121578*k - 657351)/(881*k^2 + 4083), 
  -1/106*(20263*k^2 + 285806*k - 93909)/(881*k^2 + 4083), 
  4858767860*k^4 - 1337905101*k^3 + 32584720500*k^2 - 48737893941*k - 89364400362, 
- 4)
+-4/19622126241/(k^4 + 8166/881*k^2 + 16670889/776161))
 """
 
 # Old. See more robust solutions_modular.get_quartic_pts
@@ -416,34 +425,32 @@ def k_to_abcd(mn: Rational, quad_xy: tuple, quartic_x: Rational) -> List[Integer
     """ Produce solution (A,B,C,D) from (m,n); parameterized x, y; x on quartic.
     """
     q_res = make_quartic(mn, quad_xy)
-    x_k, y_k, quartic_poly, t2_coeffs = q_res
+    x_k, y_k, quartic_poly, t_scale_expr = q_res
 
     # Check that quartic_poly is square at x
     rhs = quartic_poly.subs(k=quartic_x)
     y2 = abs(rhs)
     assert y2.is_square()
 
-    # Evaluate paramterized conic at x
+    # Evaluate parameterized conic at x
     xv = x_k.subs(k=quartic_x)
     yv = y_k.subs(k=quartic_x)
-    #print(f'x {xv}, y {yv}')
      
-    # Calculate t from second conic
-    #t2_coeffs = mn_to_xyt_conics(mn)[1]
-    t_a0, t_a, t_b, t_c = t2_coeffs
+    # Evaluate the scale factor at our target k
+    scale_val = t_scale_expr.subs(k=quartic_x)
     
-    # Ensure we stay in QQ
-    t_sq = abs(QQ((t_a*xv**2 + t_b*xv + t_c) / t_a0))
+    # t_sq is the clean_poly value times the scale factor
+    t_sq = abs(QQ(y2 * scale_val))
     #print(f't_sq {t_sq}')
-    assert t_sq.is_square()
+    assert t_sq.is_square(), 't_sq has a quadratic twist'
     tv = t_sq.sqrt()
-
+    
     # Convert to the Elkies/Tomita variables r, s, t
     rv = xv + yv
     sv = xv - yv
     #print(f'r {rv}, s {sv}, t {tv}')
     
-    # Clear Denominators
+    ## Clear Denominators
     all_fracs = [rv, sv, tv, QQ(1)]
     common_den = lcm([f.denominator() for f in all_fracs])
     
@@ -452,8 +459,9 @@ def k_to_abcd(mn: Rational, quad_xy: tuple, quartic_x: Rational) -> List[Integer
     B = abs(sv * common_den)
     C = abs(tv * common_den)
     D = abs(common_den)
+    
+    # Verification
     assert A**4 + B**4 + C**4 == D**4
-    #print(A, B, C, D)
 
     # Return sorted A,B,C and the D
     lhs_list = sorted([Integer(A), Integer(B), Integer(C)])
@@ -466,6 +474,20 @@ t 217519/422481
 r 95800/422481, s -414560/422481
 95800 414560 217519 422481
 ([95800, 217519, 414560], 422481)
+
+mn = QQ(-291)/80
+quad_xy = (QQ(-1448)/7293, QQ(152)/221)
+k0 = QQ(1292115)/175762
+k_to_abcd(mn, quad_xy, k0)
+    assert t_sq.is_square(), 't_sq has a quadratic twist'
+AssertionError: t_sq has a quadratic twist
+t_sq
+1053976225/692082399137
+The numerator is square, but not the denominator.
+I don't understand why this fails.
+Note that -40/291 fails with same quad_xy:
+>>> k_to_abcd(QQ(-40)/291, (QQ(1448)/7293, QQ(152)/221), QQ(-1292115)/175762)
+AssertionError: t_sq has a quadratic twist
 """
 
 # Old. See find_mn_y2t2_pts
@@ -528,105 +550,6 @@ collected_mn_to_brute(mn_list)
 Counts: mn 135, D 0, big 0, known 0
 doesn't find anything
 """
-
-def find_mn_y2t2_pts(first_m: int, last_m: int, first_n: int, last_n: int,
-        max_pt: int=1_000_000, quad_h: int=100_000_000, quad_lim: int=3,
-        step_m: int=4, max_d: int=int(1e27)) -> None | tuple:
-    """ Search for mn with rational points on both y^2 and t^2 conics.
-    """
-    from modular.solutions_modular import check_yt, get_quartic_pts, \
-        u_to_quartic, check_quartic
-    # Check input parameters for sanity.
-    if 4 == step_m: 
-        assert first_m % 4 == 0
-        assert 4 <= first_m
-    assert first_m <= last_m
-    assert first_n % 2 == 1
-    assert 1 <= first_n <= last_n
-    assert 1 <= max_pt
-
-    # Look up index of known solutions with denominator.
-    d_to_known_inx = {val['abcd'][-1]: inx 
-            for inx, val in enumerate(known.values(), start=1)}
-
-    # Declare search counts
-    u_hits = big_hits = known_hits = 0
-    found_knowns = set() # indexes of known solutions found in search
-    found_new = False
-
-    # Search for points and count results.
-    start = datetime.now()
-    for m in range(first_m, last_m + 1, step_m):
-        for n in range(first_n, last_n + 1, 2):
-            if gcd(n, m) != 1: continue
-            uQ = QQ(m) / n
-            for mn in (uQ, -uQ, uQ.inverse(), -uQ.inverse()):
-                # Quadratics for y^2 and t^2 and quartic on inverse must be solvable
-                if not check_yt(mn): continue
-                qp = u_to_quartic(mn.inverse())
-                if 0 != check_quartic(qp) and 0 != check_quartic(-qp): continue
-                # Inverse solvable but solution not known, so mn a candidate.
-                #print(f'Trying mn {mn}', flush=True)
-                u_hits += 1
-                found_known = False
-                quad_hxy = get_rational_points(mn, result_limit=quad_lim)
-                for hxy in quad_hxy:
-                    if hxy[0] > quad_h: break
-                    quad_xy = hxy[1:]
-                    q_res = make_quartic(mn, quad_xy)
-                    if 0 != check_quartic(q_res[2]) or \
-                        0 != check_quartic(-q_res[2]): continue
-                    print(f'Trying mn {mn}, quad_xy {quad_xy}', flush=True)
-                    pts = get_quartic_pts(mn, max_pt, q_res[2])
-                    if pts is None: continue # D2 not solvable
-                    if 0 == len(pts): continue # Failed to find quartic point
-                    #set_trace()
-                    for k0, _ in pts:
-                        try:
-                            (a, b, c), d = k_to_abcd(mn, quad_xy, k0)
-                        except AssertionError:
-                            print(f'AssertionError k_to_abcd({mn}, {quad_xy}, {k0})')
-                            continue
-                        assert a**4 + b**4 + c**4 == d**4
-                        if d >= max_d:
-                            big_hits += 1
-                            print(f'\t{k0} -> big {float(d):.4e}', flush=True)
-                            continue
-                        if d in d_to_known_inx:
-                            known_hits += 1
-                            found_known = True
-                            inx = d_to_known_inx[d]
-                            found_knowns.add(inx)
-                            print(f'\t{k0} -> known #{inx}: {d}', flush=True)
-                            break
-                        print(f'\n\nNEW {mn}, {quad_xy}, {k0}'
-                              f' -> {d}; {c}, {b}, {a}',
-                              flush=True)
-                        found_new = True
-                        break
-                    if found_new or found_known: break
-                if found_new: break
-            if found_new: break
-        if found_new: break
-
-    # Report results and return if found new solution.
-    elapsed = datetime.now() - start
-    print(f'hits: u {u_hits}, big {big_hits}, known {known_hits}')
-    if 0 < known_hits: 
-        print(f'knowns {len(found_knowns)}: {sorted(found_knowns)}')
-    print(f'elapsed: {elapsed}', flush=True)
-    if found_new: return mn, quad_xy, k0, d, (c, b, a)
-"""
-find_mn_y2t2_pts(8, 8, 5, 5, 1_000_000)
-inv u -5/8 has v [-1617/200, -1617/200, -477/692, -477/692, 20824/2003, 20824/2003, -34272/4885, -34272/4885, 36696/8687, 36696/8687, 398113/66200, 398113/66200, -124529/68084, -124529/68084]
-Trying mn -8/5
-Trying mn -8/5, quad_xy (-5/14, 25/42)
-Searching for pts on -8/5 quartic
-	known #13: 589845921
-hits: u 1, big 0, known 1
-knowns 1: [13]
-"""
-
 
 
 

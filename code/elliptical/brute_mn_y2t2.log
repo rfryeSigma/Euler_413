@@ -1,10 +1,10 @@
-This is a log of what ranges have been searhed using
+This is a log of what ranges have been searched using
 elliptical/solutions_curves.py find_mn_y2t2_pts
 with get_optimized_rational_points and find_points_by_substitution.
 
 This log has been SUPERCEDED by brute_mn.log also using
 elliptical/solutions_curves.py find_mn_y2t2_pts
-but with get_optimized_rational_points and hyperellratpoints.
+but with get_rational_points and hyperellratpoints.
 
 5/6/2026W
 date; python -um elliptical.solutions_curves find_mn_y2t2_pts 4 4 1 1_000 1_000_000; date
@@ -1352,7 +1352,7 @@ elapsed: 3:30:05.537971
 I replaced get_optimized_rational_points and find_points_by_substitution
 with get_optimized_rational_points and hyperellratpoints.
 It's much faster and finds smaller quad_xy, so it calls get_quartic_pts,
-so overall much slower, but more effective.
+so overall much slower (3.5x), but more effective.
 
 For example, OLD RESULTS
 date; python -um elliptical.solutions_curves find_mn_y2t2_pts 652 652 1 20_000 1_000_000 100_000_000 5; date

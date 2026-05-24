@@ -1,7 +1,9 @@
 The code in the elliptical sub_folder attempts to match factoring solutions 
 with Elliptical Curve solutions.
 
-brute_mn_y2t2.log -- log of progress elliptical/solutions_curves.py find_mn_y2t2_pts
+brute_mn.log -- 2nd log of progress elliptical/solutions_curves.py find_mn_y2t2_pts
+
+brute_mn_y2t2.log -- old 1st log of progress elliptical/solutions_curves.py find_mn_y2t2_pts
 
 brute.log -- log of progress using brute.py
 

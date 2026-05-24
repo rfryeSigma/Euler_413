@@ -181,7 +181,11 @@ def search_small_EC_points(e_res: tuple, quartic_poly: Polynomial_rational_flint
         k = elliptic_point_to_k(t, e_res, quartic_poly, k0)
         k_set.add(k)
         if verbose: print(f't = {t}, k = {k}')
-        abc, d = k_to_abcd(mn, quad_xy, k) # Check that t works
+        try:
+            abc, d = k_to_abcd(mn, quad_xy, k) # Check that t works
+        except AssertionError:
+            print(f'AssertionError torsion point {t}, k_to_abcd({mn}, {quad_xy}, {k})')
+            return []
         if verbose: print(f'\td {d}')
 
    # Collect generators
@@ -252,7 +256,11 @@ def search_small_EC_points(e_res: tuple, quartic_poly: Polynomial_rational_flint
     big_hits = known_hits = 0
     found_knowns = set()
     for k in ks:
-        abc, d = k_to_abcd(mn, quad_xy, k)
+        try:
+            abc, d = k_to_abcd(mn, quad_xy, k)
+        except AssertionError:
+            print(f'AssertionError k_to_abcd({mn}, {quad_xy}, {k})')
+            continue
         if d >= max_d:
             big_hits += 1
             if verbose: print(f'\tk {k} -> big d {float(d):.5e}')
@@ -264,12 +272,103 @@ def search_small_EC_points(e_res: tuple, quartic_poly: Polynomial_rational_flint
             if verbose: print(f'\tk {k} -> known #{inx}: {d}')
             continue
         a, b, c = abc
-        print(f'\n\nNEW: k {k} -> {d}; {c}, {b}, {a}', flush=True)
+        assert False, f'NEW: k {k} -> {d}; {c}, {b}, {a}'
         return k, d, abc
     found_knowns = sorted(found_knowns)
     print(f'big {big_hits}, known {known_hits}'
         f'\nknowns {len(found_knowns)}: {found_knowns}')
     return found_knowns
+
+def find_mn_y2t2_pts(first_m: int, last_m: int, first_n: int, last_n: int,
+        max_pt: int=1_000_000, quad_h: int=100_000_000, quad_lim: int=5,
+        step_m: int=4, max_d: int=int(1e27)) -> None | tuple:
+    """ Search for mn with rational points on both y^2 and t^2 conics.
+    """
+    from modular.solutions_modular import check_yt, get_quartic_pts, \
+        u_to_quartic, check_quartic
+    # Check input parameters for sanity.
+    if 4 == step_m: 
+        assert first_m % 4 == 0
+        assert 4 <= first_m
+    assert first_m <= last_m
+    assert first_n % 2 == 1
+    assert 1 <= first_n <= last_n
+    assert 1 <= max_pt
+
+    # Look up index of known solutions with denominator.
+    d_to_known_inx = {val['abcd'][-1]: inx 
+            for inx, val in enumerate(known.values(), start=1)}
+
+    # Declare search counts
+    u_hits = big_hits = known_hits = 0
+    found_knowns = set() # indexes of known solutions found in search
+
+    # Search for points and count results.
+    start = datetime.now()
+    for m in range(first_m, last_m + 1, step_m):
+        for n in range(first_n, last_n + 1, 2):
+            if gcd(n, m) != 1: continue
+            uQ = QQ(m) / n
+            for mn in (uQ, -uQ, uQ.inverse(), -uQ.inverse()):
+                # Quadratics for y^2 and t^2 and quartic on inverse must be solvable
+                if not check_yt(mn): continue
+                qp = u_to_quartic(mn.inverse())
+                if 0 != check_quartic(qp) and 0 != check_quartic(-qp): continue
+                # Inverse solvable but solution not known, so mn a candidate.
+                #print(f'Trying mn {mn}', flush=True)
+                u_hits += 1
+                quad_hxy = get_rational_points(mn, result_limit=quad_lim)
+                for hxy in quad_hxy:
+                    if hxy[0] > quad_h: break
+                    quad_xy = hxy[1:]
+                    q_res = make_quartic(mn, quad_xy)
+                    if 0 != check_quartic(q_res[2]) and \
+                        0 != check_quartic(-q_res[2]): continue
+                    print(f'Trying mn {mn}, quad_xy {quad_xy}', flush=True)
+                    pts = get_quartic_pts(mn, max_pt, q_res[2])
+                    if pts is None: continue # D2 not solvable
+                    if 0 == len(pts): continue # Failed to find quartic point
+                    #set_trace()
+                    for k0, _ in pts:
+                        try:
+                            (a, b, c), d = k_to_abcd(mn, quad_xy, k0)
+                        except AssertionError:
+                            print(f'AssertionError k_to_abcd({mn}, {quad_xy}, {k0})')
+                            break
+                        assert a**4 + b**4 + c**4 == d**4
+                        if d >= max_d:
+                            big_hits += 1
+                            print(f'\t{k0} -> big {float(d):.4e}', flush=True)
+                            break
+                        if d in d_to_known_inx:
+                            known_hits += 1
+                            inx = d_to_known_inx[d]
+                            found_knowns.add(inx)
+                            print(f'\t{k0} -> known #{inx}: {d}', flush=True)
+                            break
+                        assert False, f'NEW {mn}, {quad_xy}, {k0} -> {d}; {c}, {b}, {a}'
+                    # Have a point on quartic so use it on elliptic curve
+                    e_res = model_quartic_as_elliptic_curve(q_res[2], k0)
+                    search_small_EC_points(e_res, q_res[2], k0, mn, quad_xy,
+                                            10, verbose=True)
+                    break
+
+    # Report results and return if found new solution.
+    elapsed = datetime.now() - start
+    print(f'hits: u {u_hits}, big {big_hits}, known {known_hits}')
+    if 0 < known_hits: 
+        print(f'knowns {len(found_knowns)}: {sorted(found_knowns)}')
+    print(f'elapsed: {elapsed}', flush=True)
+"""
+find_mn_y2t2_pts(8, 8, 5, 5, 1_000_000)
+inv u -5/8 has v [-1617/200, -1617/200, -477/692, -477/692, 20824/2003, 20824/2003, -34272/4885, -34272/4885, 36696/8687, 36696/8687, 398113/66200, 398113/66200, -124529/68084, -124529/68084]
+Trying mn -8/5
+Trying mn -8/5, quad_xy (-5/14, 25/42)
+Searching for pts on -8/5 quartic
+	known #13: 589845921
+hits: u 1, big 0, known 1
+knowns 1: [13]
+"""
 
 # unfinished
 def scan_known_mn(known_s: int=1, known_e: int=9999, max_mn_h: int=100_000_000, 
@@ -364,6 +463,58 @@ Trying mn 307700/1565217 with height 1565217
 45556888578449
 Trying mn -107368/3333 with height 107368
 	Trying quad_xy (-547024702/7676412239, 3046936840/7676412239)
+
+No occurences of solution #10 in uv table
+G11711_9=dict(info='Gerbicz (2006)', inx=10, m=(-11_846_053, -175_812),
+	abcd=(34_918_520, 87_865_617, 106_161_120, 117_112_081),
+abcd_to_h_u((34918520, 87865617, 106161120, 117112081))
+(11846053/175812), 
+(-18948825/19835764), 
+(25607745/5442892), 
+(-15944968/42458829), 
+(23301824/52367253), 
+(-78061568/40207629), 
+(-93514757/75615072), 
+(310739997/74371388), 
+(-431691625/11587212), 
+(487340221/120067584), 
+(-29915585/638841996), 
+(-936262392/509548501)]
+u = QQ(11846053)/175812
+v0 = QQ(-18948825)/19835764
+solve_v_list(u, find_uv_by_EC(u, v0, 10, verbose=True))
+only solutions are
+	big 8.97772e+36
+	known #10: 117112081
+
+>>> solve_for_mn(34_918_520, 87_865_617, 106_161_120, 117_112_081)
+Found 4 solutions for (34918520, 87865617, 106161120, 117112081)
+'m': 5_442_892, 'n': 25_607_745
+'m': 19_835_764, 'n': -18_948_825
+'m': 11_587_212, 'n': -431_691_625
+'m': 638_841_996, 'n': -29_915_585
+could also try reverse of u and its double
+'m': 175_812, 'n': 11_846_053
+'m': 351_624, 'n': 11_846_053
+
+mn = QQ(175_812)/11_846_053
+get_rational_points(mn, result_limit=5)
+(42011260744054/192526530579387, -33295295015500/64175510193129), 
+(2224696268784089188870189970/8653232156224306277013777729, -33295295015500/64175510193129)
+
+get_rational_points(QQ(351_624)/11_846_053, result_limit=5)
+Error: no solution found (local obstruction at 5)
+It's inverse is ok, but pts are also large.
+
+get_rational_points(QQ(5_442_892)/25_607_745)
+(141303923992260981887185/302588073027773771375298, -120329362711475/438887799087878), 
+(50701376336814574107084737101/226022548675154521248463782921, -120329362711475/438887799087878)
+
+get_rational_points(QQ(19_835_764)/-18_948_825)
+(2229416622237066555335457524/8015678965131800172324590517, 36778358665912/319640403871319), 
+(-1419440975067610480522649118682/2060029494038872644287419762869, 36778358665912/319640403871319)
+
+Conclude that somving #10 by mn not feasible.
 """
 
 

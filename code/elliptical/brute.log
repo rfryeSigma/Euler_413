@@ -1975,6 +1975,4 @@ TODO
 date; python -um modular.solutions_modular find_uvD_pts  1 20_000 1_000_000; date
 1004
 
-Finish coding scan_known_mn, and run it.
-
 ----------
