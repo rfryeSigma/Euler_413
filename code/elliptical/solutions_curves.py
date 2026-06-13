@@ -374,7 +374,12 @@ def make_quartic(mn: Rational, quad_xy: tuple):
     
     # Convert symbolic expression to a formal polynomial to get clean coefficients
     R = PolynomialRing(QQ, 'k')
-    poly = R(poly_expr)
+    try:
+        poly = R(poly_expr)
+    except Exception as e:
+        print(f'Error converting to polynomial: {e}')
+        print(f'\tfor mn {mn}, quad_xy {quad_xy}, poly_expr: {poly_expr}')
+        return None
     
     # Handle the GCD and Square Factor Caveat
     coeffs = poly.coefficients()

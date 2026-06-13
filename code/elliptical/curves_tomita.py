@@ -322,11 +322,12 @@ def find_mn_y2t2_pts(first_m: int, last_m: int, first_n: int, last_n: int,
                     if hxy[0] > quad_h: break
                     quad_xy = hxy[1:]
                     q_res = make_quartic(mn, quad_xy)
+                    if q_res is None: continue # quartic not solvable
                     if 0 != check_quartic(q_res[2]) and \
                         0 != check_quartic(-q_res[2]): continue
                     print(f'Trying mn {mn}, quad_xy {quad_xy}', flush=True)
                     pts = get_quartic_pts(mn, max_pt, q_res[2])
-                    if pts is None: continue # D2 not solvable
+                    if pts is None: continue # quartic not solvable
                     if 0 == len(pts): continue # Failed to find quartic point
                     #set_trace()
                     for k0, _ in pts:

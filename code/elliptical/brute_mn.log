@@ -382,6 +382,11 @@ hits: u 813, big 0, known 1
 knowns 1: [21]
 elapsed: 1 day, 0:38:07.011212
 
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 88 88 1 20_000; date
+hits: u 323, big 0, known 0
+elapsed: 10:59:32.583903
+    failed to match -5/44 as -5/88
+
 date; python -um elliptical.curves_tomita find_mn_y2t2_pts 96 96 1 20_000; date
 hits: u 365, big 0, known 0
 elapsed: 13:07:55.260984
@@ -401,6 +406,7 @@ elapsed: 6:20:23.759283
 date; python -um elliptical.curves_tomita find_mn_y2t2_pts 112 112 1 20_000; date
 hits: u 320, big 0, known 0
 elapsed: 10:02:01.856188
+    failed to match 56/-165 as 112/-165, but -165/56 did
 
 date; python -um elliptical.curves_tomita find_mn_y2t2_pts 116 116 1 20_000; date
 hits: u 166, big 0, known 0
@@ -476,33 +482,1358 @@ hits: u 233, big 0, known 1
 knowns 1: [12]
 elapsed: 8:24:08.936975
 
-DOING
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 164 164 1 20_000; date
+hits: u 130, big 0, known 0
+elapsed: 5:07:16.248215
+    failed to hit 1865/132 as 1865/164
 
-date; python -um elliptical.curves_tomita find_mn_y2t2_pts 88 88 1 20_000; date
-
+1/25/2026M
 date; python -um elliptical.curves_tomita find_mn_y2t2_pts 120 120 1 20_000; date
+hits: u 1039, big 0, known 0
+elapsed: 1 day, 10:15:04.842569
 
 date; python -um elliptical.curves_tomita find_mn_y2t2_pts 140 140 1 20_000; date
+hits: u 481, big 0, known 0
+elapsed: 19:24:38.341456
 
 date; python -um elliptical.curves_tomita find_mn_y2t2_pts 144 144 1 20_000; date
+hits: u 365, big 0, known 0
+elapsed: 13:28:14.488328
 
 date; python -um elliptical.curves_tomita find_mn_y2t2_pts 148 148 1 20_000; date
+hits: u 147, big 0, known 0
+elapsed: 6:20:41.375028
 
 date; python -um elliptical.curves_tomita find_mn_y2t2_pts 152 152 1 20_000; date
+hits: u 318, big 0, known 0
+elapsed: 13:47:49.761348
 
 date; python -um elliptical.curves_tomita find_mn_y2t2_pts 156 156 1 20_000; date
+hits: u 237, big 0, known 0
+elapsed: 9:07:40.409375
 
 date; python -um elliptical.curves_tomita find_mn_y2t2_pts 160 160 1 20_000; date
+Trying mn -93/160, quad_xy (254/907, 536/907)
+Searching for +- pts on -93/160 quartic
+	25236/1129 -> known #4: 12197457
+	k 25236/1129 -> known #4: 12197457
+	k -550836/283711 -> known #4: 12197457
+	k -8063601/5898475 -> known #18: 1787882337
+	k 16536838503/1900317053 -> known #18: 1787882337
+	k 50930364501447/1298472119197 -> known #81: 17503689286309573964097
+big 0, known 5
+knowns 3: [4, 18, 81]
+    similar to -93/80
+Trying mn 553/160, quad_xy (-8456/25167, 26908/75501)
+Searching for + pts on 553/160 quartic
+	4379777/265710 -> known #21: 5179020201
+	k 4379777/265710 -> known #21: 5179020201
+	k -7212707/11043678 -> known #21: 5179020201
+	k 36792481/3258626649 -> known #51: 5380742305932201
+	k 184907753162827/35223107603133 -> known #91: 1088768337585323892067521
+big 0, known 4
+knowns 3: [21, 51, 91]
+    similar to 553/80
+hits: u 842, big 0, known 2
+knowns 2: [4, 21]
+elapsed: 1 day, 6:17:24.579066
 
-date; python -um elliptical.curves_tomita find_mn_y2t2_pts 164 164 1 20_000; date
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 168 168 1 20_000; date
+hits: u 437, big 0, known 0
+elapsed: 19:46:21.978024
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 172 172 1 20_000; date
+hits: u 134, big 0, known 0
+elapsed: 6:14:12.904418
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 176 176 1 20_000; 
+hits: u 318, big 0, known 0
+elapsed: 13:39:21.368271
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 184 184 1 20_000; date
+Trying mn -125/184, quad_xy (364/2503, 5792/7509)
+Searching for + pts on -125/184 quartic
+	-3268237/319878 -> known #27: 64244765937
+	k -3268237/319878 -> known #27: 64244765937
+	k -174348329/96790866 -> known #27: 64244765937
+	k -267598323/328463387 -> known #41: 25866132798297
+	k -719371556653/27218829250 -> known #66: 77107030404994920297
+	k 2263705802261/78583278381 -> known #41: 25866132798297
+	k -658473877875581/607248891439125 -> big d 3.67722e+27
+	k -940508979399787/712922135456562 -> known #66: 77107030404994920297
+big 1, known 6
+knowns 3: [27, 41, 66], missed 100 because v too big
+should hit 184/2265
+hits: u 304, big 0, known 1
+knowns 1: [27]
+elapsed: 12:43:06.399915
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 188 188 1 20_000; date
+hits: u 149, big 0, known 0
+elapsed: 5:42:23.058964
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 196 196 1 20_000; date
+hits: u 143, big 0, known 0
+elapsed: 7:04:07.645074
+
+5/26/2026T
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 180 180 1 20_000; date
+hits: u 549, big 0, known 0
+elapsed: 19:25:38.220869
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 192 192 1 20_000; date
+hits: u 370, big 0, known 0
+elapsed: 16:09:13.064236
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 204 204 1 20_000; date
+hits: u 179, big 0, known 0
+elapsed: 7:40:38.818871
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 208 208 1 20_000; date
+hits: u 375, big 0, known 0
+elapsed: 16:45:42.884050
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 212 212 1 20_000; date
+hits: u 161, big 0, known 0
+elapsed: 5:44:55.992074
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 216 216 1 20_000; date
+hits: u 352, big 0, known 0
+elapsed: 15:42:09.278830
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 220 220 1 20_000; date
+hits: u 437, big 0, known 0
+elapsed: 17:02:01.777169
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 228 228 1 20_000; date
+hits: u 226, big 0, known 0
+elapsed: 8:23:43.761241
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 224 224 1 20_000; date
+hits: u 314, big 0, known 0
+elapsed: 13:32:05.157661
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 232 232 1 20_000; date
+hits: u 334, big 0, known 0
+elapsed: 12:40:44.001461
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 236 236 1 20_000; date
+hits: u 145, big 0, known 0
+elapsed: 5:38:53.043823
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 244 244 1 20_000; date
+hits: u 145, big 0, known 0
+elapsed: 6:46:21.848274
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 252 252 1 20_000; date
+hits: u 207, big 0, known 0
+elapsed: 7:43:57.576815
+
+5/27/2026W
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 200 200 1 20_000; 
+Trying mn -200/37, quad_xy (-2194/5209, 9040/15627)
+Searching for - pts on -200/37 quartic
+	-11119/3093 -> known #4: 12197457
+	k -11119/3093 -> known #4: 12197457
+	k 204257/39724059 -> known #4: 12197457
+	k -258215869/30947343 -> known #18: 1787882337
+	k 1282235867/2417283129 -> known #18: 1787882337
+    big 0, known 4
+    knowns 2: [4, 18]
+	similar to uv (-93/80, 400/-37) and 400/-37
+200 also could have hit 200/-97 (for uv -97/400) but misseed 
+python -um elliptical.curves_tomita find_mn_y2t2_pts 200 200 37 37 5_000_000 1_000_000_000 1
+Trying mn -200/37, quad_xy (-2194/5209, 9040/15627)
+Searching for - pts on -200/37 quartic
+	-11119/3093 -> known #4: 12197457
+	k -11119/3093 -> known #4: 12197457
+	k 204257/39724059 -> known #4: 12197457
+	k -258215869/30947343 -> known #18: 1787882337
+	k 1282235867/2417283129 -> known #18: 1787882337
+	big 0, known 4
+	knowns 2: [4, 18]
+200 also could have hit 873/200 (for u -97/400) but missed
+python -um elliptical.curves_tomita find_mn_y2t2_pts 200 200 873 873 5_000_000 1_000_000_000 1
+	missed too
+200 also should hit 200/-1617, 200/1873 but it missed them. Try harder.
+python -um elliptical.curves_tomita find_mn_y2t2_pts 200 200 1617 1617 2_000_000 1_000_000_000 20
+but runs out of quad_xy after 8th: Trying mn 200/1617, quad_xy (330009/905774, 378483/905774)
+python -um elliptical.curves_tomita find_mn_y2t2_pts 200 200 1873 1873 2_000_000 1_000_000_000 20
+but runs out of quad-xy afther the 12th: Trying mn 200/1873, quad_xy (86196408/496361323, -826384/3438993)
+python -um elliptical.curves_tomita find_mn_y2t2_pts 200 200 1617 1873 5_000_000 1_000_000_000 1
+Trying mn 200/1617, quad_xy (906/2327, 996/2327) missed too
+python -um elliptical.curves_tomita find_mn_y2t2_pts 200 200 1617 1873 5_000_000 1_000_000_000 1
+Trying mn 200/1873, quad_xy (74179/279698, 320293/839094) missed too
+hits: u 818, big 0, known 1
+knowns 1: [4]
+elapsed: 1 day, 10:43:14.051313
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 248 248 1 20_000; date
+hits: u 298, big 0, known 0
+elapsed: 10:55:50.981624
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 256 256 1 20_000; date
+hits: u 268, big 0, known 0
+elapsed: 11:26:31.194530
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 260 260 1 20_000; date
+hits: u 531, big 0, known 0
+elapsed: 19:00:36.793511
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 264 264 1 20_000; date
+264 should hit 1865/264 (for 1865/132) but missed it
+hits: u 390, big 0, known 0
+elapsed: 18:02:21.198907
+python -um elliptical.curves_tomita find_mn_y2t2_pts 264 264 1865 1865 5_000_000 1_000_000_000 1
+	missed it too
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 268 268 1 20_000; date
+hits: u 133, big 0, known 0
+elapsed: 4:50:22.307219
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 272 272 1 20_000; 
+272 should hit 272/-133 (for 136/-133) but didn't even try it.
+hits: u 257, big 0, known 0
+elapsed: 9:32:43.447739
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 276 276 1 20_000; date
+hits: u 160, big 0, known 0
+elapsed: 5:46:25.197200
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 280 280 1 20_000; date
+280 should hit 280/7493 but missed 
+hits: u 948, big 0, known 0
+elapsed: 1 day, 15:41:05.130594
+python -um elliptical.curves_tomita find_mn_y2t2_pts 280 280 7493 7493 5_000_000 1_000_000_000 1
+Trying mn 280/7493, quad_xy (84883/121946, 10061/365838)
+Searching for - pts on 280/7493 quartic
+	-8370841/4219461 -> known #29: 219813483369
+	k -8370841/4219461 -> known #29: 219813483369
+	k 5261758922/2388080613 -> known #29: 219813483369
+	big 0, known 2
+	knowns 1: [29]
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 284 284 1 20_000; date
+hits: u 143, big 0, known 0
+elapsed: 4:20:29.617565
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 288 288 1 20_000; date
+hits: u 361, big 0, known 0
+elapsed: 13:21:22.143369
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 292 292 1 20_000; date
+hits: u 141, big 0, known 0
+elapsed: 5:29:53.246701
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 296 296 1 20_000; date
+hits: u 286, big 0, known 0
+elapsed: 12:36:05.937648
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 300 300 1 20_000; date
+hits: u 504, big 0, known 0
+elapsed: 17:05:09.175562
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 308 308 1 20_000; date
+hits: u 175, big 0, known 0
+elapsed: 7:16:55.934691
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 316 316 1 20_000; date
+hits: u 157, big 0, known 0
+elapsed: 6:18:16.562495
+
+5/28/2026R
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 240 240 1 20_000; date
+Trying mn 240/1861, quad_xy (108101/147286, 31447/147286)
+Searching for +- pts on 240/1861 quartic
+	-698863/567901 -> known #33: 1059621884297
+	k -698863/567901 -> known #33: 1059621884297
+	k -1265333767/1900194651 -> known #11: 145087793
+	k 25760994125/12879097079 -> known #11: 145087793
+	k 84709077982/21154991321 -> known #33: 1059621884297
+	k 328413727819142/162842921503141 -> big d 6.01546e+29
+	big 1, known 4
+	knowns 2: [11, 33]
+    similar to 240/1861
+hits: u 1098, big 0, known 1
+knowns 1: [33]
+elapsed: 1 day, 21:24:47.604404
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 304 304 1 20_000; date
+hits: u 303, big 0, known 0
+elapsed: 12:07:05.033504
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 320 320 1 20_000; date
+320 should hit 320/-1041
+Trying mn -320/1041, quad_xy (-3671/20974, 7357/20974)
+Searching for + pts on -320/1041 quartic
+	516342/530551 -> known #1: 422481
+	k 516342/530551 -> known #1: 422481
+	k 6338607/342499 -> known #17: 1679142729
+	k 44284977/7073309 -> known #17: 1679142729
+	k -99355155/36911191 -> known #1: 422481
+	k -15608327478/5010902609 -> known #47: 58844817090201
+	k 2566188957255/697127941579 -> known #95: 3122849928997768901912409
+	k 9545903844723/8170053152521 -> known #47: 58844817090201
+	k -175800694093383/20054431822901 -> big d 1.13699e+28
+	big 1, known 7
+	knowns 4: [1, 17, 47, 95]
+hits: u 820, big 0, known 1
+knowns 1: [1]
+elapsed: 1 day, 5:05:25.595806
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 324 324 1 20_000; date
+hits: u 185, big 0, known 0
+elapsed: 7:20:25.093351
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 328 328 1 20_000; date
+hits: u 272, big 0, known 0
+elapsed: 9:50:25.962093
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 332 332 1 20_000; date
+hits: u 141, big 0, known 0
+elapsed: 4:43:29.370332
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 336 336 1 20_000; date
+hits: u 427, big 0, known 0
+elapsed: 19:32:43.855750
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 340 340 1 20_000; date
+340 should hit 340/14337, but didn't try
+hits: u 390, big 0, known 0
+elapsed: 13:09:07.810414
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 344 344 1 20_000; date
+hits: u 302, big 0, known 0
+elapsed: 12:17:21.305156
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 348 348 1 20_000; date
+hits: u 193, big 0, known 0
+elapsed: 8:04:58.351098
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 352 352 1 20_000; date
+hits: u 318, big 0, known 0
+elapsed: 13:19:25.172486
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 356 356 1 20_000; date
+hits: u 144, big 0, known 0
+elapsed: 4:39:41.958267
+
+5/29/2026F
+Since I am scoring more hits with 5_000_000 and 1 quad_xy, switch to that:
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 364 364 1 20_000 5_000_000 1_000_000_000 1; date
+364 should hit 364/-709
+Trying mn -364/709, quad_xy (-884/5035, 9412/15105) missed
+No, 5_000_000 taking too long and still missing candidates. Interrupt and use 2_000_000
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 364 364 2385 20_000 2_000_000 1_000_000_000 1; date
+hits: u 175, big 0, known 0
+elapsed: 6:11:58.647971
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 368 368 1 20_000 5_000_000 1_000_000_000 1; date
+No, 5_000_000 taking too long and still missing candidates. Interrupt and use 2_000_000
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 368 368 2055 20_000 2_000_000 1_000_000_000 1; date
+368 should hit 2265/368 (for 184/2265)
+Trying mn 2265/368, quad_xy (-36426/82319, 40308/82319) missed
+hits: u 262, big 0, known 0
+elapsed: 10:37:08.114896
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 372 372 1 20_000 5_000_000 1_000_000_000 1; date
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 372 372 2975 20_000 2_000_000 1_000_000_000 1; datex
+hits: u 164, big 0, known 0
+elapsed: 5:19:32.274227
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 376 376 1 20_000 5_000_000 1_000_000_000 1; date
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 376 376 1365 20_000 2_000_000 1_000_000_000 1; date
+hits: u 265, big 0, known 0
+elapsed: 10:03:01.837725
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 380 380 1 20_000 5_000_000 1_000_000_000 1; date
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 380 380 1287 20_000 2_000_000 1_000_000_000 1; 
+hits: u 393, big 0, known 0
+elapsed: 13:31:14.012339
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 384 384 1 20_000 5_000_000 1_000_000_000 1; date
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 384 384 985 20_000 2_000_000 1_000_000_000 1; 
+hits: u 348, big 0, known 0
+elapsed: 13:39:22.415914
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 388 388 1 20_000 5_000_000 1_000_000_000 1; date
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 388 388 3675 20_000 2_000_000 1_000_000_000 1; date
+hits: u 98, big 0, known 0
+elapsed: 3:24:59.260848
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 392 392 1 20_000 5_000_000 1_000_000_000 1; date
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 392 392 1065 20_000 2_000_000 1_000_000_000 1; date
+hits: u 279, big 0, known 0
+elapsed: 12:08:55.207955
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 396 396 1 20_000 2_000_000 1_000_000_000 1; date
+hits: u 199, big 0, known 0
+elapsed: 8:37:09.717235
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 404 404 1 20_000 2_000_000 1_000_000_000 1; date
+hits: u 144, big 0, known 0
+elapsed: 5:35:12.276740
+
+5/30/2026Sa
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 400 400 1 20_000 5_000_000 1_000_000_000 1; date
+400 should hit -37/400, 400/-97, 873/400, -1617/400 (for -1617/200), 1873/400 (for 1873/200)
+Trying mn -37/400, quad_xy (2194/5209, 9040/15627)
+	11119/3093 -> known #4: 12197457
+	k 11119/3093 -> known #4: 12197457
+	k -204257/39724059 -> known #4: 12197457
+	k 258215869/30947343 -> known #18: 1787882337
+	k -1282235867/2417283129 -> known #18: 1787882337
+	big 0, known 4
+	knowns 2: [4, 18]
+Trying mn -400/97, quad_xy (-2000/4227, 6280/12681) missed
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 400 400 249 20_000 2_000_000 1_000_000_000 1; date
+hits: u 782, big 0, known 0
+elapsed: 1 day, 9:28:34.114332
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 408 408 1 20_000 2_000_000 1_000_000_000 1; date
+hits: u 355, big 0, known 0
+elapsed: 15:12:36.055954
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 412 412 1 20_000 2_000_000 1_000_000_000 1; date
+412 should hit 412/-1425 #2, #23
+Trying mn -412/1425, quad_xy (-1679/144358, 99821/144358)
+Searching for +- pts on -412/1425 quartic
+	11169/60181 -> known #2: 2813001
+	k 11169/60181 -> known #2: 2813001
+	k -9652857/1730275 -> known #2: 2813001
+	k 285762684/59252825 -> known #23: 15434547801
+	k 22612854940953/8089714723747 -> known #23: 15434547801
+	big 0, known 4
+	knowns 2: [2, 23]
+hits: u 146, big 0, known 1
+knowns 1: [2]
+elapsed: 5:36:28.455109
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 416 416 1 20_000 2_000_000 1_000_000_000 1; date
+hits: u 381, big 0, known 0
+elapsed: 16:37:09.846592
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 420 420 1 20_000 2_000_000 1_000_000_000 1; date
+hits: u 599, big 0, known 0
+elapsed: 1 day, 2:03:20.657446
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 424 424 1 20_000 2_000_000 1_000_000_000 1; date
+hits: u 300, big 0, known 0
+elapsed: 10:41:29.377856
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 428 428 1 20_000 2_000_000 1_000_000_000 1; date
+hits: u 147, big 0, known 0
+elapsed: 6:21:42.989589
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 432 432 1 20_000 2_000_000 1_000_000_000 1; date
+432 should hit 432/12185 but missed
+hits: u 360, big 0, known 0
+elapsed: 16:41:49.850772
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 436 436 1 20_000 2_000_000 1_000_000_000 1; date
+hits: u 150, big 0, known 0
+elapsed: 5:28:07.942063
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 444 444 1 20_000 2_000_000 1_000_000_000 1; date
+hits: u 205, big 0, known 0
+elapsed: 8:22:21.406042
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 448 448 1 20_000 2_000_000 1_000_000_000 1; date
+hits: u 309, big 0, known 0
+elapsed: 13:42:57.124167
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 452 452 1 20_000 2_000_000 1_000_000_000 1; date
+hits: u 135, big 0, known 0
+elapsed: 5:33:20.359435
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 468 468 1 20_000 2_000_000 1_000_000_000 1; date
+Trying mn -468/5281, quad_xy (385389/897398, 511455/897398)
+Searching for +- pts on -468/5281 quartic
+	-1452567/226613 -> known #27: 64244765937
+	k -1452567/226613 -> known #27: 64244765937
+	k -34513895406/17236388671 -> known #27: 64244765937
+	k -1504171766499/356948640409 -> known #41: 25866132798297
+	k -404915677342422/153050461375883 -> known #41: 25866132798297
+	big 0, known 4
+	knowns 2: [27, 41]
+	similar to -125/92 and 936/-5281
+hits: u 231, big 0, known 1
+knowns 1: [27]
+elapsed: 9:22:27.891190
+
+5/31/2026Su
+Redo mults of 120 in range 20_001 40_000
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 120 120 20_001 40_000 2_000_000 1_000_000_000 1; date
+hits: u 811, big 0, known 0
+elapsed: 12:33:59.224728
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 360 360 1 20_000 5_000_000 1_000_000_000 1; date
+No, 5_000_000 taking too long and still missing candidates. Interrupt and use 2_000_000
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 360 360 673 20_000 2_000_000 1_000_000_000 1; date
+hits: u 1059, big 0, known 0
+elapsed: 1 day, 20:40:08.630709
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 440 440 1 20_000 2_000_000 1_000_000_000 1; date
+hits: u 877, big 0, known 0
+elapsed: 1 day, 11:16:38.293761
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 456 456 1 20_000 2_000_000 1_000_000_000 1; date
+hits: u 423, big 0, known 0
+elapsed: 18:09:22.900212
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 460 460 1 20_000 2_000_000 1_000_000_000 1; date
+hits: u 395, big 0, known 0
+elapsed: 16:27:27.897486
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 464 464 1 20_000 2_000_000 1_000_000_000 1; date
+hits: u 309, big 0, known 0
+elapsed: 12:48:07.842940
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 472 472 1 20_000 2_000_000 1_000_000_000 1; date
+hits: u 274, big 0, known 0
+elapsed: 10:39:19.420694
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 484 484 1 20_000 2_000_000 1_000_000_000 1; date
+484 should miss 484/78065 #38, #56 as did 400/-97
+hits: u 162, big 0, known 0
+elapsed: 7:17:29.306731
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 488 488 1 20_000 2_000_000 1_000_000_000 1; date
+hits: u 291, big 0, known 0
+elapsed: 12:51:31.724434
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 492 492 1 20_000 2_000_000 1_000_000_000 1; date
+hits: u 159, big 0, known 0
+elapsed: 6:42:00.242830
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 500 500 1 20_000 2_000_000 1_000_000_000 1; date
+500 should hit 500/47
+Trying mn 500/47, quad_xy (-13/242, 53/726)
+Searching for + pts on 500/47 quartic
+	-3404/3813 -> known #17: 1679142729
+	k -3404/3813 -> known #17: 1679142729
+	k -390356/118407 -> known #1: 422481
+	k 782335/159237 -> known #1: 422481
+	k 110327845/91101959 -> known #17: 1679142729
+	k 48595487404/36796963187 -> known #94: 1796867575393608033006561
+	big 0, known 5
+	knowns 3: [1, 17, 94]
+hits: u 382, big 0, known 1
+knowns 1: [17]
+elapsed: 14:46:40.712604
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 496 496 1 20_000 2_000_000 1_000_000_000 1; date
+hits: u 291, big 0, known 0
+elapsed: 11:56:58.333246
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 508 508 1 20_000 2_000_000 1_000_000_000 1; date
+hits: u 152, big 0, known 0
+elapsed: 6:46:08.301638
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 512 512 1 20_000 2_000_000 1_000_000_000 1; date
+hits: u 264, big 0, known 0
+elapsed: 9:58:56.154974
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 516 516 1 20_000 2_000_000 1_000_000_000 1; date
+hits: u 194, big 0, known 0
+elapsed: 7:48:36.714429
+
+6/1/2026M
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 480 480 1 20_000 2_000_000 1_000_000_000 1; date
+480 should hit 1861/480 (for 1861/240)
+Trying mn 1861/480, quad_xy (-108101/147286, 31447/147286)
+Searching for +- pts on 1861/480 quartic
+	698863/567901 -> known #33: 1059621884297
+	k 698863/567901 -> known #33: 1059621884297
+	k 1265333767/1900194651 -> known #11: 145087793
+	k -25760994125/12879097079 -> known #11: 145087793
+	k -84709077982/21154991321 -> known #33: 1059621884297
+	k -328413727819142/162842921503141 -> big d 6.01546e+29
+	big 1, known 4
+	knowns 2: [11, 33]
+Interrupt 12857
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 480 480 12857 20_000 2_000_000 1_000_000_000 1; date
+hits: u 334, big 0, known 0
+elapsed: 8:36:52.155895
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 504 504 1 20_000 2_000_000 1_000_000_000 1; date
+hits: u 422, big 0, known 0
+elapsed: 21:06:32.716412
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 524 524 1 20_000 2_000_000 1_000_000_000 1; date
+hits: u 159, big 0, known 0
+elapsed: 6:10:35.804973
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 528 528 1 20_000 2_000_000 1_000_000_000 1; date
+Interrupt 8993
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 528 528 8993 20_000 2_000_000 1_000_000_000 1; 
+hits: u 196, big 0, known 0
+elapsed: 5:43:34.707742
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 532 532 1 20_000 2_000_000 1_000_000_000 1; date
+hits: u 165, big 0, known 0
+elapsed: 7:19:00.506968
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 536 536 1 20_000 2_000_000 1_000_000_000 1; date
+Interrupt 15715
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 536 536 15715 20_000 2_000_000 1_000_000_000 1; date
+hits: u 49, big 0, known 0
+elapsed: 0:41:53.589914
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 540 540 1 20_000 2_000_000 1_000_000_000 1; date
+540 should hit 540/-361
+Trying mn -540/361, quad_xy (7613/55966, 29497/55966)
+Searching for +- pts on -540/361 quartic
+	9512/52303 -> known #11: 145087793
+	k 9512/52303 -> known #11: 145087793
+	k -1782758009/3073371555 -> known #33: 1059621884297
+	k 14292714703/8244479237 -> known #11: 145087793
+	k 90697875331/26724810751 -> known #33: 1059621884297
+	big 0, known 4
+	knowns 2: [11, 33]
+Interrupt 4079
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 540 540 4079 20_000 2_000_000 1_000_000_000 1; date
+hits: u 388, big 0, known 0
+elapsed: 13:37:45.763543
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 544 544 1 20_000 2_000_000 1_000_000_000 1; date
+hits: u 253, big 0, known 0
+elapsed: 10:08:47.943003
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 548 548 1 20_000 2_000_000 1_000_000_000 1; date
+hits: u 131, big 0, known 0
+elapsed: 5:00:53.636650
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 556 556 1 20_000 2_000_000 1_000_000_000 1; date
+hits: u 141, big 0, known 0
+elapsed: 5:55:13.573378
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 564 564 1 20_000 2_000_000 1_000_000_000 1; date
+hits: u 177, big 0, known 0
+elapsed: 7:43:59.765370
+
+Do mults of 120 in range 20_001 40_000
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 240 240 20_001 40_000 2_000_000 1_000_000_000 1; date
+hits: u 844, big 0, known 0
+elapsed: 11:50:08.347359
+
+6/2/2026T
+Do mults of 120 in range 20_001 40_000
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 360 360 20_001 40_000 2_000_000 1_000_000_000 1; date
+Interrupt 23627
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 360 360 23_627 40_000 2_000_000 1_000_000_000 1; date
+hits: u 621, big 0, known 0
+elapsed: 11:03:21.128608
+
+Do mults of 120 in range 20_001 40_000
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 480 480 20_001 40_000 2_000_000 1_000_000_000 2; date
+hits: u 834, big 0, known 0
+elapsed: 12:49:01.613821
+
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 520 520 1 20_000 2_000_000 1_000_000_000 1; date
+Interrupt 3339
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 520 520 3339 20_000 2_000_000 1_000_000_000 1; date
+hits: u 820, big 0, known 0
+elapsed: 1 day, 1:35:21.817515
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 552 552 1 20_000 2_000_000 1_000_000_000 1; date
+hits: u 345, big 0, known 0
+elapsed: 16:02:17.421915
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 568 568 1 20_000 2_000_000 1_000_000_000 1; date
+568 should hit 568/-1005
+Trying mn -568/1005, quad_xy (10122/78563, 63384/78563)
+Searching for +- pts on -568/1005 quartic
+	85941/89543 -> known #12: 156646737
+	k 85941/89543 -> known #12: 156646737
+	k -6576324/18208003 -> known #5: 16003017
+	k 341174187/106652551 -> known #12: 156646737
+	k 93825884364/4467581827 -> known #5: 16003017
+	big 0, known 4
+	knowns 2: [5, 12]
+hits: u 286, big 0, known 1
+knowns 1: [12]
+elapsed: 11:30:34.281330
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 572 572 1 20_000 2_000_000 1_000_000_000 1; date
+hits: u 189, big 0, known 0
+elapsed: 7:03:20.641568
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 576 576 1 20_000 2_000_000 1_000_000_000 1; date
+576 may hit 576/83, missed because need pt > 2_000_000
+hits: u 373, big 0, known 0
+elapsed: 16:59:43.865216
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 580 580 1 20_000 2_000_000 1_000_000_000 1; date
+hits: u 419, big 0, known 0
+elapsed: 13:49:27.670112
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 584 584 1 20_000 2_000_000 1_000_000_000 1; date
+hits: u 280, big 0, known 0
+elapsed: 10:23:25.634208
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 588 588 1 20_000 2_000_000 1_000_000_000 1; date
+hits: u 202, big 0, known 0
+elapsed: 6:34:53.544925
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 596 596 1 20_000 2_000_000 1_000_000_000 2; date
+hits: u 140, big 0, known 0
+elapsed: 8:25:35.513885
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 604 604 1 20_000 2_000_000 1_000_000_000 2; date
+hits: u 143, big 0, known 0
+elapsed: 8:13:36.406697
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 612 612 1 20_000 2_000_000 1_000_000_000 2; date
+hits: u 144, big 0, known 0
+elapsed: 8:11:42.037029
+
+6/3/2026W
+Do mults of 120 in range 20_001 40_000
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 520 520 20_001 40_000 2_000_000 1_000_000_000 2; date
+hits: u 831, big 0, known 0
+elapsed: 13:00:39.092182
+
+Do mults of 120 in range 20_001 40_000
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 600 600 20_001 40_000 2_000_000 1_000_000_000 2; date
+hits: u 778, big 0, known 0
+elapsed: 12:58:24.236410
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 560 560 1 20_000 2_000_000 1_000_000_000 1; date
+560 may hit 7493/560 (for 7493/280), but missed
+Trying mn 7493/560, quad_xy (-84883/121946, 10061/365838), perhaps too large.
+hits: u 946, big 0, known 0
+elapsed: 1 day, 13:49:30.746463
+
+592 should hit 592/-865 #19, 61, 89, but it missed. Would have found it on 2nd quartic. Use from now on.
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 592 592 1 20_000 2_000_000 1_000_000_000 2; date
+Trying mn -592/865, quad_xy (4976/15963, 19208/47889)
+Trying mn -592/865, quad_xy (18038/90149, 188636/270447)
+	51022/6283 -> known #19: 1871713857
+	k 51022/6283 -> known #19: 1871713857
+	k -274683538/363349503 -> known #19: 1871713857
+	k 15388308376911/9112705106509 -> known #61: 1592672455342770513
+	k 359232139211713/386055908344557 -> known #61: 1592672455342770513
+	big 0, known 4
+	knowns 2: [19, 61]
+hits: u 298, big 0, known 1
+knowns 1: [19]
+elapsed: 19:02:42.459732
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 608 608 1 20_000 2_000_000 1_000_000_000 2; date
+hits: u 276, big 0, known 0
+elapsed: 17:30:33.002571
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 616 616 1 20_000 2_000_000 1_000_000_000 2; date
+hits: u 330, big 0, known 0
+elapsed: 19:54:22.310833
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 620 620 1 20_000 2_000_000 1_000_000_000 2; date
+hits: u 415, big 0, known 0
+elapsed: 22:49:10.351892
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 624 624 1 20_000 2_000_000 1_000_000_000 2; date
+hits: u 459, big 0, known 0
+elapsed: 1 day, 7:27:43.222512
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 628 628 1 20_000 2_000_000 1_000_000_000 2; date
+hits: u 147, big 0, known 0
+elapsed: 7:39:18.113704
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 632 632 1 20_000 2_000_000 1_000_000_000 2; date
+hits: u 288, big 0, known 0
+elapsed: 18:38:30.373142
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 636 636 1 20_000 2_000_000 1_000_000_000 2; date
+hits: u 206, big 0, known 0
+elapsed: 11:18:09.239849
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 644 644 1 20_000 2_000_000 1_000_000_000 2; date
+hits: u 167, big 0, known 0
+elapsed: 8:59:38.206454
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 652 652 1 20_000 2_000_000 1_000_000_000 2; date
+hits: u 134, big 0, known 0
+elapsed: 8:04:03.757399
+
+6/4/2026R
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 600 600 1 20_000 2_000_000 1_000_000_000 2; date
+Interrupted Trying mn 600/10559, quad_xy (234962/2620399, 547312/2620399)
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 600 600 10559 20_000 2_000_000 1_000_000_000 2; date
+hits: u 427, big 0, known 0
+elapsed: 13:09:21.450933
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 648 648 1 20_000 2_000_000 1_000_000_000 2; date
+hits: u 356, big 0, known 0
+elapsed: 23:14:07.353463
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 656 656 1 20_000 2_000_000 1_000_000_000 2; date
+hits: u 283, big 0, known 0
+elapsed: 15:06:38.149671
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 660 660 1 20_000 2_000_000 1_000_000_000 2; date
+660 should hit 660/-817
+Trying mn -660/817, quad_xy (134126/437931, 40084/145977)
+Searching for +- pts on -660/817 quartic
+	269760/262703 -> known #8: 44310257
+	k 269760/262703 -> known #8: 44310257
+	k -148573385628/885973035539 -> known #8: 44310257
+	k -23672631362763/14998021155271 -> known #64: 10816708329115215113
+	k 28775516096787/9219758589151 -> known #64: 10816708329115215113
+	k 30759036033063/11444612859779 -> known #72: 1671674986261410994097
+	k -219252053179131/164024255952887 -> known #72: 1671674986261410994097
+Interrupted Trying mn 660/5713, quad_xy (10887206/49034499, 4968700/16344833)
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 660 660 5713 20_000 2_000_000 1_000_000_000 2; date
+hits: u 376, big 0, known 0
+elapsed: 12:26:16.080951
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 664 664 1 20_000 2_000_000 1_000_000_000 2; date
+hits: u 277, big 0, known 0
+elapsed: 14:15:45.152470
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 668 668 1 20_000 2_000_000 1_000_000_000 2; date
+hits: u 137, big 0, known 0
+elapsed: 8:49:19.387837
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 672 672 1 20_000 2_000_000 1_000_000_000 2; date
+Interrupted Trying mn 4625/672, quad_xy (-39640784/54717417, -852592/18239139)
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 672 672 4625 20_000 2_000_000 1_000_000_000 2; date
+hits: u 303, big 0, known 0
+elapsed: 14:58:12.658264
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 676 676 1 20_000 2_000_000 1_000_000_000 2; 
+hits: u 163, big 0, known 0
+elapsed: 10:01:43.156267
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 684 684 1 20_000 2_000_000 1_000_000_000 2; date
+hits: u 185, big 0, known 0
+elapsed: 9:16:46.782788
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 692 692 1 20_000 2_000_000 1_000_000_000 2; date
+692 should hit 692/-477 #7, #20
+Trying mn -692/477, quad_xy (-3514/16223, 12340/16223)
+	407376/45419 -> known #20: 3393603777
+	k 407376/45419 -> known #20: 3393603777
+	k 16998669/8296799 -> known #7: 20615673
+	k 121782732/89219347 -> known #20: 3393603777
+	k 102079192431/21129576539 -> known #7: 20615673
+	big 0, known 4
+	knowns 2: [7, 20]
+hits: u 116, big 0, known 1
+knowns 1: [20]
+elapsed: 8:23:10.844379
+
+
+Do mults of 120 in range 20_001 40_000
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 720 720 20_001 40_000 2_000_000 1_000_000_000 2; date
+hits: u 779, big 0, known 0
+elapsed: 14:27:24.572333
+
+6/5/2026F
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 640 640 1 20_000 2_000_000 1_000_000_000 2; date
+640 may hit -1041/640 (for -1041/320)
+Trying mn -1017/640, quad_xy (-438434/943863, 3572/16559)
+Trying mn -1041/640, quad_xy (-9601/20974, 5915/20974)
+	-45462/9911 -> known #1: 422481
+	k -45462/9911 -> known #1: 422481
+	k 505959/243797 -> known #1: 422481
+	k 4075050/2265791 -> known #47: 58844817090201
+	k -11938245/72685487 -> known #17: 1679142729
+	k -2389411035/3468363473 -> known #17: 1679142729
+	k -41005064745/10597424869 -> known #47: 58844817090201
+	big 0, known 6
+	knowns 3: [1, 17, 47]
+Interrupted Trying mn -640/5243, quad_xy (103519/211274, 292121/633822)
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 640 640 5243 20_000 2_000_000 1_000_000_000 2; date
+hits: u 582, big 0, known 0
+elapsed: 22:07:30.968401
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 688 688 1 20_000 2_000_000 1_000_000_000 2; date
+hits: u 315, big 0, known 0
+elapsed: 17:43:03.858937
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 696 696 1 20_000 2_000_000 1_000_000_000 2; date
+hits: u 393, big 0, known 0
+elapsed: 1 day, 0:27:58.015660
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 700 700 1 20_000 2_000_000 1_000_000_000 2; date
+hits: u 430, big 0, known 0
+elapsed: 22:16:36.185641
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 704 704 1 20_000 2_000_000 1_000_000_000 2; date
+hits: u 297, big 0, known 0
+elapsed: 16:09:07.356606
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 708 708 1 20_000 2_000_000 1_000_000_000 2; date
+hits: u 161, big 0, known 0
+elapsed: 9:36:41.127654
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 712 712 1 20_000 2_000_000 1_000_000_000 2; date
+hits: u 267, big 0, known 0
+elapsed: 14:46:21.265494
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 716 716 1 20_000 2_000_000 1_000_000_000 2; date
+hits: u 116, big 0, known 0
+elapsed: 5:51:48.598312
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 724 724 1 20_000 2_000_000 1_000_000_000 2; date
+hits: u 139, big 0, known 0
+elapsed: 8:12:34.354028
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 732 732 1 20_000 2_000_000 1_000_000_000 2; date
+hits: u 180, big 0, known 0
+elapsed: 9:19:10.299383
+
+Do mults of 120 in range 20_001 40_000
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 840 840 20_001 40_000 2_000_000 1_000_000_000 2; date
+hits: u 882, big 0, known 0
+elapsed: 12:44:46.712012
+
+6/6/2026Sa
+Do mults of 120 in range 20_001 40_000
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 960 960 20_001 40_000 2_000_000 1_000_000_000 2; date
+hits: u 823, big 0, known 0
+elapsed: 11:49:13.920471
+
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 680 680 1 20_000 2_000_000 1_000_000_000 2; date
+680 may hit 14337/680 (for 14337/340) but didn't try
+hits: u 745, big 0, known 0
+elapsed: 1 day, 17:42:43.408978
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 728 728 1 20_000 2_000_000 1_000_000_000 2; date
+728 may hit -709/728 (for -709/364), but missed it
+Trying mn -709/728, quad_xy (884/5035, 9412/15105)
+Trying mn -709/728, quad_xy (-2162/5633, 4532/16899)
+hits: u 378, big 0, known 0
+elapsed: 1 day, 1:00:26.354241
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 736 736 1 20_000 2_000_000 1_000_000_000 2; date
+hits: u 291, big 0, known 0
+elapsed: 17:05:12.303650
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 740 740 1 20_000 2_000_000 1_000_000_000 2; date
+hits: u 418, big 0, known 0
+elapsed: 19:46:59.22411
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 744 744 1 20_000 2_000_000 1_000_000_000 2; date
+hits: u 392, big 0, known 0
+elapsed: 22:24:33.178463
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 748 748 1 20_000 2_000_000 1_000_000_000 2; date
+hits: u 134, big 0, known 0
+elapsed: 7:21:37.029160
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 752 752 1 20_000 2_000_000 1_000_000_000 2; date
+hits: u 293, big 0, known 0
+elapsed: 17:42:58.039705
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 756 756 1 20_000 2_000_000 1_000_000_000 2; date
+hits: u 197, big 0, known 0
+elapsed: 12:19:50.257094
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 764 764 1 20_000 2_000_000 1_000_000_000 2; date
+hits: u 130, big 0, known 0
+elapsed: 6:22:55.448493
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 772 772 1 20_000 2_000_000 1_000_000_000 2; date
+hits: u 119, big 0, known 0
+elapsed: 5:00:38.429548
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 788 788 1 20_000 2_000_000 1_000_000_000 2; date
+hits: u 131, big 0, known 0
+elapsed: 7:43:50.189449
+
+7/7/2026Su
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 720 720 1 20_000 2_000_000 1_000_000_000 2; date
+hits: u 1063, big 0, known 0
+elapsed: 2 days, 16:36:27.992257
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 768 768 1 20_000 2_000_000 1_000_000_000 2; date
+hits: u 338, big 0, known 0
+elapsed: 19:36:26.900855
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 776 776 1 20_000 2_000_000 1_000_000_000 2; date
+hits: u 240, big 0, known 0
+elapsed: 14:12:40.208667
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 784 784 1 20_000 2_000_000 1_000_000_000 2; date
+hits: u 308, big 0, known 0
+elapsed: 20:03:02.799170
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 792 792 1 20_000 2_000_000 1_000_000_000 2; 
+hits: u 370, big 0, known 0
+elapsed: 23:39:45.115886
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 796 796 1 20_000 2_000_000 1_000_000_000 2; date
+hits: u 138, big 0, known 0
+elapsed: 7:49:20.320519
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 804 804 1 20_000 2_000_000 1_000_000_000 2; date
+hits: u 166, big 0, known 0
+elapsed: 9:37:31.055913
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 808 808 1 20_000 2_000_000 1_000_000_000 2; date
+hits: u 294, big 0, known 0
+elapsed: 16:57:42.413762
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 812 812 1 20_000 2_000_000 1_000_000_000 2; date
+hits: u 197, big 0, known 0
+elapsed: 14:04:32.613739
+
+6/8/2026M
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 760 760 1 20_000 2_000_000 1_000_000_000 2; date
+hits: u 806, big 0, known 0
+elapsed: 1 day, 22:04:29.168644
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 780 780 1 20_000 2_000_000 1_000_000_000 2; date
+hits: u 648, big 0, known 0
+elapsed: 1 day, 9:44:54.893442
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 800 800 1 20_000 2_000_000 1_000_000_000 2; date
+800 may hit many doubles of 400: -37, -97, 873; only tried -97
+Trying mn -97/800, quad_xy (2000/4227, 6280/12681)
+Trying mn -97/800, quad_xy (2506/4869, 5876/14607)
+hits: u 802, big 0, known 0
+elapsed: 1 day, 22:46:34.986358
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 816 816 1 20_000 2_000_000 1_000_000_000 2; date
+hits: u 308, big 0, known 0
+elapsed: 17:30:45.948687
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 820 820 1 20_000 2_000_000 1_000_000_000 2; date
+hits: u 369, big 0, known 0
+elapsed: 17:30:10.645733
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 824 824 1 20_000 2_000_000 1_000_000_000 2; date
+824 may hit -1425/824 (for -1425/412): #2, #23
+Trying mn -1425/824, quad_xy (1679/144358, 99821/144358)
+	-11169/60181 -> known #2: 2813001
+	k -11169/60181 -> known #2: 2813001
+	k 9652857/1730275 -> known #2: 2813001
+	k -285762684/59252825 -> known #23: 15434547801
+	k -22612854940953/8089714723747 -> known #23: 15434547801
+	big 0, known 4
+	 2: [2, 23]
+hits: u 296, big 0, known 1
+knowns 1: [2]
+elapsed: 14:56:25.507518
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 828 828 1 20_000 2_000_000 1_000_000_000 2; date
+hits: u 179, big 0, known 0
+elapsed: 9:51:57.100323
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 832 832 1 20_000 2_000_000 1_000_000_000 2; date
+hits: u 354, big 0, known 0
+elapsed: 21:03:38.094044
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 836 836 1 20_000 2_000_000 1_000_000_000 2; date
+hits: u 149, big 0, known 0
+elapsed: 7:37:24.869479
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 844 844 1 20_000 2_000_000 1_000_000_000 2; date
+hits: u 137, big 0, known 0
+elapsed: 6:42:32.417906
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 852 852 1 20_000 2_000_000 1_000_000_000 2; date
+hits: u 181, big 0, known 0
+elapsed: 9:38:39.918734
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 856 856 1 20_000 2_000_000 1_000_000_000 2; date
+hits: u 276, big 0, known 0
+elapsed: 15:27:03.135453
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 868 868 1 20_000 2_000_000 1_000_000_000 2; date
+hits: u 150, big 0, known 0
+elapsed: 8:13:56.536980
+
+6/9/2026T
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 848 848 1 20_000 2_000_000 1_000_000_000 2; date
+hits: u 281, big 0, known 0
+elapsed: 17:06:08.543391
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 860 860 1 20_000 2_000_000 1_000_000_000 2; date
+hits: u 406, big 0, known 0
+elapsed: 20:48:16.737722
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 864 864 1 20_000 2_000_000 1_000_000_000 2; date
+864 may hit 12185/864 (for 12185 432) but didn't try
+hits: u 376, big 0, known 0
+elapsed: 22:06:10.282830
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 872 872 1 20_000 2_000_000 1_000_000_000 2; date
+hits: u 287, big 0, known 0
+elapsed: 16:32:06.952615
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 876 876 1 20_000 2_000_000 1_000_000_000 2; date
+hits: u 164, big 0, known 0
+elapsed: 9:25:42.313548
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 884 884 1 20_000 2_000_000 1_000_000_000 2; date
+hits: u 133, big 0, known 0
+elapsed: 8:06:44.100066
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 892 892 1 20_000 2_000_000 1_000_000_000 2; date
+hits: u 128, big 0, known 0
+elapsed: 8:08:17.958925
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 904 904 1 20_000 2_000_000 1_000_000_000 2; date
+hits: u 259, big 0, known 0
+elapsed: 16:17:14.426687
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 908 908 1 20_000 2_000_000 1_000_000_000 2; 
+hits: u 129, big 0, known 0
+elapsed: 7:25:50.463107
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 916 916 1 20_000 2_000_000 1_000_000_000 2; date
+hits: u 137, big 0, known 0
+elapsed: 7:19:10.976298
+
+6/10/2026W
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 840 840 1 20_000 2_000_000 1_000_000_000 2; date
+hits: u 1127, big 0, known 0
+elapsed: 2 days, 16:01:26.924288
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 880 880 1 20_000 2_000_000 1_000_000_000 2; date
+hits: u 850, big 0, known 0
+elapsed: 2 days, 1:11:46.257189
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 888 888 1 20_000 2_000_000 1_000_000_000 2; date
+hits: u 386, big 0, known 0
+elapsed: 22:39:16.180505
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 896 896 1 20_000 2_000_000 1_000_000_000 2; date
+hits: u 306, big 0, known 0
+elapsed: 19:34:33.506697
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 900 900 1 20_000 2_000_000 1_000_000_000 2; date
+hits: u 464, big 0, known 0
+elapsed: 23:24:01.567296
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 912 912 1 20_000 2_000_000 1_000_000_000 2; date
+hits: u 371, big 0, known 0
+elapsed: 21:55:03.970201
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 924 924 1 20_000 2_000_000 1_000_000_000 2; date
+hits: u 230, big 0, known 0
+elapsed: 14:42:23.007804
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 928 928 1 20_000 2_000_000 1_000_000_000 2; date
+hits: u 265, big 0, known 0
+elapsed: 14:41:53.925991
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 932 932 1 20_000 2_000_000 1_000_000_000 2; date
+hits: u 117, big 0, known 0
+elapsed: 6:27:00.772866
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 944 944 1 20_000 2_000_000 1_000_000_000 2; date
+hits: u 248, big 0, known 0
+elapsed: 16:10:40.850808
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 948 948 1 20_000 2_000_000 1_000_000_000 2; date
+hits: u 150, big 0, known 0
+elapsed: 7:02:27.755229
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 956 956 1 20_000 2_000_000 1_000_000_000 2; date
+hits: u 140, big 0, known 0
+elapsed: 7:50:52.349081
+
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 964 964 1 20_000 2_000_000 1_000_000_000 2; date
+hits: u 127, big 0, known 0
+elapsed: 8:23:13.074058
+
+6/11/2026R
+DELAYED Do m 4:1000 for n 1:20_000
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 476 476 1 20_000 2_000_000 1_000_000_000 2; date
+hits: u 141, big 0, known 0
+elapsed: 8:20:11.381935
+
+Do m 4:1000 for n 1:20_000
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 920 920 1 20_000 2_000_000 1_000_000_000 2; date
+920 will miss 920/-2433 because missed it in a deep search; didn't try
+hits: u 800, big 0, known 0
+elapsed: 1 day, 21:33:48.507830
+
+Do m 4:1000 for n 1:20_000
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 936 936 1 20_000 2_000_000 1_000_000_000 2; date
+936 should hit -5281/936, #27, #41
+Trying mn -5281/936, quad_xy (-385389/897398, 511455/897398)
+	1452567/226613 -> known #27: 64244765937
+	k 1452567/226613 -> known #27: 64244765937
+	k 34513895406/17236388671 -> known #27: 64244765937
+	k 1504171766499/356948640409 -> known #41: 25866132798297
+	k 404915677342422/153050461375883 -> known #41: 25866132798297
+	big 0, known 4
+	knowns 2: [27, 41]
+hits: u 456, big 0, known 1
+knowns 1: [27]
+elapsed: 1 day, 5:02:04.518422
+
+Do m 4:1000 for n 1:20_000
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 940 940 1 20_000 2_000_000 1_000_000_000 2; date
+hits: u 1127, big 0, known 0
+elapsed: 2 days, 16:01:26.924288
+
+Do m 4:1000 for n 1:20_000
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 952 952 1 20_000 2_000_000 1_000_000_000 2; date
+hits: u 305, big 0, known 0
+elapsed: 16:19:18.346897
+
+Do m 4:1000 for n 1:20_000
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 968 968 1 20_000 2_000_000 1_000_000_000 2; date
+968 will miss 78065/968 (for 484/78065) unless do special
+hits: u 293, big 0, known 0
+elapsed: 20:31:40.178993
+
+Do m 4:1000 for n 1:20_000
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 972 972 1 20_000 2_000_000 1_000_000_000 2; date
+hits: u 181, big 0, known 0
+elapsed: 8:41:57.047873
+
+Do m 4:1000 for n 1:20_000
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 976 976 1 20_000 2_000_000 1_000_000_000 2; 
+hits: u 295, big 0, known 0
+elapsed: 15:49:10.799345
+
+Do m 4:1000 for n 1:20_000
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 980 980 1 20_000 2_000_000 1_000_000_000 2; date
+hits: u 453, big 0, known 0
+elapsed: 1 day, 0:17:06.217412
+
+Do m 4:1000 for n 1:20_000
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 988 988 1 20_000 2_000_000 1_000_000_000 2; date
+hits: u 177, big 0, known 0
+elapsed: 9:13:39.814510
+
+6/12/2026F
+DELAYED Do m 4:1000 for n 1:20_000
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 312 312 1 20_000 2_000_000 1_000_000_000 2; date
+hits: u 466, big 0, known 0
+elapsed: 1 day, 8:47:17.415570
+
+Do m 4:1000 for n 1:20_000
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 960 960 1 20_000 2_000_000 1_000_000_000 2; date
+hits: u 971, big 0, known 0
+elapsed: 2 days, 4:57:45.164802
+
+Do m 4:1000 for n 1:20_000
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 984 984 1 20_000 2_000_000 1_000_000_000 2; date
+hits: u 309, big 0, known 0
+elapsed: 19:41:56.300694
+
+Do m 4:1000 for n 1:20_000
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 992 992 1 20_000 2_000_000 1_000_000_000 2; date
+hits: u 273, big 0, known 0
+elapsed: 15:45:09.246035
+
+Do m 4:1000 for n 1:20_000
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 996 996 1 20_000 2_000_000 1_000_000_000 2; date
+Trying mn 996/3625, quad_xy (934417/1650546, -16743/183394)
+Searching for +- pts on 996/3625 quartic
+    poly = R(poly_expr)
+TypeError: no conversion of this rational to integer
+Failing on next odd.
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 996 996 3625 3625 2_000_000 1_000_000_000 2; date
+OK. Fix bug by catching error when no rational root.
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 996 996 3627 20_000 2_000_000 1_000_000_000 2; date
+Error converting to polynomial: no conversion of this rational to integer
+	for mn 996/3635, quad_xy (-2974247/116396637, -1195/7994), poly_expr: 2153614699930777451094083187893*k^4 + 962115600707879525752662069060*k^3 - 1038780928375318244*sqrt(-19767612926501101275060324*k^2 + 8801279281881396491422680*k + 7501819891049660390769)*k^2 + 14203879966434170205234862857513*k^2 + 446260902914745570*sqrt(-19767612926501101275060324*k^2 + 8801279281881396491422680*k + 7501819891049660390769)*k - 3187939924749947371656289343460*k + 1152692548845062316*sqrt(-19767612926501101275060324*k^2 + 8801279281881396491422680*k + 7501819891049660390769) + 2538156322887173672087871404244
+Trying mn 996/3635, quad_xy (160182949/232793274, -1195/7994)
+hits: u 139, big 0, known 0
+elapsed: 5:22:11.860592
+
+6/13/2026Sa
+Do m 4:1000 for n 1:20_000
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 1000 1000 1 20_000 2_000_000 1_000_000_000 2; date
+1000 should hit 47/1000
+Trying mn 47/1000, quad_xy (13/242, 53/726)
+	3404/3813 -> known #17: 1679142729
+	k 3404/3813 -> known #17: 1679142729
+	k 390356/118407 -> known #1: 422481
+	k -782335/159237 -> known #1: 422481
+	k -110327845/91101959 -> known #17: 1679142729
+	k -48595487404/36796963187 -> known #94: 1796867575393608033006561
+	big 0, known 5
+	knowns 3: [1, 17, 94]
+hits: u 750, big 0, known 1
+knowns 1: [17]
+elapsed: 1 day, 15:47:26.417342
+
+
+
+DOING
+Do m 4:20_000 in groups of 100 for n 1:999
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 1004 1100 1 999 2_000_000 1_000_000_000 2; date
+Trying mn -361/1080, quad_xy (-7613/55966, 29497/55966) compare u=-361/540
+	-9512/52303 -> known #11: 145087793
+	k -9512/52303 -> known #11: 145087793
+	k 1782758009/3073371555 -> known #33: 1059621884297
+	k -14292714703/8244479237 -> known #11: 145087793
+	k -90697875331/26724810751 -> known #33: 1059621884297
+	big 0, known 4
+	knowns 2: [11, 33]
+
+
+Do m 4:20_000 in groups of 100 for n 1:999
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 1104 1200 1 999 2_000_000 1_000_000_000 2; date
+Should miss -2345/1152
+
+Do m 4:20_000 in groups of 100 for n 1:999
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 1204 1300 1 999 2_000_000 1_000_000_000 2; date
+Should hit 1208/135: #30, #40 but missed
+Trying mn 1208/135, quad_xy (-66672/112757, 45564/112757)
+Searching for +- pts on 1208/135 quartic
+Trying mn 1208/135, quad_xy (-123295/200282, 73945/200282)
+Searching for +- pts on 1208/135 quartic
+
+Do m 4:20_000 in groups of 100 for n 1:999
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 1304 1400 1 999 2_000_000 1_000_000_000 2; date
+Should miss -705/1376
+
+Do m 4:20_000 in groups of 100 for n 1:999
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 1404 1500 1 999 2_000_000 1_000_000_000 2; date
+
+Do m 4:20_000 in groups of 100 for n 1:999
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 1504 1600 1 999 2_000_000 1_000_000_000 2; date
+Should miss 1520/-1581
+
+Do m 4:20_000 in groups of 100 for n 1:999
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 1604 1700 1 999 2_000_000 1_000_000_000 2; date
+
+Do m 4:20_000 in groups of 100 for n 1:999
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 1704 1800 1 999 2_000_000 1_000_000_000 2; date
+Should miss 1744,495
+
+Do m 4:20_000 in groups of 100 for n 1:999
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 1804 1900 1 999 2_000_000 1_000_000_000 2; date
 
 
 TEMPLATE
-date; python -um elliptical.curves_tomita find_mn_y2t2_pts  1 20_000; date
+Do m 4:20_000 in groups of 100 for n 1:999
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 1804 1900 1 999 2_000_000 1_000_000_000 2; date
 
-TODO
-next 168
+Do m 4:20_000 in groups of 100 for n 1:999
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 1904 2000 1 999 2_000_000 1_000_000_000 2; date
 
+Do m 4:20_000 in groups of 100 for n 1:999
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 2004 2100 1 999 2_000_000 1_000_000_000 2; date
+
+Do m 4:20_000 in groups of 100 for n 1:999
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 2104 2200 1 999 2_000_000 1_000_000_000 2; date
+
+Do m 4:20_000 in groups of 100 for n 1:999
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 2204 2300 1 999 2_000_000 1_000_000_000 2; date
+
+Do m 4:20_000 in groups of 100 for n 1:999
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 2304 2400 1 999 2_000_000 1_000_000_000 2; date
+
+Do m 4:20_000 in groups of 100 for n 1:999
+date; python -um elliptical.curves_tomita find_mn_y2t2_pts 2404 2500 1 999 2_000_000 1_000_000_000 2; date
+
+
+Expect no hits till 3168,-1553 but 1553/999
 
 ------
 Example mn_y2t2 investigation.
@@ -528,3 +1859,4 @@ v0 = QQ(136)/-133
 solve_v_list(u, find_uv_by_EC(u, v0, 10, verbose=True))
 
 -------
+https://videos.develop3dlive.com/video/yan-mcclelland-nasa-text-to-spaceship-ai/

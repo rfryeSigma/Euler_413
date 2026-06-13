@@ -1970,9 +1970,19 @@ knowns 2: [1, 17]
 elapsed: 1 day, 9:35:23.232501
 
 DOING
+Do mults of 120 in range 20_001 40_000
+date; python -um modular.solutions_modular find_uvD_pts 120 120 20_001 40_000 2_000_000; date
+Interrupt -26627
+date; python -um modular.solutions_modular find_uvD_pts 120 120 26_627 40_000 2_000_000; date
+Interrupt 27157
+Taking too long. Abandon for now.
 
 TODO
+TEMPLATE
 date; python -um modular.solutions_modular find_uvD_pts  1 20_000 1_000_000; date
 1004
+
+Redo mults of 120 in range 20_001 40_000
+date; python -um modular.solutions_modular find_uvD_pts 240 240 20_001 40_000 2_000_000; date
 
 ----------
